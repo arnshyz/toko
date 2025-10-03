@@ -1,0 +1,121 @@
+generator client { provider = "prisma-client-js" }
+datasource db { provider = "postgresql"; url = env("DATABASE_URL") }
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  slug         String   @unique
+  isAdmin      Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  products     Product[]
+  orderItems   OrderItem[] @relation("SellerItems")
+  warehouses   Warehouse[]
+}
+
+model Warehouse {
+  id        String   @id @default(cuid())
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id])
+  name      String
+  city      String?
+  createdAt DateTime @default(now())
+
+  products  Product[]
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  sellerId    String
+  seller      User     @relation(fields: [sellerId], references: [id])
+  title       String
+  description String?
+  price       Int
+  stock       Int       @default(0)
+  imageUrl    String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  warehouseId String?
+  warehouse   Warehouse? @relation(fields: [warehouseId], references: [id])
+
+  orderItems  OrderItem[]
+}
+
+model Order {
+  id               String        @id @default(cuid())
+  orderCode        String        @unique
+  buyerName        String
+  buyerPhone       String
+  buyerAddress     String
+  courier          String
+  shippingCost     Int
+  status           OrderStatus   @default(PENDING)
+  paymentMethod    PaymentMethod @default(TRANSFER)
+  uniqueCode       Int           @default(0)
+  itemsTotal       Int
+  totalWithUnique  Int
+  voucherCode      String?
+  voucherDiscount  Int           @default(0)
+  proofImage       Bytes?
+  proofMimeType    String?
+  createdAt        DateTime      @default(now())
+
+  items            OrderItem[]
+  logs             VerificationLog[]
+  returns          ReturnRequest[]
+}
+
+model OrderItem {
+  id         String       @id @default(cuid())
+  orderId    String
+  order      Order        @relation(fields: [orderId], references: [id])
+  productId  String
+  product    Product      @relation(fields: [productId], references: [id])
+  sellerId   String
+  seller     User         @relation("SellerItems", fields: [sellerId], references: [id])
+  qty        Int
+  price      Int
+  status     ItemStatus   @default(PENDING)
+
+  returns    ReturnRequest[]
+}
+
+model Voucher {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  kind      VoucherKind
+  value     Int
+  minSpend  Int      @default(0)
+  active    Boolean  @default(true)
+  expiresAt DateTime?
+  createdAt DateTime @default(now())
+}
+
+model ReturnRequest {
+  id        String       @id @default(cuid())
+  orderId   String
+  order     Order        @relation(fields: [orderId], references: [id])
+  orderItemId String
+  orderItem OrderItem    @relation(fields: [orderItemId], references: [id])
+  status    ReturnStatus @default(REQUESTED)
+  reason    String
+  createdAt DateTime     @default(now())
+}
+
+model VerificationLog {
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id])
+  actor     String
+  action    String
+  note      String?
+  createdAt DateTime @default(now())
+}
+
+enum OrderStatus { PENDING PAID CANCELLED }
+enum ItemStatus { PENDING PACKED SHIPPED DELIVERED }
+enum PaymentMethod { TRANSFER COD }
+enum VoucherKind { PERCENT FIXED }
+enum ReturnStatus { REQUESTED APPROVED REJECTED RECEIVED REFUND_ISSUED }
