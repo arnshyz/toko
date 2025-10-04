@@ -1,4 +1,22 @@
-export default function SellerLogin() {
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { getIronSession } from "iron-session";
+import { sessionOptions, SessionUser } from "@/lib/session";
+
+export default async function SellerLogin() {
+  const cookieStore = cookies();
+  // @ts-ignore
+  const res = new Response();
+  const session = await getIronSession<{ user?: SessionUser }>(
+    { headers: { cookie: cookieStore.toString() } } as any,
+    res as any,
+    sessionOptions,
+  );
+
+  if (session.user) {
+    redirect("/seller/dashboard");
+  }
+
   return (
     <div className="max-w-md mx-auto bg-white border rounded p-6">
       <h1 className="text-xl font-semibold mb-4">Login Seller</h1>
