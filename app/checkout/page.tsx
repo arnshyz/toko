@@ -7,11 +7,32 @@ export default function CheckoutPage() {
   const [items, setItems] = useState<CartItem[]>([]);
   const [total, setTotal] = useState(0);
   const [courier, setCourier] = useState<keyof typeof COURIERS>('JNE_REG');
+  const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
-    const raw = localStorage.getItem('cart');
-    const arr: CartItem[] = raw ? JSON.parse(raw) : [];
-    setItems(arr); setTotal(arr.reduce((s, it) => s + it.price * it.qty, 0));
+    async function init() {
+      try {
+        const res = await fetch('/api/auth/me', { cache: 'no-store' });
+        const data = res.ok ? await res.json() : { user: null };
+        if (!data.user) {
+          const redirect = encodeURIComponent('/checkout');
+          window.location.href = `/login?redirect=${redirect}`;
+          return;
+        }
+      } catch (err) {
+        const redirect = encodeURIComponent('/checkout');
+        window.location.href = `/login?redirect=${redirect}`;
+        return;
+      }
+
+      const raw = localStorage.getItem('cart');
+      const arr: CartItem[] = raw ? JSON.parse(raw) : [];
+      setItems(arr);
+      setTotal(arr.reduce((s, it) => s + it.price * it.qty, 0));
+      setCheckingAuth(false);
+    }
+
+    init();
   }, []);
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
@@ -20,10 +41,19 @@ export default function CheckoutPage() {
     fd.append('items', JSON.stringify(items));
     fd.append('courier', courier);
     const res = await fetch('/api/checkout', { method: 'POST', body: fd });
+    if (res.status === 401) {
+      const redirect = encodeURIComponent('/checkout');
+      window.location.href = `/login?redirect=${redirect}`;
+      return;
+    }
     if (!res.ok) { alert('Gagal membuat pesanan'); return; }
     const data = await res.json();
     localStorage.removeItem('cart');
     window.location.href = `/order/${data.orderCode}`;
+  }
+
+  if (checkingAuth) {
+    return <div className="bg-white border rounded p-4">Memuat checkout...</div>;
   }
 
   return (

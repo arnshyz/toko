@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getIronSession } from "iron-session";
-import { sessionOptions, SessionUser } from "@/lib/session";
+import { getAppSessionFromRequest, getSafeRedirect } from "@/lib/auth";
 import bcrypt from "bcryptjs";
 
 export async function POST(req: NextRequest) {
@@ -14,10 +13,14 @@ export async function POST(req: NextRequest) {
   const ok = await bcrypt.compare(password, user.passwordHash);
   if (!ok) return NextResponse.json({ error: 'Invalid' }, { status: 400 });
 
-  const res = new NextResponse(null, { status: 302, headers: { Location: '/seller/dashboard' } });
-  const session = await getIronSession<{ user?: SessionUser }>(req, res, sessionOptions);
+  const defaultRedirect = user.isAdmin ? '/admin/orders' : '/seller/dashboard';
+  const redirectTo = getSafeRedirect(form.get('redirect')?.toString() ?? null, defaultRedirect);
+
+  const { session, res } = await getAppSessionFromRequest(req);
   session.user = { id: user.id, name: user.name, email: user.email, slug: user.slug, isAdmin: user.isAdmin };
   await session.save();
+  res.headers.set('Location', redirectTo);
+  res.status = 302;
   return res;
 }
 

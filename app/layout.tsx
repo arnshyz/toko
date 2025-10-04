@@ -1,11 +1,16 @@
 import "./globals.css";
 
+import { getAppSession } from "@/lib/auth";
+
 export const metadata = {
   title: "Akay Nusantara",
   description: "Marketplace dengan transfer manual, COD, multi-gudang, voucher & retur",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const session = await getAppSession();
+  const user = session.user;
+
   return (
     <html lang="id">
       <body className="bg-gray-50 text-gray-900">
@@ -16,6 +21,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <a href="/cart" className="hover:underline text-army">Keranjang</a>
               <a href="/seller/login" className="hover:underline text-army">Seller</a>
               <a href="/admin/orders" className="hover:underline text-army">Admin</a>
+              {user ? (
+                <>
+                  <span className="text-gray-600 hidden sm:inline">Halo, {user.name.split(" ")[0]}</span>
+                  <form method="POST" action="/api/auth/logout">
+                    <button className="hover:underline text-army" type="submit">Logout</button>
+                  </form>
+                </>
+              ) : (
+                <>
+                  <a href="/login" className="hover:underline text-army">Login</a>
+                  <a href="/register" className="hover:underline text-army">Daftar</a>
+                </>
+              )}
             </nav>
           </div>
         </header>
