@@ -9,9 +9,9 @@ export async function POST(req: NextRequest) {
   const orderItemId = String(form.get('orderItemId') || '');
   const status = String(form.get('status') || 'PENDING') as any;
 
-  // @ts-ignore
+
   const res = new NextResponse(null);
-  // @ts-ignore
+
   const session = await getIronSession(req, res, sessionOptions);
   const user = session.user as SessionUser | undefined;
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
