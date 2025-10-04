@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getIronSession } from "iron-session";
 import { sessionOptions, SessionUser } from "@/lib/session";
@@ -51,6 +52,12 @@ export async function POST(req: NextRequest) {
     : fallbackCategory;
 
   const variantGroups = parseVariantInput(variantsRaw);
+  const variantPayload: Prisma.InputJsonValue | undefined = variantGroups.length > 0
+    ? (variantGroups.map((group) => ({
+        name: group.name,
+        options: [...group.options],
+      })) as Prisma.InputJsonValue)
+    : undefined;
 
 
   const res = new NextResponse(null);
@@ -72,7 +79,7 @@ export async function POST(req: NextRequest) {
       warehouseId: warehouseId || null,
       category,
       originalPrice: finalOriginalPrice,
-      variantOptions: variantGroups.length > 0 ? variantGroups : undefined,
+      variantOptions: variantPayload,
     }
   });
   return NextResponse.redirect(new URL('/seller/products', req.url));
