@@ -7,10 +7,10 @@ export async function POST(req: NextRequest) {
   const form = await req.formData();
   const name = String(form.get('name') || '');
   const city = String(form.get('city') || '');
-  // @ts-ignore
+
   const res = new NextResponse(null);
-  // @ts-ignore
-  const session = await getIronSession(req, res, sessionOptions);
+
+  const session = await getIronSession<{ user?: SessionUser }>(req, res, sessionOptions);
   const user = session.user as SessionUser | undefined;
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
