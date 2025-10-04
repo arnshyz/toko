@@ -7,7 +7,7 @@ export async function POST(req: NextRequest, { params }: { params: { code: strin
   // @ts-ignore
   const res = new NextResponse(null);
   // @ts-ignore
-  const session = await getIronSession(req, res, sessionOptions);
+  const session = await getIronSession<{ user?: SessionUser }>(req, res, sessionOptions);
   const user = session.user as SessionUser | undefined;
   if (!user || !user.isAdmin) return NextResponse.json({ error: 'Admin only' }, { status: 403 });
 
