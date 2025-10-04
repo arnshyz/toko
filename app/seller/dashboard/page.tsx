@@ -2,14 +2,12 @@ import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 import { sessionOptions, SessionUser } from "@/lib/session";
 import { getIronSession } from "iron-session";
+import type { CookieStore } from "@edge-runtime/cookies";
 
 export default async function Dashboard() {
   const cookieStore = cookies();
-  // @ts-ignore
-  const res = new Response();
   const session = await getIronSession<{ user?: SessionUser }>(
-    { headers: { cookie: cookieStore.toString() } } as any,
-    res as any,
+    cookieStore as unknown as CookieStore,
     sessionOptions,
   );
   const user = session.user;

@@ -3,6 +3,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
 import { cookies } from "next/headers";
 import { getIronSession } from "iron-session";
+import type { CookieStore } from "@edge-runtime/cookies";
 import { sessionOptions, SessionUser } from "@/lib/session";
 
 export const metadata = {
@@ -12,11 +13,8 @@ export const metadata = {
 
 async function getSessionUser(): Promise<SessionUser | null> {
   const cookieStore = cookies();
-  // @ts-ignore
-  const res = new Response();
   const session = await getIronSession<{ user?: SessionUser }>(
-    { headers: { cookie: cookieStore.toString() } } as any,
-    res as any,
+    cookieStore as unknown as CookieStore,
     sessionOptions,
   );
   return session.user ?? null;

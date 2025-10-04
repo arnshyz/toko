@@ -1,15 +1,13 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getIronSession } from "iron-session";
+import type { CookieStore } from "@edge-runtime/cookies";
 import { sessionOptions, SessionUser } from "@/lib/session";
 
 export default async function SellerLogin() {
   const cookieStore = cookies();
-  // @ts-ignore
-  const res = new Response();
   const session = await getIronSession<{ user?: SessionUser }>(
-    { headers: { cookie: cookieStore.toString() } } as any,
-    res as any,
+    cookieStore as unknown as CookieStore,
     sessionOptions,
   );
 
