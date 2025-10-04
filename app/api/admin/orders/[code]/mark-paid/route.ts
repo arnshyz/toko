@@ -4,9 +4,7 @@ import { getIronSession } from "iron-session";
 import { sessionOptions, SessionUser } from "@/lib/session";
 
 export async function POST(req: NextRequest, { params }: { params: { code: string } }) {
-  // @ts-ignore
   const res = new NextResponse(null);
-  // @ts-ignore
   const session = await getIronSession<{ user?: SessionUser }>(req, res, sessionOptions);
   const user = session.user as SessionUser | undefined;
   if (!user || !user.isAdmin) return NextResponse.json({ error: 'Admin only' }, { status: 403 });
