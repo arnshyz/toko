@@ -43,6 +43,7 @@ model Product {
   imageUrl     String?
   isActive     Boolean    @default(true)
   createdAt    DateTime   @default(now())
+  variantOptions Json?
   warehouseId  String?
   warehouse    Warehouse? @relation(fields: [warehouseId], references: [id])
 

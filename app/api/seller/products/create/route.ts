@@ -7,8 +7,8 @@ import { sessionOptions, SessionUser } from "@/lib/session";
 export async function POST(req: NextRequest) {
   const form = await req.formData();
   const title = String(form.get('title') || '');
-  const price = parseInt(String(form.get('price') || '0'))||0;
-  const stock = parseInt(String(form.get('stock') || '0'))||0;
+  const price = Number.parseInt(String(form.get('price') ?? '0'), 10) || 0;
+  const stock = Number.parseInt(String(form.get('stock') ?? '0'), 10) || 0;
   const imageUrl = String(form.get('imageUrl') || '');
   const description = String(form.get('description') || '');
   const warehouseId = String(form.get('warehouseId') || '');
@@ -23,11 +23,13 @@ export async function POST(req: NextRequest) {
       if (Array.isArray(parsed) && parsed.length > 0) {
         variantPayload = parsed.map((group) => {
           if (group && typeof group === 'object') {
-            const plainGroup = { ...(group as Record<string, unknown>) };
-            const options = (plainGroup as { options?: unknown }).options;
+            const plainGroup: Record<string, unknown> = {
+              ...(group as Record<string, unknown>),
+            };
+            const options = plainGroup.options;
 
             if (Array.isArray(options)) {
-              plainGroup["options"] = options.map((option) =>
+              plainGroup.options = options.map((option) =>
                 option && typeof option === 'object'
                   ? { ...(option as Record<string, unknown>) }
                   : option
