@@ -12,9 +12,9 @@ export async function POST(req: NextRequest) {
   const description = String(form.get('description') || '');
   const warehouseId = String(form.get('warehouseId') || '');
 
-  // @ts-ignore
+
   const res = new NextResponse(null);
-  // @ts-ignore
+
   const session = await getIronSession(req, res, sessionOptions);
   const user = session.user as SessionUser | undefined;
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
