@@ -1,5 +1,11 @@
-generator client { provider = "prisma-client-js" }
-datasource db { provider = "postgresql"; url = env("DATABASE_URL") }
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
 
 model User {
   id           String   @id @default(cuid())
@@ -27,20 +33,20 @@ model Warehouse {
 }
 
 model Product {
-  id          String   @id @default(cuid())
-  sellerId    String
-  seller      User     @relation(fields: [sellerId], references: [id])
-  title       String
-  description String?
-  price       Int
-  stock       Int       @default(0)
-  imageUrl    String?
-  isActive    Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  warehouseId String?
-  warehouse   Warehouse? @relation(fields: [warehouseId], references: [id])
+  id           String     @id @default(cuid())
+  sellerId     String
+  seller       User       @relation(fields: [sellerId], references: [id])
+  title        String
+  description  String?
+  price        Int
+  stock        Int        @default(0)
+  imageUrl     String?
+  isActive     Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+  warehouseId  String?
+  warehouse    Warehouse? @relation(fields: [warehouseId], references: [id])
 
-  orderItems  OrderItem[]
+  orderItems   OrderItem[]
 }
 
 model Order {
@@ -68,40 +74,40 @@ model Order {
 }
 
 model OrderItem {
-  id         String       @id @default(cuid())
+  id         String     @id @default(cuid())
   orderId    String
-  order      Order        @relation(fields: [orderId], references: [id])
+  order      Order      @relation(fields: [orderId], references: [id])
   productId  String
-  product    Product      @relation(fields: [productId], references: [id])
+  product    Product    @relation(fields: [productId], references: [id])
   sellerId   String
-  seller     User         @relation("SellerItems", fields: [sellerId], references: [id])
+  seller     User       @relation("SellerItems", fields: [sellerId], references: [id])
   qty        Int
   price      Int
-  status     ItemStatus   @default(PENDING)
+  status     ItemStatus @default(PENDING)
 
   returns    ReturnRequest[]
 }
 
 model Voucher {
-  id        String   @id @default(cuid())
-  code      String   @unique
+  id        String    @id @default(cuid())
+  code      String    @unique
   kind      VoucherKind
-  value     Int
-  minSpend  Int      @default(0)
-  active    Boolean  @default(true)
+  value     Int       // percent atau fixed IDR
+  minSpend  Int       @default(0)
+  active    Boolean   @default(true)
   expiresAt DateTime?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 }
 
 model ReturnRequest {
-  id        String       @id @default(cuid())
-  orderId   String
-  order     Order        @relation(fields: [orderId], references: [id])
+  id          String       @id @default(cuid())
+  orderId     String
+  order       Order        @relation(fields: [orderId], references: [id])
   orderItemId String
-  orderItem OrderItem    @relation(fields: [orderItemId], references: [id])
-  status    ReturnStatus @default(REQUESTED)
-  reason    String
-  createdAt DateTime     @default(now())
+  orderItem   OrderItem    @relation(fields: [orderItemId], references: [id])
+  status      ReturnStatus @default(REQUESTED)
+  reason      String
+  createdAt   DateTime     @default(now())
 }
 
 model VerificationLog {
@@ -114,8 +120,33 @@ model VerificationLog {
   createdAt DateTime @default(now())
 }
 
-enum OrderStatus { PENDING PAID CANCELLED }
-enum ItemStatus { PENDING PACKED SHIPPED DELIVERED }
-enum PaymentMethod { TRANSFER COD }
-enum VoucherKind { PERCENT FIXED }
-enum ReturnStatus { REQUESTED APPROVED REJECTED RECEIVED REFUND_ISSUED }
+enum OrderStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
+enum ItemStatus {
+  PENDING
+  PACKED
+  SHIPPED
+  DELIVERED
+}
+
+enum PaymentMethod {
+  TRANSFER
+  COD
+}
+
+enum VoucherKind {
+  PERCENT
+  FIXED
+}
+
+enum ReturnStatus {
+  REQUESTED
+  APPROVED
+  REJECTED
+  RECEIVED
+  REFUND_ISSUED
+}
