@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
       warehouseId: warehouseId || null,
       category,
       originalPrice: finalOriginalPrice,
-      variantOptions: variantGroups.length > 0 ? variantGroups : null,
+      variantOptions: variantGroups.length > 0 ? variantGroups : undefined,
     }
   });
   return NextResponse.redirect(new URL('/seller/products', req.url));
