@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
+import { getSafeRedirect } from "@/lib/auth";
 import bcrypt from "bcryptjs";
 
 export async function POST(req: NextRequest) {
@@ -17,7 +18,8 @@ export async function POST(req: NextRequest) {
   const passwordHash = await bcrypt.hash(password, 10);
   await prisma.user.create({ data: { name, email, passwordHash, slug: slugify(name), isAdmin: false } });
 
-  return NextResponse.redirect(new URL('/seller/login', req.url));
+  const redirectTo = getSafeRedirect(form.get('redirect')?.toString() ?? null, '/seller/login');
+  return NextResponse.redirect(new URL(redirectTo, req.url));
 }
 
 
