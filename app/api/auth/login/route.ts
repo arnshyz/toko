@@ -14,11 +14,18 @@ export async function POST(req: NextRequest) {
   const ok = await bcrypt.compare(password, user.passwordHash);
   if (!ok) return NextResponse.json({ error: 'Invalid' }, { status: 400 });
 
-  const res = new NextResponse(null, { status: 302, headers: { Location: '/seller/dashboard' } });
+  const redirectTo = new URL('/seller/dashboard', req.url);
+  const res = new NextResponse();
   const session = await getIronSession<{ user?: SessionUser }>(req, res, sessionOptions);
   session.user = { id: user.id, name: user.name, email: user.email, slug: user.slug, isAdmin: user.isAdmin };
   await session.save();
-  return res;
+  const redirectResponse = NextResponse.redirect(redirectTo);
+  res.headers.forEach((value, key) => {
+    if (key.toLowerCase() === 'set-cookie') {
+      redirectResponse.headers.append(key, value);
+    }
+  });
+  return redirectResponse;
 }
 
 

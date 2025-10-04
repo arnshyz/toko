@@ -2,15 +2,24 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getIronSession } from "iron-session";
 import { sessionOptions, SessionUser } from "@/lib/session";
+import { productCategories } from "@/lib/categories";
 
 export async function POST(req: NextRequest) {
   const form = await req.formData();
   const title = String(form.get('title') || '');
   const price = parseInt(String(form.get('price') || '0'))||0;
   const stock = parseInt(String(form.get('stock') || '0'))||0;
+  const originalPriceValue = String(form.get('originalPrice') || '').trim();
+  const parsedOriginalPrice = originalPriceValue ? parseInt(originalPriceValue, 10) : NaN;
+  const originalPrice = Number.isFinite(parsedOriginalPrice) && parsedOriginalPrice > 0 ? parsedOriginalPrice : null;
   const imageUrl = String(form.get('imageUrl') || '');
   const description = String(form.get('description') || '');
   const warehouseId = String(form.get('warehouseId') || '');
+  const categoryValue = String(form.get('category') || '').trim();
+  const fallbackCategory = productCategories[0]?.slug || 'umum';
+  const category = categoryValue && productCategories.some((item) => item.slug === categoryValue)
+    ? categoryValue
+    : fallbackCategory;
 
 
   const res = new NextResponse(null);
@@ -19,6 +28,20 @@ export async function POST(req: NextRequest) {
   const user = session.user as SessionUser | undefined;
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  await prisma.product.create({ data: { sellerId: user.id, title, price, stock, imageUrl, description, warehouseId: warehouseId || null } });
+  const finalOriginalPrice = originalPrice && originalPrice > price ? originalPrice : null;
+
+  await prisma.product.create({
+    data: {
+      sellerId: user.id,
+      title,
+      price,
+      stock,
+      imageUrl,
+      description,
+      warehouseId: warehouseId || null,
+      category,
+      originalPrice: finalOriginalPrice,
+    }
+  });
   return NextResponse.redirect(new URL('/seller/products', req.url));
 }
