@@ -54,6 +54,14 @@ export default async function SellerProducts() {
           <input name="stock" type="number" placeholder="Stok" className="border rounded px-3 py-2"/>
           <input name="imageUrl" placeholder="URL gambar" className="border rounded px-3 py-2"/>
           <textarea name="description" placeholder="Deskripsi" className="border rounded px-3 py-2 md:col-span-2"></textarea>
+          <textarea
+            name="variants"
+            placeholder="Varian (contoh: Warna: Hitam, Putih)\nUkuran: 64GB, 128GB"
+            className="border rounded px-3 py-2 md:col-span-2"
+          ></textarea>
+          <p className="text-xs text-gray-500 md:col-span-2">
+            Tambahkan setiap kelompok varian di baris baru dengan format <span className="font-medium">Nama: opsi1, opsi2</span>.
+          </p>
           <button className="btn-primary md:col-span-2">Simpan</button>
         </form>
       </div>

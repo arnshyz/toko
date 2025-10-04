@@ -46,6 +46,7 @@ model Product {
   description  String?
   price        Int
   originalPrice Int?
+  variantOptions Json?
   category     String     @default("umum")
   stock        Int        @default(0)
   imageUrl     String?
