@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
 
   const res = new NextResponse(null);
 
-  const session = await getIronSession(req, res, sessionOptions);
+  const session = await getIronSession<{ user?: SessionUser }>(req, res, sessionOptions);
   const user = session.user as SessionUser | undefined;
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
