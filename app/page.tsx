@@ -3,6 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatIDR } from "@/lib/utils";
 import { PromoSlider } from "@/components/PromoSlider";
+import { getCategoryInfo, productCategories } from "@/lib/categories";
 
 export default async function HomePage() {
   const products = await prisma.product.findMany({
@@ -10,14 +11,7 @@ export default async function HomePage() {
     orderBy: { createdAt: 'desc' },
     include: { seller: true }
   });
-  const categories = [
-    { slug: "elektronik", name: "Elektronik", description: "Gadget & aksesoris", emoji: "🔌" },
-    { slug: "fashion", name: "Fashion", description: "Gaya terkini", emoji: "👗" },
-    { slug: "rumah-tangga", name: "Rumah Tangga", description: "Peralatan rumah", emoji: "🏠" },
-    { slug: "kecantikan", name: "Kecantikan", description: "Perawatan diri", emoji: "💄" },
-    { slug: "olahraga", name: "Olahraga", description: "Perlengkapan sport", emoji: "🏃" },
-    { slug: "hobi", name: "Hobi", description: "Koleksi & hobi", emoji: "🎨" }
-  ];
+  const categories = productCategories;
   return (
     <div className="space-y-10">
       <PromoSlider />
@@ -52,29 +46,45 @@ export default async function HomePage() {
           </Link>
         </div>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          {products.map(p => (
-            <div key={p.id} className="overflow-hidden rounded-lg border bg-white shadow transition hover:-translate-y-1 hover:shadow-lg">
-              <Link href={`/product/${p.id}`} className="block">
-                <img
-                  src={p.imageUrl || 'https://placehold.co/600x400?text=Produk'}
-                  className="h-40 w-full object-cover"
-                  alt={p.title}
-                />
-              </Link>
-              <div className="p-3">
-                <Link href={`/product/${p.id}`} className="font-medium line-clamp-1 hover:text-indigo-600">
-                  {p.title}
+          {products.map(p => {
+            const category = getCategoryInfo(p.category);
+            const showOriginal = p.originalPrice && p.originalPrice > p.price;
+            const categoryLabel = category?.name ?? p.category.replace(/-/g, ' ');
+            const categoryEmoji = category?.emoji ?? '🏷️';
+            return (
+              <div
+                key={p.id}
+                className="overflow-hidden rounded-lg border bg-white shadow transition hover:-translate-y-1 hover:shadow-lg"
+              >
+                <Link href={`/product/${p.id}`} className="block">
+                  <img
+                    src={p.imageUrl || 'https://placehold.co/600x400?text=Produk'}
+                    className="h-40 w-full object-cover"
+                    alt={p.title}
+                  />
                 </Link>
-                <div className="text-sm text-gray-500">
-                  Seller:{' '}
-                  <Link className="underline hover:text-indigo-600" href={`/s/${p.seller.slug}`}>
-                    {p.seller.name}
+                <div className="p-3">
+                  <div className="mb-1 inline-flex items-center gap-1 rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-600">
+                    <span>{categoryEmoji}</span>
+                    <span className="capitalize">{categoryLabel}</span>
+                  </div>
+                  <Link href={`/product/${p.id}`} className="font-medium line-clamp-1 hover:text-indigo-600">
+                    {p.title}
                   </Link>
+                  <div className="text-sm text-gray-500">
+                    Seller:{' '}
+                    <Link className="underline hover:text-indigo-600" href={`/s/${p.seller.slug}`}>
+                      {p.seller.name}
+                    </Link>
+                  </div>
+                  {showOriginal && (
+                    <div className="text-xs text-gray-400 line-through">Rp {formatIDR(p.originalPrice!)}</div>
+                  )}
+                  <div className="mt-1 text-lg font-semibold text-indigo-600">Rp {formatIDR(p.price)}</div>
                 </div>
-                <div className="mt-1 font-semibold">Rp {formatIDR(p.price)}</div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
     </div>

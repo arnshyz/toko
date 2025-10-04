@@ -39,6 +39,8 @@ model Product {
   title        String
   description  String?
   price        Int
+  originalPrice Int?
+  category     String     @default("umum")
   stock        Int        @default(0)
   imageUrl     String?
   isActive     Boolean    @default(true)
