@@ -15,6 +15,12 @@ model User {
   slug         String   @unique
   isAdmin      Boolean  @default(false)
   createdAt    DateTime @default(now())
+  storeBadge   StoreBadge @default(BASIC)
+  storeIsOnline Boolean   @default(true)
+  storeFollowers Int      @default(0)
+  storeFollowing Int      @default(0)
+  storeRating    Float?
+  storeRatingCount Int    @default(0)
 
   products     Product[]
   orderItems   OrderItem[] @relation("SellerItems")
@@ -151,4 +157,12 @@ enum ReturnStatus {
   REJECTED
   RECEIVED
   REFUND_ISSUED
+}
+
+enum StoreBadge {
+  BASIC
+  STAR
+  STAR_PLUS
+  MALL
+  PREMIUM
 }
