@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
 
@@ -68,7 +70,7 @@ export default async function AdminUsersPage({
               const hasWarehouse = user.warehouses.length > 0;
               const isSeller = user._count.products > 0 || hasWarehouse;
               return (
-                <tr key={user.id} className="border-b align-top">
+                <tr key={user.id} id={`user-${user.id}`} className="border-b align-top">
                   <td className="py-3">
                     <div className="font-medium">{user.name}</div>
                     <div className="text-xs text-gray-500">Bergabung {new Date(user.createdAt).toLocaleDateString("id-ID")}</div>
@@ -139,7 +141,7 @@ export default async function AdminUsersPage({
                   </td>
                   <td className="py-3">{user._count.products}</td>
                   <td className="py-3">{user._count.orderItems}</td>
-                  <td className="py-3">
+                  <td className="py-3 space-y-3">
                     <form
                       method="POST"
                       action={`/api/admin/users/${user.id}/toggle-admin`}
@@ -154,6 +156,122 @@ export default async function AdminUsersPage({
                         {user.isAdmin ? "Cabut Admin" : "Jadikan Admin"}
                       </button>
                     </form>
+                    {isSeller ? (
+                      <Link
+                        className="link block text-xs"
+                        href={`/admin/products?sellerId=${user.id}`}
+                      >
+                        Kelola produk seller
+                      </Link>
+                    ) : null}
+                    <details className="rounded border bg-gray-50 p-2 text-xs">
+                      <summary className="cursor-pointer font-semibold">
+                        Edit data seller
+                      </summary>
+                      <form
+                        method="POST"
+                        action={`/api/admin/users/${user.id}/update-profile`}
+                        className="mt-2 space-y-2"
+                      >
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                          <label className="flex flex-col gap-1">
+                            <span>Nama</span>
+                            <input
+                              className="rounded border px-2 py-1"
+                              name="name"
+                              defaultValue={user.name ?? ""}
+                              required
+                            />
+                          </label>
+                          <label className="flex flex-col gap-1">
+                            <span>Email</span>
+                            <input
+                              className="rounded border px-2 py-1"
+                              type="email"
+                              name="email"
+                              defaultValue={user.email ?? ""}
+                              required
+                            />
+                          </label>
+                          <label className="flex flex-col gap-1">
+                            <span>Slug</span>
+                            <input
+                              className="rounded border px-2 py-1"
+                              name="slug"
+                              defaultValue={user.slug ?? ""}
+                              required
+                            />
+                          </label>
+                          <label className="flex flex-col gap-1">
+                            <span>Rating Toko</span>
+                            <input
+                              className="rounded border px-2 py-1"
+                              type="number"
+                              name="storeRating"
+                              step="0.1"
+                              min="0"
+                              max="5"
+                              defaultValue={user.storeRating ?? ""}
+                            />
+                          </label>
+                          <label className="flex flex-col gap-1">
+                            <span>Jumlah Penilaian</span>
+                            <input
+                              className="rounded border px-2 py-1"
+                              type="number"
+                              name="storeRatingCount"
+                              min="0"
+                              defaultValue={user.storeRatingCount}
+                            />
+                          </label>
+                          <label className="flex flex-col gap-1">
+                            <span>Followers</span>
+                            <input
+                              className="rounded border px-2 py-1"
+                              type="number"
+                              name="storeFollowers"
+                              min="0"
+                              defaultValue={user.storeFollowers}
+                            />
+                          </label>
+                          <label className="flex flex-col gap-1">
+                            <span>Following</span>
+                            <input
+                              className="rounded border px-2 py-1"
+                              type="number"
+                              name="storeFollowing"
+                              min="0"
+                              defaultValue={user.storeFollowing}
+                            />
+                          </label>
+                        </div>
+                        <label className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            name="storeIsOnline"
+                            defaultChecked={user.storeIsOnline}
+                          />
+                          <span>Toko aktif</span>
+                        </label>
+                        <label className="flex flex-col gap-1">
+                          <span>Badge</span>
+                          <select
+                            name="badge"
+                            defaultValue={user.storeBadge}
+                            className="rounded border px-2 py-1"
+                          >
+                            {storeBadges.map((badge) => (
+                              <option key={badge} value={badge}>
+                                {badge}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <button className="btn-primary w-full" type="submit">
+                          Simpan Perubahan
+                        </button>
+                      </form>
+                    </details>
                   </td>
                 </tr>
               );
