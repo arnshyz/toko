@@ -1,7 +1,5 @@
 import { cookies } from "next/headers";
 import { getIronSession, type IronSession, type SessionOptions } from "iron-session";
-import { getIronSession as getEdgeIronSession } from "iron-session/edge";
-import type { NextRequest } from "next/server";
 
 export const sessionOptions: SessionOptions = {
   password: process.env.IRON_SESSION_PASSWORD!,
@@ -27,6 +25,3 @@ export async function getSession(): Promise<IronSession<SessionData>> {
   return session;
 }
 
-export async function getSessionFromRequest(req: NextRequest): Promise<IronSession<SessionData>> {
-  return getEdgeIronSession<SessionData>(req, sessionOptions);
-}
