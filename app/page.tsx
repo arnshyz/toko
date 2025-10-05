@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { formatIDR } from "@/lib/utils";
 import { PromoSlider, PromoSlide } from "@/components/PromoSlider";
 import { getCategoryInfo, productCategories } from "@/lib/categories";
+import { getPrimaryProductImageSrc } from "@/lib/productImages";
 
 const fallbackSlides: PromoSlide[] = [
   {
@@ -39,7 +40,10 @@ export default async function HomePage() {
   const products = await prisma.product.findMany({
     where: { isActive: true },
     orderBy: { createdAt: 'desc' },
-    include: { seller: true }
+    include: {
+      seller: true,
+      images: { select: { id: true }, orderBy: { sortOrder: 'asc' } },
+    }
   });
   const promoBanners = await prisma.promoBanner.findMany({
     where: { isActive: true },
@@ -104,7 +108,7 @@ export default async function HomePage() {
               >
                 <Link href={`/product/${p.id}`} className="block">
                   <img
-                    src={p.imageUrl || 'https://placehold.co/600x400?text=Produk'}
+                    src={getPrimaryProductImageSrc(p)}
                     className="h-40 w-full object-cover"
                     alt={p.title}
                   />

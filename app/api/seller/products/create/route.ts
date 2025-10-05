@@ -1,3 +1,5 @@
+import { Buffer } from "buffer";
+
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
@@ -41,7 +43,6 @@ export async function POST(req: NextRequest) {
   const originalPriceValue = String(form.get('originalPrice') || '').trim();
   const parsedOriginalPrice = originalPriceValue ? parseInt(originalPriceValue, 10) : NaN;
   const originalPrice = Number.isFinite(parsedOriginalPrice) && parsedOriginalPrice > 0 ? parsedOriginalPrice : null;
-  const imageUrl = String(form.get('imageUrl') || '');
   const description = String(form.get('description') || '');
   const warehouseId = String(form.get('warehouseId') || '');
   const categoryValue = String(form.get('category') || '').trim();
@@ -68,13 +69,24 @@ export async function POST(req: NextRequest) {
 
   const finalOriginalPrice = originalPrice && originalPrice > price ? originalPrice : null;
 
-  await prisma.product.create({
+  const files = form
+    .getAll('images')
+    .filter((entry): entry is File => entry instanceof File && entry.size > 0);
+
+  if (files.length > 5) {
+    return NextResponse.redirect(
+      new URL(`/seller/products?error=${encodeURIComponent('Maksimal 5 gambar diperbolehkan')}`, req.url)
+    );
+  }
+
+  const validatedFiles = files.filter((file) => file.type.startsWith('image/'));
+
+  const product = await prisma.product.create({
     data: {
       sellerId: user.id,
       title,
       price,
       stock,
-      imageUrl,
       description,
       warehouseId: warehouseId || null,
       category,
@@ -82,5 +94,20 @@ export async function POST(req: NextRequest) {
       variantOptions: variantPayload,
     }
   });
+  if (validatedFiles.length > 0) {
+    await Promise.all(
+      validatedFiles.map(async (file, index) => {
+        const arrayBuffer = await file.arrayBuffer();
+        await prisma.productImage.create({
+          data: {
+            productId: product.id,
+            mimeType: file.type || 'application/octet-stream',
+            data: Buffer.from(arrayBuffer),
+            sortOrder: index,
+          },
+        });
+      })
+    );
+  }
   return NextResponse.redirect(new URL('/seller/products', req.url));
 }

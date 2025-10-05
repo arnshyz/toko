@@ -4,6 +4,10 @@ import { formatIDR } from "@/lib/utils";
 import { getCategoryInfo } from "@/lib/categories";
 import { VariantSelector } from "@/components/VariantSelector";
 import { VariantGroup } from "@/types/product";
+import {
+  getPrimaryProductImageSrc,
+  getProductImageSources,
+} from "@/lib/productImages";
 
 const BADGE_STYLES: Record<string, { label: string; className: string }> = {
   BASIC: { label: "Basic", className: "bg-gray-100 text-gray-700" },
@@ -57,6 +61,9 @@ function renderStars(value: number) {
   ));
 }
 
+const HERO_PLACEHOLDER = "https://placehold.co/900x600?text=Produk";
+const THUMB_PLACEHOLDER = "https://placehold.co/300x200?text=Preview";
+
 export default async function ProductPage({ params }: { params: { id: string } }) {
   const product = await prisma.product.findUnique({
     where: { id: params.id },
@@ -64,6 +71,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
       seller: true,
       warehouse: true,
       _count: { select: { orderItems: true } },
+      images: { orderBy: { sortOrder: "asc" }, select: { id: true } },
     },
   });
 
@@ -84,6 +92,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
       },
       take: 8,
       orderBy: { createdAt: "desc" },
+      include: { images: { orderBy: { sortOrder: "asc" }, select: { id: true } } },
     }),
     prisma.product.findMany({
       where: {
@@ -93,6 +102,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
       },
       take: 8,
       orderBy: { createdAt: "desc" },
+      include: { images: { orderBy: { sortOrder: "asc" }, select: { id: true } } },
     }),
   ]);
 
@@ -186,26 +196,34 @@ export default async function ProductPage({ params }: { params: { id: string } }
     },
   ];
 
+  const productImageSources = getProductImageSources(product.id, product.images ?? []);
+  const heroImageSrc = productImageSources[0]?.src ?? product.imageUrl ?? HERO_PLACEHOLDER;
+  const thumbnailImages = (
+    productImageSources.length > 0
+      ? productImageSources
+      : [{ id: "placeholder", src: product.imageUrl ?? THUMB_PLACEHOLDER }]
+  ).slice(0, 5);
+
   return (
     <div className="space-y-10">
       <section className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
         <div className="space-y-4">
           <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
             <img
-              src={product.imageUrl || "https://placehold.co/900x600?text=Produk"}
+              src={heroImageSrc}
               alt={product.title}
               className="w-full rounded-xl object-cover"
             />
           </div>
-          <div className="grid grid-cols-4 gap-3">
-            {[0, 1, 2, 3].map((index) => (
+          <div className="grid grid-cols-4 gap-3 sm:grid-cols-5">
+            {thumbnailImages.map((image, index) => (
               <div
-                key={index}
+                key={image.id}
                 className="flex h-20 items-center justify-center overflow-hidden rounded-lg border border-dashed border-gray-200 bg-white"
               >
                 <img
-                  src={product.imageUrl || "https://placehold.co/300x200?text=Preview"}
-                  alt={`Preview ${index + 1}`}
+                  src={image.src}
+                  alt={`Preview ${index + 1} dari ${product.title}`}
                   className="h-full w-full object-cover"
                 />
               </div>
@@ -507,7 +525,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
                   className="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
                 >
                   <img
-                    src={item.imageUrl || "https://placehold.co/600x400?text=Produk"}
+                    src={getPrimaryProductImageSrc(item)}
                     alt={item.title}
                     className="h-44 w-full object-cover"
                   />
@@ -556,7 +574,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
                   className="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
                 >
                   <img
-                    src={item.imageUrl || "https://placehold.co/600x400?text=Produk"}
+                    src={getPrimaryProductImageSrc(item)}
                     alt={item.title}
                     className="h-44 w-full object-cover"
                   />

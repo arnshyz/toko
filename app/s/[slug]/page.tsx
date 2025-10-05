@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getCategoryInfo } from "@/lib/categories";
 import { formatIDR } from "@/lib/utils";
+import { getPrimaryProductImageSrc } from "@/lib/productImages";
 
 const BADGE_STYLES: Record<string, { label: string; className: string }> = {
   BASIC: { label: "Basic", className: "bg-gray-100 text-gray-700" },
@@ -34,6 +35,7 @@ export default async function Storefront({ params }: { params: { slug: string } 
   const products = await prisma.product.findMany({
     where: { sellerId: seller.id, isActive: true },
     orderBy: { createdAt: "desc" },
+    include: { images: { select: { id: true }, orderBy: { sortOrder: "asc" } } },
   });
 
   const badgeKey = seller.storeBadge ?? "BASIC";
@@ -158,7 +160,7 @@ export default async function Storefront({ params }: { params: { slug: string } 
                   className="overflow-hidden rounded-xl border border-gray-100 bg-white transition hover:-translate-y-1 hover:shadow-lg"
                 >
                   <img
-                    src={p.imageUrl || "https://placehold.co/600x400?text=Produk"}
+                    src={getPrimaryProductImageSrc(p)}
                     alt={p.title}
                     className="h-44 w-full object-cover"
                   />
