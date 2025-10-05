@@ -21,7 +21,12 @@ export default async function SellerProducts() {
       <h1 className="text-2xl font-semibold mb-4">Produk Saya</h1>
       <div className="bg-white border rounded p-4 mb-6">
         <h2 className="font-semibold mb-2">Tambah Produk</h2>
-        <form method="POST" action="/api/seller/products/create" className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <form
+          method="POST"
+          action="/api/seller/products/create"
+          encType="multipart/form-data"
+          className="grid grid-cols-1 md:grid-cols-2 gap-3"
+        >
           <select name="category" required className="border rounded px-3 py-2 md:col-span-2">
             <option value="">Pilih Kategori Produk</option>
             {productCategories.map((category) => (
@@ -43,7 +48,19 @@ export default async function SellerProducts() {
             className="border rounded px-3 py-2"
           />
           <input name="stock" type="number" placeholder="Stok" className="border rounded px-3 py-2"/>
-          <input name="imageUrl" placeholder="URL gambar" className="border rounded px-3 py-2"/>
+          <label className="md:col-span-2 text-sm">
+            <span className="mb-1 block font-medium">Gambar Produk</span>
+            <input
+              name="images"
+              type="file"
+              accept="image/*"
+              multiple
+              className="w-full rounded border px-3 py-2"
+            />
+            <span className="mt-1 block text-xs text-gray-500">
+              Unggah hingga 5 gambar. Gambar pertama akan menjadi thumbnail utama.
+            </span>
+          </label>
           <textarea name="description" placeholder="Deskripsi" className="border rounded px-3 py-2 md:col-span-2"></textarea>
           <textarea
             name="variants"

@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getCategoryInfo } from "@/lib/categories";
 import { formatIDR } from "@/lib/utils";
+import { getPrimaryProductImageSrc } from "@/lib/productImages";
 
 const BADGE_STYLES: Record<string, { label: string; className: string }> = {
   BASIC: { label: "Basic", className: "bg-gray-100 text-gray-700" },
@@ -34,6 +35,7 @@ export default async function Storefront({ params }: { params: { slug: string } 
   const products = await prisma.product.findMany({
     where: { sellerId: seller.id, isActive: true },
     orderBy: { createdAt: "desc" },
+    include: { images: { select: { id: true }, orderBy: { sortOrder: "asc" } } },
   });
 
   const badgeKey = seller.storeBadge ?? "BASIC";
@@ -47,6 +49,7 @@ export default async function Storefront({ params }: { params: { slug: string } 
     ? `${ratingValue.toFixed(1)} (${formatCompactNumber(ratingCount)} penilaian)`
     : "Belum ada penilaian";
   const joinedLabel = formatJoinedSince(seller.createdAt);
+  const displayName = seller.storeName?.trim().length ? seller.storeName : seller.name;
 
   return (
     <div className="space-y-8">
@@ -55,9 +58,18 @@ export default async function Storefront({ params }: { params: { slug: string } 
           <div className="flex flex-1 flex-col gap-6 md:flex-row md:items-center">
             <div className="flex flex-col items-center gap-3 text-center md:items-start md:text-left">
               <div className="relative h-20 w-20 overflow-hidden rounded-xl bg-gradient-to-br from-gray-100 to-gray-200">
-                <span className="absolute inset-0 flex items-center justify-center text-lg font-semibold text-gray-600">
-                  {seller.name.slice(0, 2).toUpperCase()}
-                </span>
+                {seller.avatarUrl?.trim() ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={seller.avatarUrl}
+                    alt={`Foto ${displayName}`}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <span className="absolute inset-0 flex items-center justify-center text-lg font-semibold text-gray-600">
+                    {displayName.slice(0, 2).toUpperCase()}
+                  </span>
+                )}
               </div>
               <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${badge.className}`}>
                 {badge.label}
@@ -68,7 +80,7 @@ export default async function Storefront({ params }: { params: { slug: string } 
               <div className="flex flex-col items-start gap-3 md:flex-row md:items-center md:justify-between">
                 <div>
                   <div className="flex items-center gap-2 text-lg font-semibold text-gray-900">
-                    {seller.name}
+                    {displayName}
                     <span
                       className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${isOnline ? "border-emerald-200 bg-emerald-50 text-emerald-600" : "border-gray-200 bg-gray-50 text-gray-500"}`}
                     >
@@ -149,7 +161,7 @@ export default async function Storefront({ params }: { params: { slug: string } 
                   className="overflow-hidden rounded-xl border border-gray-100 bg-white transition hover:-translate-y-1 hover:shadow-lg"
                 >
                   <img
-                    src={p.imageUrl || "https://placehold.co/600x400?text=Produk"}
+                    src={getPrimaryProductImageSrc(p)}
                     alt={p.title}
                     className="h-44 w-full object-cover"
                   />
