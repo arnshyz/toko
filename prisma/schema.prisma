@@ -26,10 +26,6 @@ model User {
   orderItems   OrderItem[] @relation("SellerItems")
   warehouses   Warehouse[]
   passwordResetTokens PasswordResetToken[]
-  chatThreadsCreated ChatThread[] @relation("CreatorThreads")
-  chatParticipants   ChatParticipant[]
-  chatMessages       ChatMessage[]
-  chatReports        ChatReport[]
   chatBlocksIssued   ChatBlock[] @relation("IssuerBlocks")
   chatBlocksReceived ChatBlock[] @relation("TargetBlocks")
   chatAuditLogs      ChatAuditLog[]
