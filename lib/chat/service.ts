@@ -214,7 +214,13 @@ export async function sendMessage(
         senderId,
         content: contentText ? cleanText : null,
         kind: input.kind ?? (input.attachments && input.attachments.length > 0 ? ChatMessageKind.ATTACHMENT : ChatMessageKind.TEXT),
-        metadata: input.metadata as Prisma.JsonValue,
+        metadata:
+  input.metadata === undefined
+    ? undefined
+    : input.metadata === null
+      ? Prisma.JsonNull
+      : (input.metadata as Prisma.InputJsonValue),
+
         moderationState: flagged ? ChatModerationState.FLAGGED : ChatModerationState.APPROVED,
       },
       include: { attachments: true },
