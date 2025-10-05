@@ -148,108 +148,22 @@ model PasswordResetToken {
 }
 
 model ChatThread {
-  id            String          @id @default(cuid())
-  type          ChatThreadType  @default(DIRECT)
-  contextType   ChatContextType
-  contextId     String
-  createdById   String
-  createdBy     User            @relation("CreatorThreads", fields: [createdById], references: [id])
-  title         String?
-  lastMessageId String? @unique
-  lastMessage   ChatMessage?    @relation("ThreadLastMessage", fields: [lastMessageId], references: [id])
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-
-  participants  ChatParticipant[]
-  messages      ChatMessage[]
-  reminders     ChatReminder[]
-  reports       ChatReport[]
-  auditLogs     ChatAuditLog[]
-
-  @@index([contextType, contextId])
-}
-
-model ChatParticipant {
-  id               String               @id @default(cuid())
-  threadId         String
-  thread           ChatThread           @relation(fields: [threadId], references: [id])
-  userId           String
-  user             User                 @relation(fields: [userId], references: [id])
-  role             ChatParticipantRole  @default(MEMBER)
-  lastReadMessageId String?
-  lastReadAt       DateTime?
-  mutedUntil       DateTime?
-  isActive         Boolean              @default(true)
-  createdAt        DateTime             @default(now())
-  updatedAt        DateTime             @updatedAt
-
-  receipts         ChatMessageReceipt[]
-
-  @@unique([threadId, userId])
+  id        String   @id @default(cuid())
+  orderId   String   @unique
+  createdAt DateTime @default(now())
+  messages  ChatMessage[]
 }
 
 model ChatMessage {
-  id           String          @id @default(cuid())
-  threadId     String
-  thread       ChatThread      @relation(fields: [threadId], references: [id])
-  senderId     String
-  sender       User            @relation(fields: [senderId], references: [id])
-  content      String?
-  kind         ChatMessageKind @default(TEXT)
-  metadata     Json?
-  sentAt       DateTime        @default(now())
-  deliveredAt  DateTime?
-  readAt       DateTime?
-  editedAt     DateTime?
-  deletedAt    DateTime?
-  moderationState ChatModerationState @default(PENDING)
-
-  attachments  ChatAttachment[]
-  receipts     ChatMessageReceipt[]
-  reports      ChatReport[]
-  threadAsLastMessage ChatThread? @relation("ThreadLastMessage")
-
-  @@index([threadId, sentAt])
+  id        String   @id @default(cuid())
+  threadId  String
+  thread    ChatThread @relation(fields: [threadId], references: [id])
+  sender    String    // "buyer:<phone>" / "seller:<userId>"
+  content   String?
+  metadata  Json?
+  createdAt DateTime  @default(now())
 }
 
-model ChatAttachment {
-  id          String   @id @default(cuid())
-  messageId   String
-  message     ChatMessage @relation(fields: [messageId], references: [id])
-  url         String
-  fileName    String
-  mimeType    String
-  size        Int
-  scannedAt   DateTime?
-  scanStatus  AttachmentScanStatus @default(PENDING)
-  createdAt   DateTime @default(now())
-}
-
-model ChatMessageReceipt {
-  id          String              @id @default(cuid())
-  messageId   String
-  message     ChatMessage         @relation(fields: [messageId], references: [id])
-  participantId String
-  participant ChatParticipant     @relation(fields: [participantId], references: [id])
-  status      MessageDeliveryStatus
-  occurredAt  DateTime            @default(now())
-
-  @@unique([messageId, participantId, status])
-}
-
-model ChatReport {
-  id          String        @id @default(cuid())
-  messageId   String
-  message     ChatMessage   @relation(fields: [messageId], references: [id])
-  threadId    String
-  thread      ChatThread    @relation(fields: [threadId], references: [id])
-  reporterId  String
-  reporter    User          @relation(fields: [reporterId], references: [id])
-  reason      String
-  createdAt   DateTime      @default(now())
-  resolvedAt  DateTime?
-  resolution  String?
-}
 
 model ChatBlock {
   id           String   @id @default(cuid())
