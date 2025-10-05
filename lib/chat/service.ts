@@ -208,13 +208,17 @@ export async function sendMessage(
   const { cleanText, flagged, matchedTerms } = contentText ? scanMessageContent(contentText) : { cleanText: "", flagged: false, matchedTerms: [] };
 
   const message = await prisma.$transaction(async (tx) => {
+    const metadataPayload = input.metadata
+      ? (input.metadata as Prisma.InputJsonValue)
+      : undefined;
+
     const createdMessage = await tx.chatMessage.create({
       data: {
         threadId,
         senderId,
         content: contentText ? cleanText : null,
         kind: input.kind ?? (input.attachments && input.attachments.length > 0 ? ChatMessageKind.ATTACHMENT : ChatMessageKind.TEXT),
-        metadata: input.metadata as Prisma.JsonValue,
+        metadata: metadataPayload,
         moderationState: flagged ? ChatModerationState.FLAGGED : ChatModerationState.APPROVED,
       },
       include: { attachments: true },
