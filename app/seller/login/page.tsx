@@ -111,12 +111,12 @@ export default async function SellerLogin() {
               >
                 Masuk dengan Facebook
               </button>
-              <button
-                type="button"
-                className="flex items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 font-medium text-gray-700 transition hover:border-[#f53d2d]/40 hover:text-[#f53d2d]"
+              <a
+                href="/api/auth/google"
+                className="flex items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 text-center font-medium text-gray-700 transition hover:border-[#f53d2d]/40 hover:text-[#f53d2d]"
               >
                 Masuk dengan Google
-              </button>
+              </a>
             </div>
 
             <div className="mt-6 text-center text-sm text-gray-500">

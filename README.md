@@ -29,6 +29,7 @@ Marketplace ala Shopee dengan **transfer manual + kode unik**, **COD**, **vouche
 - `DATABASE_URL`
 - `IRON_SESSION_PASSWORD`
 - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` (untuk mengirim OTP reset password). Saat variabel ini tidak diisi, email akan dicetak ke log saja.
+- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI` (opsional — default ke `/api/auth/google/callback` sesuai origin) untuk login Google.
 - `PLATFORM_NAME`, `BANK_*`, `ACCOUNT_NAME`, `BASE_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`
 
 ## Deploy Vercel
