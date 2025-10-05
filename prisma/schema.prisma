@@ -15,6 +15,7 @@ model User {
   slug         String   @unique
   isAdmin      Boolean  @default(false)
   createdAt    DateTime @default(now())
+  avatarUrl    String?
   storeBadge   StoreBadge @default(BASIC)
   storeIsOnline Boolean   @default(true)
   storeFollowers Int      @default(0)
@@ -57,6 +58,31 @@ model Product {
   warehouse    Warehouse? @relation(fields: [warehouseId], references: [id])
 
   orderItems   OrderItem[]
+  images       ProductImage[]
+}
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  mimeType  String
+  data      Bytes
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model PromoBanner {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  highlight   String
+  imageUrl    String
+  ctaLabel    String
+  ctaHref     String
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Order {

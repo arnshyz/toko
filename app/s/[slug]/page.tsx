@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getCategoryInfo } from "@/lib/categories";
 import { formatIDR } from "@/lib/utils";
+import { getPrimaryProductImageSrc } from "@/lib/productImages";
 
 const BADGE_STYLES: Record<string, { label: string; className: string }> = {
   BASIC: { label: "Basic", className: "bg-gray-100 text-gray-700" },
@@ -34,6 +35,7 @@ export default async function Storefront({ params }: { params: { slug: string } 
   const products = await prisma.product.findMany({
     where: { sellerId: seller.id, isActive: true },
     orderBy: { createdAt: "desc" },
+    include: { images: { select: { id: true }, orderBy: { sortOrder: "asc" } } },
   });
 
   const badgeKey = seller.storeBadge ?? "BASIC";
@@ -55,9 +57,18 @@ export default async function Storefront({ params }: { params: { slug: string } 
           <div className="flex flex-1 flex-col gap-6 md:flex-row md:items-center">
             <div className="flex flex-col items-center gap-3 text-center md:items-start md:text-left">
               <div className="relative h-20 w-20 overflow-hidden rounded-xl bg-gradient-to-br from-gray-100 to-gray-200">
-                <span className="absolute inset-0 flex items-center justify-center text-lg font-semibold text-gray-600">
-                  {seller.name.slice(0, 2).toUpperCase()}
-                </span>
+                {seller.avatarUrl?.trim() ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={seller.avatarUrl}
+                    alt={`Foto ${seller.name}`}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <span className="absolute inset-0 flex items-center justify-center text-lg font-semibold text-gray-600">
+                    {seller.name.slice(0, 2).toUpperCase()}
+                  </span>
+                )}
               </div>
               <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${badge.className}`}>
                 {badge.label}
@@ -149,7 +160,7 @@ export default async function Storefront({ params }: { params: { slug: string } 
                   className="overflow-hidden rounded-xl border border-gray-100 bg-white transition hover:-translate-y-1 hover:shadow-lg"
                 >
                   <img
-                    src={p.imageUrl || "https://placehold.co/600x400?text=Produk"}
+                    src={getPrimaryProductImageSrc(p)}
                     alt={p.title}
                     className="h-44 w-full object-cover"
                   />
