@@ -28,7 +28,11 @@ export const config = {
 };
 
 function getServer(res: NextApiResponse): SocketServer {
-  return res.socket.server as SocketServer;
+  const socket = res.socket;
+  if (!socket) {
+    throw new Error("WebSocket upgrade socket is not available on the response");
+  }
+  return socket.server as SocketServer;
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
