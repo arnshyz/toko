@@ -84,5 +84,8 @@ export default async function OrderPage({ params }: { params: { code: string } }
         {order.proofImage ? <p className="text-sm text-green-700 mt-2">Bukti sudah terunggah.</p> : null}
       </div>
     </div>
-  );
+  {/* (opsional) chat */}
+    {/* <OrderChat orderCode={params.code} role="buyer" /> */}
+  </div>
+);
 }
