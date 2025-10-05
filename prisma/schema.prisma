@@ -26,9 +26,6 @@ model User {
   orderItems   OrderItem[] @relation("SellerItems")
   warehouses   Warehouse[]
   passwordResetTokens PasswordResetToken[]
-  chatBlocksIssued   ChatBlock[] @relation("IssuerBlocks")
-  chatBlocksReceived ChatBlock[] @relation("TargetBlocks")
-  chatAuditLogs      ChatAuditLog[]
 }
 
 model Warehouse {
@@ -161,73 +158,6 @@ model ChatMessage {
 }
 
 
-model ChatBlock {
-  id           String   @id @default(cuid())
-  issuerId     String
-  issuer       User     @relation("IssuerBlocks", fields: [issuerId], references: [id])
-  targetId     String
-  target       User     @relation("TargetBlocks", fields: [targetId], references: [id])
-  reason       String?
-  createdAt    DateTime @default(now())
-  expiresAt    DateTime?
-
-  @@unique([issuerId, targetId])
-}
-
-model ChatReminder {
-  id           String    @id @default(cuid())
-  threadId     String
-  thread       ChatThread @relation(fields: [threadId], references: [id])
-  triggeredFor DateTime
-  createdAt    DateTime  @default(now())
-  sent         Boolean   @default(false)
-
-  @@unique([threadId, triggeredFor])
-}
-
-model ChatAuditLog {
-  id        String          @id @default(cuid())
-  threadId  String?
-  thread    ChatThread?     @relation(fields: [threadId], references: [id])
-  actorId   String?
-  actor     User?           @relation(fields: [actorId], references: [id])
-  action    ChatAuditAction
-  detail    String?
-  createdAt DateTime        @default(now())
-}
-
-enum ChatThreadType {
-  DIRECT
-  GROUP
-}
-
-enum ChatContextType {
-  PRODUCT
-  ORDER
-  CART
-  SUPPORT
-}
-
-enum ChatParticipantRole {
-  MEMBER
-  SELLER
-  BUYER
-  ADMIN
-  SUPPORT
-}
-
-enum ChatMessageKind {
-  TEXT
-  ATTACHMENT
-  SYSTEM
-}
-
-enum ChatModerationState {
-  PENDING
-  APPROVED
-  FLAGGED
-  BLOCKED
-}
 
 enum AttachmentScanStatus {
   PENDING
@@ -240,18 +170,6 @@ enum MessageDeliveryStatus {
   SENT
   DELIVERED
   READ
-}
-
-enum ChatAuditAction {
-  THREAD_CREATED
-  MESSAGE_SENT
-  MESSAGE_FLAGGED
-  MESSAGE_REPORTED
-  USER_BLOCKED
-  USER_UNBLOCKED
-  PARTICIPANT_JOINED
-  PARTICIPANT_LEFT
-  REMINDER_SCHEDULED
 }
 
 enum OrderStatus {
