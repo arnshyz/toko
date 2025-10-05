@@ -1,10 +1,7 @@
 import "./globals.css";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
-import { cookies } from "next/headers";
-import { getIronSession } from "iron-session";
-import type { CookieStore } from "@edge-runtime/cookies";
-import { sessionOptions, SessionUser } from "@/lib/session";
+import { getSession, SessionUser } from "@/lib/session";
 
 export const metadata = {
   title: "Akay Nusantara",
@@ -12,11 +9,7 @@ export const metadata = {
 };
 
 async function getSessionUser(): Promise<SessionUser | null> {
-  const cookieStore = cookies();
-  const session = await getIronSession<{ user?: SessionUser }>(
-    cookieStore as unknown as CookieStore,
-    sessionOptions,
-  );
+  const session = await getSession();
   return session.user ?? null;
 }
 

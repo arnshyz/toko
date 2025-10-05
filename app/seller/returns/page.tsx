@@ -1,15 +1,8 @@
 import { prisma } from "@/lib/prisma";
-import { cookies } from "next/headers";
-import { sessionOptions, SessionUser } from "@/lib/session";
-import { getIronSession } from "iron-session";
-import type { CookieStore } from "@edge-runtime/cookies";
+import { getSession } from "@/lib/session";
 
 export default async function SellerReturns() {
-  const cookieStore = cookies();
-  const session = await getIronSession<{ user?: SessionUser }>(
-    cookieStore as unknown as CookieStore,
-    sessionOptions,
-  );
+  const session = await getSession();
   const user = session.user;
   if (!user) return <div>Harap login.</div>;
 
