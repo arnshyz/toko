@@ -3,7 +3,11 @@ import { getSession } from "@/lib/session";
 
 const storeBadges = ["BASIC", "STAR", "STAR_PLUS", "MALL", "PREMIUM"] as const;
 
-export default async function AdminUsersPage() {
+export default async function AdminUsersPage({
+  searchParams,
+}: {
+  searchParams?: Record<string, string | string[] | undefined>;
+}) {
   const session = await getSession();
   const currentUser = session.user;
   if (!currentUser || !currentUser.isAdmin) {
@@ -19,12 +23,32 @@ export default async function AdminUsersPage() {
           orderItems: true,
         },
       },
+      warehouses: {
+        select: {
+          id: true,
+        },
+      },
     },
   });
+
+  const successMessage =
+    typeof searchParams?.message === "string" ? searchParams.message : undefined;
+  const errorMessage =
+    typeof searchParams?.error === "string" ? searchParams.error : undefined;
 
   return (
     <div>
       <h1 className="text-2xl font-semibold mb-4">Admin: Manajemen Pengguna &amp; Seller</h1>
+      {successMessage ? (
+        <div className="mb-4 rounded border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">
+          {successMessage}
+        </div>
+      ) : null}
+      {errorMessage ? (
+        <div className="mb-4 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          {errorMessage}
+        </div>
+      ) : null}
       <div className="bg-white border rounded p-4 overflow-x-auto">
         <table className="w-full text-sm min-w-[720px]">
           <thead>
@@ -41,7 +65,8 @@ export default async function AdminUsersPage() {
           <tbody>
             {users.map((user) => {
               const isCurrent = user.id === currentUser.id;
-              const isSeller = user._count.products > 0;
+              const hasWarehouse = user.warehouses.length > 0;
+              const isSeller = user._count.products > 0 || hasWarehouse;
               return (
                 <tr key={user.id} className="border-b align-top">
                   <td className="py-3">
@@ -89,6 +114,24 @@ export default async function AdminUsersPage() {
                             </button>
                           </form>
                         </div>
+                        <form
+                          method="POST"
+                          action={`/api/admin/users/${user.id}/delete-store`}
+                          className="pt-1"
+                        >
+                          <button
+                            className="text-xs rounded bg-red-600 px-3 py-1 font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:bg-red-300"
+                            type="submit"
+                            disabled={user._count.orderItems > 0}
+                            title={
+                              user._count.orderItems > 0
+                                ? "Tidak dapat menghapus toko karena memiliki riwayat penjualan"
+                                : undefined
+                            }
+                          >
+                            Hapus Toko
+                          </button>
+                        </form>
                       </div>
                     ) : (
                       <div className="text-xs text-gray-500">Belum memiliki produk</div>
