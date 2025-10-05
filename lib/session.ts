@@ -1,5 +1,4 @@
-import { cookies } from "next/headers";
-import { getIronSession, type IronSession, type SessionOptions } from "iron-session";
+import type { IronSession, SessionOptions } from "iron-session";
 
 export const sessionOptions: SessionOptions = {
   password: process.env.IRON_SESSION_PASSWORD!,
@@ -18,10 +17,14 @@ export type SessionUser = {
 export type SessionData = { user?: SessionUser };
 
 export async function getSession(): Promise<IronSession<SessionData>> {
-  const session = await getIronSession<SessionData>(
+  const [{ cookies }, { getIronSession }] = await Promise.all([
+    import("next/headers"),
+    import("iron-session"),
+  ]);
+
+  return getIronSession<SessionData>(
     cookies() as unknown as any,
     sessionOptions,
   );
-  return session;
 }
 
