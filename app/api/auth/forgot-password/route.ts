@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { randomUUID } from "crypto";
 import { sendPasswordResetOtpEmail } from "@/lib/email";
 
 const OTP_EXPIRATION_MINUTES = 15;
@@ -36,6 +37,7 @@ export async function POST(req: NextRequest) {
 
   await prisma.passwordResetToken.create({
     data: {
+      id: randomUUID(),
       userId: user.id,
       otpHash,
       expiresAt,
