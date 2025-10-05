@@ -41,6 +41,17 @@ export default async function AdminUsersPage({
   return (
     <div>
       <h1 className="text-2xl font-semibold mb-4">Admin: Manajemen Pengguna &amp; Seller</h1>
+      <div className="mb-4 flex flex-wrap gap-3 text-sm">
+        <Link className="link" href="/admin/products">
+          Kelola Produk Seller
+        </Link>
+        <Link className="link" href="/admin/banners">
+          Kelola Banner Promo
+        </Link>
+        <Link className="link" href="/admin/orders">
+          Pantau Pesanan
+        </Link>
+      </div>
       {successMessage ? (
         <div className="mb-4 rounded border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-700">
           {successMessage}

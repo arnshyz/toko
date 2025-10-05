@@ -60,6 +60,20 @@ model Product {
   orderItems   OrderItem[]
 }
 
+model PromoBanner {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  highlight   String
+  imageUrl    String
+  ctaLabel    String
+  ctaHref     String
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 model Order {
   id               String        @id @default(cuid())
   orderCode        String        @unique

@@ -45,9 +45,14 @@ export default async function AdminProductsPage({
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-4">
         <h1 className="text-2xl font-semibold">Admin: Kelola Produk Seller</h1>
-        <Link className="link text-sm" href="/admin/users">
-          &larr; Kembali ke pengguna
-        </Link>
+        <div className="flex items-center gap-3 text-sm">
+          <Link className="link" href="/admin/banners">
+            Kelola Banner Promo
+          </Link>
+          <Link className="link" href="/admin/users">
+            &larr; Kembali ke pengguna
+          </Link>
+        </div>
       </div>
       <form className="flex flex-wrap items-end gap-2" method="GET">
         <label className="flex flex-col text-sm">
