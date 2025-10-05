@@ -1,5 +1,6 @@
 // app/order/[code]/page.tsx
 import { prisma } from "@/lib/prisma";
+import OrderChat from "@/components/OrderChat";
 export const dynamic = "force-dynamic";
 
 export default async function Page({ params }: { params: { code: string } }) {
@@ -30,8 +31,10 @@ export default async function Page({ params }: { params: { code: string } }) {
         </form>
       </div>
 
-      {/* (opsional) Chat */}
-      {/* <OrderChat orderCode={params.code} role="buyer" /> */}
+      <div className="bg-white border rounded p-4">
+        <h2 className="font-semibold mb-2">Chat dengan Seller</h2>
+        <OrderChat orderCode={params.code} role="buyer" />
+      </div>
     </div>
   );
 }
