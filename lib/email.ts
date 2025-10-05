@@ -1,8 +1,8 @@
-import nodemailer from "nodemailer";
+import nodemailer, { Transporter } from "nodemailer";
 
-let cachedTransport: nodemailer.Transporter | null | undefined;
+let cachedTransport: Transporter | null | undefined;
 
-function resolveTransport(): nodemailer.Transporter | null {
+function resolveTransport(): Transporter | null {
   if (cachedTransport !== undefined) {
     return cachedTransport;
   }
