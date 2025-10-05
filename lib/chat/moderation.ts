@@ -1,25 +1,20 @@
-const BANNED_TERMS = [
-  "bannedword",
-  "scam",
-  "fraud",
-  "hack",
-];
+// lib/chat/moderation.ts
+const BANNED = ["badword1", "badword2"];
 
-export function scanMessageContent(content: string): {
+export type ModerationResult = {
   cleanText: string;
   flagged: boolean;
   matchedTerms: string[];
-} {
+};
+
+export function moderate(input: string): ModerationResult {
+  const content = input.trim();
   const lower = content.toLowerCase();
-  const matched: string[] = [];
-  for (const term of BANNED_TERMS) {
-    if (lower.includes(term)) {
-      matched.push(term);
-    }
-  }
+  const matched = BANNED.filter(w => lower.includes(w));
+
   return {
     cleanText: content,
     flagged: matched.length > 0,
-    matchedTerms,
+    matchedTerms: matched, // ⬅️ perbaikan
   };
 }
