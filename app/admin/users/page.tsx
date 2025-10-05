@@ -72,8 +72,26 @@ export default async function AdminUsersPage({
               return (
                 <tr key={user.id} id={`user-${user.id}`} className="border-b align-top">
                   <td className="py-3">
-                    <div className="font-medium">{user.name}</div>
-                    <div className="text-xs text-gray-500">Bergabung {new Date(user.createdAt).toLocaleDateString("id-ID")}</div>
+                    <div className="flex items-start gap-3">
+                      <div className="h-12 w-12 overflow-hidden rounded-full bg-gray-200">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={
+                            user.avatarUrl?.trim()
+                              ? user.avatarUrl
+                              : "https://placehold.co/96x96?text=Foto"
+                          }
+                          alt={user.name ?? "Foto profil"}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                      <div>
+                        <div className="font-medium">{user.name}</div>
+                        <div className="text-xs text-gray-500">
+                          Bergabung {new Date(user.createdAt).toLocaleDateString("id-ID")}
+                        </div>
+                      </div>
+                    </div>
                   </td>
                   <td className="py-3">{user.email}</td>
                   <td className="py-3">
@@ -244,6 +262,41 @@ export default async function AdminUsersPage({
                               defaultValue={user.storeFollowing}
                             />
                           </label>
+                          <label className="flex flex-col gap-1 sm:col-span-2">
+                            <span>Foto Profil (URL)</span>
+                            <input
+                              className="rounded border px-2 py-1"
+                              type="url"
+                              name="avatarUrl"
+                              placeholder="https://contoh.com/avatar.jpg"
+                              defaultValue={user.avatarUrl ?? ""}
+                            />
+                            <span className="text-[11px] text-gray-500">
+                              Kosongkan untuk menghapus foto profil.
+                            </span>
+                          </label>
+                          <div className="sm:col-span-2">
+                            <span className="mb-1 block text-xs font-semibold uppercase text-gray-500">
+                              Pratinjau Foto Profil
+                            </span>
+                            <div className="flex items-center gap-3">
+                              <div className="h-16 w-16 overflow-hidden rounded-full bg-gray-200">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={
+                                    user.avatarUrl?.trim()
+                                      ? user.avatarUrl
+                                      : "https://placehold.co/128x128?text=Foto"
+                                  }
+                                  alt={`Foto ${user.name ?? "profil"}`}
+                                  className="h-full w-full object-cover"
+                                />
+                              </div>
+                              <span className="text-xs text-gray-500">
+                                Gunakan URL gambar langsung (https://).
+                              </span>
+                            </div>
+                          </div>
                         </div>
                         <label className="flex items-center gap-2">
                           <input

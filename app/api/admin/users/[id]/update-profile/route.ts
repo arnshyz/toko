@@ -38,6 +38,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const slug = formData.get("slug");
   const badge = formData.get("badge");
   const storeIsOnline = formData.get("storeIsOnline") === "on";
+  const avatarUrl = formData.get("avatarUrl");
 
   if (typeof name !== "string" || name.trim().length === 0) {
     return NextResponse.redirect(new URL(`/admin/users?error=${encodeURIComponent("Nama wajib diisi")}`, req.url));
@@ -54,6 +55,28 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const allowedBadges = Object.values(StoreBadge);
   if (!allowedBadges.includes(badge as StoreBadgeValue)) {
     return NextResponse.redirect(new URL(`/admin/users?error=${encodeURIComponent("Badge tidak ditemukan")}`, req.url));
+  }
+
+  let avatarUrlValue: string | null | undefined = undefined;
+  if (typeof avatarUrl === "string") {
+    const trimmed = avatarUrl.trim();
+    if (trimmed.length === 0) {
+      avatarUrlValue = null;
+    } else {
+      try {
+        const parsed = new URL(trimmed);
+        if (!["http:", "https:"].includes(parsed.protocol)) {
+          throw new Error("URL foto harus menggunakan protokol http/https");
+        }
+        avatarUrlValue = trimmed;
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "URL foto profil tidak valid";
+        return NextResponse.redirect(
+          new URL(`/admin/users?error=${encodeURIComponent(message)}`, req.url),
+        );
+      }
+    }
   }
 
   let storeRating: number | undefined;
@@ -89,6 +112,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         storeRatingCount,
         storeFollowers,
         storeFollowing,
+        avatarUrl: avatarUrlValue,
       },
     });
   } catch (error) {

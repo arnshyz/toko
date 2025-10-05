@@ -15,6 +15,7 @@ model User {
   slug         String   @unique
   isAdmin      Boolean  @default(false)
   createdAt    DateTime @default(now())
+  avatarUrl    String?
   storeBadge   StoreBadge @default(BASIC)
   storeIsOnline Boolean   @default(true)
   storeFollowers Int      @default(0)
