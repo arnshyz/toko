@@ -55,9 +55,18 @@ export default async function Storefront({ params }: { params: { slug: string } 
           <div className="flex flex-1 flex-col gap-6 md:flex-row md:items-center">
             <div className="flex flex-col items-center gap-3 text-center md:items-start md:text-left">
               <div className="relative h-20 w-20 overflow-hidden rounded-xl bg-gradient-to-br from-gray-100 to-gray-200">
-                <span className="absolute inset-0 flex items-center justify-center text-lg font-semibold text-gray-600">
-                  {seller.name.slice(0, 2).toUpperCase()}
-                </span>
+                {seller.avatarUrl?.trim() ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={seller.avatarUrl}
+                    alt={`Foto ${seller.name}`}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <span className="absolute inset-0 flex items-center justify-center text-lg font-semibold text-gray-600">
+                    {seller.name.slice(0, 2).toUpperCase()}
+                  </span>
+                )}
               </div>
               <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${badge.className}`}>
                 {badge.label}

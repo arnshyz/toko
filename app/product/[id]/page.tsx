@@ -339,9 +339,18 @@ export default async function ProductPage({ params }: { params: { id: string } }
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div className="flex items-center gap-4">
                 <div className="relative h-16 w-16 overflow-hidden rounded-xl bg-gradient-to-br from-gray-100 to-gray-200">
-                  <span className="absolute inset-0 flex items-center justify-center text-lg font-semibold text-gray-600">
-                    {seller.name.slice(0, 2).toUpperCase()}
-                  </span>
+                  {seller.avatarUrl?.trim() ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={seller.avatarUrl}
+                      alt={`Foto ${seller.name}`}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <span className="absolute inset-0 flex items-center justify-center text-lg font-semibold text-gray-600">
+                      {seller.name.slice(0, 2).toUpperCase()}
+                    </span>
+                  )}
                 </div>
                 <div className="space-y-1">
                   <div className="flex flex-wrap items-center gap-2 text-lg font-semibold text-gray-900">
