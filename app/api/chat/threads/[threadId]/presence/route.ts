@@ -8,13 +8,14 @@ export async function GET(
   { params }: { params: { threadId: string } },
 ) {
   const session = await getSession();
-  if (!session.user) {
+  const user = session.user;
+  if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const participants = await prisma.chatParticipant.findMany({
     where: { threadId: params.threadId },
   });
-  if (!participants.some((p) => p.userId === session.user.id)) {
+  if (!participants.some((p) => p.userId === user.id)) {
     return NextResponse.json({ error: "Not authorized" }, { status: 403 });
   }
   const statuses = await Promise.all(
