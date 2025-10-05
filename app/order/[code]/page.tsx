@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { formatIDR } from "@/lib/utils";
 import { paymentTemplate, waLink } from "@/lib/wa";
+import OrderChat from "@/components/OrderChat";
 
 export const dynamic = 'force-dynamic';
 
@@ -68,7 +69,12 @@ export default async function OrderPage({ params }: { params: { code: string } }
           {order.paymentMethod==='TRANSFER' && (<a className="btn-primary" href={wa} target="_blank">Kirim Konfirmasi via WhatsApp</a>)}
         </div>
       </div>
-
+ <div className="mt-6">
+        <h2 className="font-semibold mb-2">Chat dengan Seller</h2>
+        <OrderChat orderCode={params.code} role="buyer" />
+      </div>
+    </div>
+    
       <div className="bg-white border rounded p-4 mt-6">
         <h2 className="font-semibold mb-2">Upload Bukti Transfer</h2>
         <form action={`/api/order/${order.orderCode}/upload-proof`} method="post" encType="multipart/form-data">
