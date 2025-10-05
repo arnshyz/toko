@@ -25,6 +25,7 @@ model User {
   products     Product[]
   orderItems   OrderItem[] @relation("SellerItems")
   warehouses   Warehouse[]
+  passwordResetTokens PasswordResetToken[]
 }
 
 model Warehouse {
@@ -126,6 +127,16 @@ model VerificationLog {
   actor     String
   action    String
   note      String?
+  createdAt DateTime @default(now())
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  otpHash   String
+  expiresAt DateTime
+  usedAt    DateTime?
   createdAt DateTime @default(now())
 }
 
