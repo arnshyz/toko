@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
 
+export const dynamic = "force-dynamic";
+
 export default async function Dashboard() {
   const session = await getSession();
   const user = session.user;
@@ -8,7 +10,7 @@ export default async function Dashboard() {
 
   const account = await prisma.user.findUnique({
     where: { id: user.id },
-    select: { isBanned: true },
+    select: { isBanned: true, storeIsOnline: true },
   });
 
   if (!account || account.isBanned) {
@@ -28,6 +30,8 @@ export default async function Dashboard() {
     );
   }
 
+  const storeIsOnline = account.storeIsOnline ?? false;
+
   const [pcount, orders, revenue] = await Promise.all([
     prisma.product.count({ where: { sellerId: user.id } }),
     prisma.orderItem.findMany({ where: { sellerId: user.id }, select: { orderId: true }, distinct: ["orderId"] }),
@@ -37,6 +41,26 @@ export default async function Dashboard() {
   return (
     <div>
       <h1 className="text-2xl font-semibold mb-4">Dashboard Seller</h1>
+      <div className="bg-white border rounded p-4 mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h2 className="font-semibold text-lg">Status Toko</h2>
+          <p className="text-sm text-gray-600">
+            {storeIsOnline
+              ? "Toko Anda sedang buka dan pelanggan dapat melakukan pembelian."
+              : "Toko Anda sedang ditutup. Buka kembali agar pelanggan dapat berbelanja."}
+          </p>
+        </div>
+        <form method="POST" action="/api/seller/store/toggle" className="flex-shrink-0">
+          <input
+            type="hidden"
+            name="status"
+            value={storeIsOnline ? "offline" : "online"}
+          />
+          <button className={storeIsOnline ? "btn-outline" : "btn-primary"}>
+            {storeIsOnline ? "Tutup Toko" : "Buka Toko"}
+          </button>
+        </form>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white border rounded p-4"><div className="text-sm text-gray-500">Produk</div><div className="text-2xl font-bold">{pcount}</div></div>
         <div className="bg-white border rounded p-4"><div className="text-sm text-gray-500">Pesanan</div><div className="text-2xl font-bold">{orders.length}</div></div>
