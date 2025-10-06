@@ -14,6 +14,10 @@ export async function POST(req: NextRequest) {
   const ok = await bcrypt.compare(password, user.passwordHash);
   if (!ok) return NextResponse.json({ error: 'Invalid' }, { status: 400 });
 
+  if (user.isBanned) {
+    return NextResponse.redirect(new URL('/seller/login?error=banned', req.url));
+  }
+
   const redirectTo = new URL('/seller/dashboard', req.url);
   const res = new NextResponse();
   const session = await getIronSession<{ user?: SessionUser }>(req, res, sessionOptions);

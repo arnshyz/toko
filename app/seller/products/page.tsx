@@ -9,6 +9,28 @@ export default async function SellerProducts() {
   const user = session.user;
   if (!user) return <div>Harap login.</div>;
 
+  const account = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { isBanned: true },
+  });
+
+  if (!account || account.isBanned) {
+    return (
+      <div>
+        <h1 className="text-2xl font-semibold mb-4">Produk Saya</h1>
+        <div className="rounded border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          Akun Anda sedang diblokir sehingga tidak dapat mengelola produk. Hubungi
+          {" "}
+          <a className="underline" href="mailto:support@akay.id">
+            support@akay.id
+          </a>
+          {" "}
+          untuk bantuan lebih lanjut.
+        </div>
+      </div>
+    );
+  }
+
   const [products, warehouses] = await Promise.all([
     prisma.product.findMany({ where: { sellerId: user.id }, orderBy: { createdAt: 'desc' }, include: { warehouse: true } }),
     prisma.warehouse.findMany({ where: { ownerId: user.id }, orderBy: { createdAt: 'desc' } })

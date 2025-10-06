@@ -136,6 +136,12 @@ export async function handleGoogleCallback(req: NextRequest): Promise<NextRespon
     });
   }
 
+  if (user.isBanned) {
+    return clearStateCookie(
+      NextResponse.redirect(new URL("/seller/login?error=banned", url.origin)),
+    );
+  }
+
   const redirectTo = new URL("/seller/dashboard", url.origin);
   const response = clearStateCookie(NextResponse.redirect(redirectTo));
 

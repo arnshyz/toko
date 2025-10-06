@@ -2,11 +2,25 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 
-export default async function SellerLogin() {
+export default async function SellerLogin({
+  searchParams,
+}: {
+  searchParams?: Record<string, string | string[] | undefined>;
+}) {
   const session = await getSession();
 
   if (session.user) {
     redirect("/seller/dashboard");
+  }
+
+  const errorParam =
+    typeof searchParams?.error === "string" ? searchParams.error : undefined;
+  let errorMessage: string | undefined;
+  if (errorParam === "banned") {
+    errorMessage =
+      "Akun Anda telah diblokir oleh admin. Silakan hubungi support@akay.id untuk informasi lebih lanjut.";
+  } else if (errorParam) {
+    errorMessage = "Gagal masuk. Silakan coba lagi atau reset password Anda.";
   }
 
   return (
@@ -59,6 +73,11 @@ export default async function SellerLogin() {
             <h1 className="text-2xl font-semibold text-gray-900">Log in ke akun seller</h1>
             <p className="mt-2 text-sm text-gray-500">Masuk untuk mengelola toko dan menerima pesanan terbaru Anda.</p>
 
+            {errorMessage ? (
+              <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                {errorMessage}
+              </div>
+            ) : null}
             <form method="POST" action="/api/auth/login" className="mt-6 space-y-4">
               <div className="space-y-1">
                 <label htmlFor="email" className="text-sm font-medium text-gray-700">

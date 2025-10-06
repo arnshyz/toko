@@ -14,6 +14,7 @@ model User {
   passwordHash String
   slug         String   @unique
   isAdmin      Boolean  @default(false)
+  isBanned     Boolean  @default(false)
   createdAt    DateTime @default(now())
   avatarUrl    String?
   storeBadge   StoreBadge @default(BASIC)
@@ -102,6 +103,11 @@ model Order {
   voucherDiscount  Int           @default(0)
   proofImage       Bytes?
   proofMimeType    String?
+  midtransTransactionId String?
+  midtransOrderId       String?
+  midtransStatus        String?
+  midtransPaymentType   String?
+  midtransFraudStatus   String?
   createdAt        DateTime      @default(now())
 
   items            OrderItem[]

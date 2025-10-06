@@ -5,6 +5,7 @@
 .badge{ @apply inline-block text-xs px-2 py-0.5 rounded-full; }
 .badge-pending{ @apply bg-amber-100 text-amber-700; }
 .badge-paid{ @apply bg-emerald-100 text-emerald-700; }
+.badge-danger{ @apply bg-red-100 text-red-700; }
 .badge-packed{ @apply bg-blue-100 text-blue-700; }
 .badge-shipped{ @apply bg-purple-100 text-purple-700; }
 .badge-delivered{ @apply bg-green-100 text-green-700; }

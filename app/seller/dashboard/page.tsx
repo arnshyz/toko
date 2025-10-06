@@ -6,6 +6,28 @@ export default async function Dashboard() {
   const user = session.user;
   if (!user) return <div>Harap login sebagai seller.</div>;
 
+  const account = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { isBanned: true },
+  });
+
+  if (!account || account.isBanned) {
+    return (
+      <div>
+        <h1 className="text-2xl font-semibold mb-4">Dashboard Seller</h1>
+        <div className="rounded border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          Akun seller Anda telah diblokir oleh tim admin karena pelanggaran. Hubungi
+          {" "}
+          <a className="underline" href="mailto:support@akay.id">
+            support@akay.id
+          </a>
+          {" "}
+          untuk proses banding atau informasi lebih lanjut.
+        </div>
+      </div>
+    );
+  }
+
   const [pcount, orders, revenue] = await Promise.all([
     prisma.product.count({ where: { sellerId: user.id } }),
     prisma.orderItem.findMany({ where: { sellerId: user.id }, select: { orderId: true }, distinct: ["orderId"] }),

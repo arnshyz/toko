@@ -6,6 +6,28 @@ export default async function Warehouses() {
   const user = session.user;
   if (!user) return <div>Harap login.</div>;
 
+  const account = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { isBanned: true },
+  });
+
+  if (!account || account.isBanned) {
+    return (
+      <div>
+        <h1 className="text-2xl font-semibold mb-4">Gudang</h1>
+        <div className="rounded border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          Tidak dapat mengelola gudang karena akun diblokir. Hubungi
+          {" "}
+          <a className="underline" href="mailto:support@akay.id">
+            support@akay.id
+          </a>
+          {" "}
+          untuk mengaktifkan kembali akses Anda.
+        </div>
+      </div>
+    );
+  }
+
   const warehouses = await prisma.warehouse.findMany({ where: { ownerId: user.id }, orderBy: { createdAt: 'desc' } });
 
   return (

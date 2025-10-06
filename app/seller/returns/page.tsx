@@ -6,6 +6,28 @@ export default async function SellerReturns() {
   const user = session.user;
   if (!user) return <div>Harap login.</div>;
 
+  const account = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { isBanned: true },
+  });
+
+  if (!account || account.isBanned) {
+    return (
+      <div>
+        <h1 className="text-2xl font-semibold mb-4">Retur Masuk</h1>
+        <div className="rounded border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          Anda tidak dapat memproses retur selama akun diblokir. Silakan hubungi
+          {" "}
+          <a className="underline" href="mailto:support@akay.id">
+            support@akay.id
+          </a>
+          {" "}
+          untuk peninjauan akun.
+        </div>
+      </div>
+    );
+  }
+
   const returns = await prisma.returnRequest.findMany({
     orderBy: { createdAt: 'desc' },
     where: { orderItem: { sellerId: user.id } },

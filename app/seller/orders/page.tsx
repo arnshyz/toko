@@ -6,6 +6,28 @@ export default async function SellerOrders() {
   const user = session.user;
   if (!user) return <div>Harap login.</div>;
 
+  const account = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { isBanned: true },
+  });
+
+  if (!account || account.isBanned) {
+    return (
+      <div>
+        <h1 className="text-2xl font-semibold mb-4">Pesanan (Produk Saya)</h1>
+        <div className="rounded border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          Anda tidak dapat mengelola pesanan karena akun sedang diblokir. Hubungi
+          {" "}
+          <a className="underline" href="mailto:support@akay.id">
+            support@akay.id
+          </a>
+          {" "}
+          untuk klarifikasi lebih lanjut.
+        </div>
+      </div>
+    );
+  }
+
   const orders = await prisma.order.findMany({
     orderBy: { createdAt: 'desc' },
     where: { items: { some: { sellerId: user.id } } },

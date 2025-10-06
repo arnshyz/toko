@@ -38,6 +38,9 @@ export default async function AdminBannersPage({
           <Link className="link" href="/admin/products">
             Kelola Produk
           </Link>
+          <Link className="link" href="/admin/vouchers">
+            Kelola Voucher
+          </Link>
         </div>
       </div>
 

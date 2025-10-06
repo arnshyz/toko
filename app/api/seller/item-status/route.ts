@@ -16,6 +16,11 @@ export async function POST(req: NextRequest) {
   const user = session.user as SessionUser | undefined;
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  const account = await prisma.user.findUnique({ where: { id: user.id }, select: { isBanned: true } });
+  if (!account || account.isBanned) {
+    return NextResponse.redirect(new URL('/seller/login?error=banned', req.url));
+  }
+
   const item = await prisma.orderItem.findUnique({ where: { id: orderItemId }, include: { order: true } });
   if (!item || item.sellerId !== user.id || item.order.orderCode !== orderCode) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
