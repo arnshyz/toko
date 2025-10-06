@@ -3,6 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatIDR } from "@/lib/utils";
 import { PromoSlider, PromoSlide } from "@/components/PromoSlider";
+import { ActiveVoucherPopup } from "@/components/ActiveVoucherPopup";
 import { getCategoryInfo, productCategories } from "@/lib/categories";
 import { getPrimaryProductImageSrc } from "@/lib/productImages";
 
@@ -37,6 +38,7 @@ const fallbackSlides: PromoSlide[] = [
 ];
 
 export default async function HomePage() {
+  const now = new Date();
   const products = await prisma.product.findMany({
     where: { isActive: true },
     orderBy: { createdAt: 'desc' },
@@ -52,6 +54,21 @@ export default async function HomePage() {
       { createdAt: "asc" },
     ],
   });
+  const activeVouchers = await prisma.voucher.findMany({
+    where: {
+      active: true,
+      OR: [
+        { expiresAt: null },
+        { expiresAt: { gt: now } },
+      ],
+    },
+    orderBy: [
+      { createdAt: "desc" },
+      { code: "asc" },
+    ],
+    take: 1,
+  });
+  const highlightedVoucher = activeVouchers[0];
   const slides: PromoSlide[] = promoBanners.map((banner) => ({
     title: banner.title,
     description: banner.description,
@@ -63,6 +80,20 @@ export default async function HomePage() {
   const categories = productCategories;
   return (
     <div className="space-y-10">
+      {highlightedVoucher ? (
+        <ActiveVoucherPopup
+          voucher={{
+            id: highlightedVoucher.id,
+            code: highlightedVoucher.code,
+            kind: highlightedVoucher.kind,
+            value: highlightedVoucher.value,
+            minSpend: highlightedVoucher.minSpend,
+            expiresAt: highlightedVoucher.expiresAt
+              ? highlightedVoucher.expiresAt.toISOString()
+              : null,
+          }}
+        />
+      ) : null}
       <PromoSlider slides={slides.length > 0 ? slides : fallbackSlides} />
 
       <section>
