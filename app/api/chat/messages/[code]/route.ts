@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getIronSession } from "iron-session";
 
 import { prisma } from "@/lib/prisma";
-import { sessionOptions, SessionUser } from "@/lib/session";
+import { getSession } from "@/lib/session";
 
 async function getOrderByCode(orderCode: string) {
   return prisma.order.findUnique({
@@ -44,7 +43,7 @@ export async function GET(_req: NextRequest, { params }: { params: { code: strin
 }
 
 export async function POST(req: NextRequest, { params }: { params: { code: string } }) {
-  const session = await getIronSession<{ user?: SessionUser }>(req, new Response(), sessionOptions);
+  const session = await getSession();
   const user = session.user;
 
   const body = await req.json().catch(() => null);
