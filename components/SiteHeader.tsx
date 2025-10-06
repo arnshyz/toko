@@ -71,7 +71,7 @@ export function SiteHeader({ user }: SiteHeaderProps) {
                       Akun Saya
                     </Link>
                     <Link
-                      href="/seller/orders"
+                      href="/orders"
                       className="block px-4 py-3 text-sm font-medium hover:bg-gray-100"
                       onClick={() => setOpen(false)}
                     >
