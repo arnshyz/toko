@@ -61,7 +61,18 @@ export async function createMidtransTransaction(
 
   if (!res.ok) {
     const errorBody = await res.text();
-    throw new Error(`Midtrans error ${res.status}: ${errorBody}`);
+    let detail = errorBody;
+    try {
+      const parsed = JSON.parse(errorBody);
+      if (parsed?.status_message) {
+        detail = parsed.status_message;
+      } else if (parsed?.message) {
+        detail = parsed.message;
+      }
+    } catch {
+      // ignore parse errors and keep raw text
+    }
+    throw new Error(`Midtrans error ${res.status}: ${detail}`);
   }
 
   const data = (await res.json()) as SnapTransactionResponse;

@@ -20,7 +20,17 @@ export default function CheckoutPage() {
     fd.append('items', JSON.stringify(items));
     fd.append('courier', courier);
     const res = await fetch('/api/checkout', { method: 'POST', body: fd });
-    if (!res.ok) { alert('Gagal membuat pesanan'); return; }
+    if (!res.ok) {
+      let message = 'Gagal membuat pesanan';
+      try {
+        const data = await res.json();
+        if (data?.error) message = data.error;
+      } catch (err) {
+        // ignore JSON parse error
+      }
+      alert(message);
+      return;
+    }
     const data = await res.json();
     localStorage.removeItem('cart');
     window.location.href = `/order/${data.orderCode}`;

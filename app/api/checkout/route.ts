@@ -25,18 +25,11 @@ export async function POST(req: NextRequest) {
 
   let itemsTotal = 0;
   const createdItems: any[] = [];
-  const midtransItems: SnapItemDetail[] = [];
   const usedWarehouses = new Set<string | 'default'>();
   for (const it of items) {
     const p = products.find(pp => pp.id === it.productId)!;
     itemsTotal += p.price * it.qty;
     createdItems.push({ productId: p.id, sellerId: p.sellerId, qty: it.qty, price: p.price });
-    midtransItems.push({
-      id: p.id,
-      name: p.title.slice(0, 50),
-      price: p.price,
-      quantity: it.qty,
-    });
     // @ts-ignore
     usedWarehouses.add(p.warehouseId || 'default');
   }
@@ -64,21 +57,32 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Pembayaran Midtrans belum dikonfigurasi' }, { status: 500 });
   }
 
-  if (shippingCost > 0) {
-    midtransItems.push({
-      id: `SHIP-${courierKey}`,
-      name: `Ongkir ${courier.label}`.slice(0, 50),
-      price: shippingCost,
+  let midtransItems: SnapItemDetail[] = [];
+  if (paymentMethod === 'MIDTRANS') {
+    const summaryName = (() => {
+      if (!products.length) return 'Pesanan Toko';
+      if (products.length === 1) {
+        const qty = items[0]?.qty ?? 1;
+        const label = products[0]?.title?.slice(0, 38) ?? 'Produk';
+        return `${label}${qty > 1 ? ` ×${qty}` : ''}`.slice(0, 50);
+      }
+      const first = products[0]?.title?.slice(0, 30) ?? 'Produk';
+      return `${first} +${products.length - 1} lainnya`.slice(0, 50);
+    })();
+
+    midtransItems = [{
+      id: orderCode,
+      name: summaryName,
+      price: payableTotal,
       quantity: 1,
-    });
+    }];
   }
-  if (voucherDiscount > 0) {
-    midtransItems.push({
-      id: `DISC-${voucherUsed ?? 'voucher'}`.slice(0, 50),
-      name: 'Diskon Voucher',
-      price: -voucherDiscount,
-      quantity: 1,
-    });
+
+  if (paymentMethod === 'MIDTRANS' && payableTotal <= 0) {
+    return NextResponse.json(
+      { error: 'Total pembayaran Midtrans tidak valid' },
+      { status: 400 },
+    );
   }
 
   let order;
@@ -143,6 +147,8 @@ export async function POST(req: NextRequest) {
     if (order) {
       await prisma.order.delete({ where: { id: order.id } }).catch(() => {});
     }
-    return NextResponse.json({ error: 'Gagal memproses pesanan' }, { status: 500 });
+    const message = err instanceof Error ? err.message : 'Gagal memproses pesanan';
+    const status = /Midtrans/i.test(message) ? 502 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }
