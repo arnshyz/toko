@@ -54,7 +54,12 @@ export default async function SellerOrders() {
                       ))}
                     </div>
                   </td>
-                  <td className="py-2 align-top"><a className="link" href={`/order/${o.orderCode}`} target="_blank">Detail</a></td>
+                  <td className="py-2 align-top">
+                    <div className="flex flex-col gap-1">
+                      <a className="link" href={`/order/${o.orderCode}`} target="_blank">Detail</a>
+                      <a className="link" href={`/seller/orders/${o.orderCode}`}>Chat</a>
+                    </div>
+                  </td>
                 </tr>
               );
             })}
