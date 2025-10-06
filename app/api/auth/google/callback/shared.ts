@@ -109,7 +109,7 @@ export async function handleGoogleCallback(req: NextRequest): Promise<NextRespon
   const emailVerified = profile.email_verified !== false;
   const fullName =
     typeof profile.name === "string" && profile.name.trim().length > 0
-      ? profile.name
+      ? profile.name.trim()
       : email.split("@")[0];
 
   if (!email || !emailVerified) {
@@ -123,11 +123,13 @@ export async function handleGoogleCallback(req: NextRequest): Promise<NextRespon
   if (!user) {
     const passwordFallback = randomUUID();
     const passwordHash = await bcrypt.hash(passwordFallback, 10);
-    const slug = await buildUniqueSlug(fullName);
+    const storeNameBase = fullName || email.split("@")[0] || "Seller";
+    const storeName = `Toko ${storeNameBase}`.trim();
+    const slug = await buildUniqueSlug(storeName);
 
     user = await prisma.user.create({
       data: {
-        name: fullName || "Seller Akay",
+        name: storeName || "Seller Akay",
         email,
         passwordHash,
         slug,

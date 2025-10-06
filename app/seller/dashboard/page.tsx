@@ -10,7 +10,7 @@ export default async function Dashboard() {
 
   const account = await prisma.user.findUnique({
     where: { id: user.id },
-    select: { isBanned: true, storeIsOnline: true },
+    select: { isBanned: true, storeIsOnline: true, name: true, slug: true },
   });
 
   if (!account || account.isBanned) {
@@ -31,6 +31,8 @@ export default async function Dashboard() {
   }
 
   const storeIsOnline = account.storeIsOnline ?? false;
+  const storeName = account.name;
+  const storeSlug = account.slug;
 
   const [pcount, orders, revenue] = await Promise.all([
     prisma.product.count({ where: { sellerId: user.id } }),
@@ -41,7 +43,17 @@ export default async function Dashboard() {
   return (
     <div>
       <h1 className="text-2xl font-semibold mb-4">Dashboard Seller</h1>
-      <div className="bg-white border rounded p-4 mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+      <div className="bg-white border rounded p-4 mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="space-y-1">
+          <h2 className="font-semibold text-lg">Profil Toko</h2>
+          <div className="text-sm text-gray-600">
+            <div className="font-medium text-gray-900">{storeName}</div>
+            <div className="text-xs text-gray-500">Alamat etalase: https://akay.id/s/{storeSlug}</div>
+          </div>
+          <a className="text-sm font-semibold text-[#f53d2d] hover:text-[#d63b22]" href="/seller/settings">
+            Atur nama &amp; alamat toko →
+          </a>
+        </div>
         <div>
           <h2 className="font-semibold text-lg">Status Toko</h2>
           <p className="text-sm text-gray-600">
@@ -66,12 +78,13 @@ export default async function Dashboard() {
         <div className="bg-white border rounded p-4"><div className="text-sm text-gray-500">Pesanan</div><div className="text-2xl font-bold">{orders.length}</div></div>
         <div className="bg-white border rounded p-4"><div className="text-sm text-gray-500">Omzet (Paid)</div><div className="text-2xl font-bold">Rp {new Intl.NumberFormat('id-ID').format(revenue._sum.price || 0)}</div></div>
       </div>
-      <div className="mt-6 flex gap-2">
+      <div className="mt-6 flex flex-wrap gap-2">
         <a className="btn-primary" href="/seller/products">Kelola Produk</a>
         <a className="btn-outline" href="/seller/orders">Pesanan Saya</a>
         <a className="btn-outline" href="/seller/warehouses">Gudang</a>
         <a className="btn-outline" href="/seller/returns">Retur</a>
-        <a className="btn-outline" href={`/s/${user.slug}`} target="_blank">Lihat Toko</a>
+        <a className="btn-outline" href={`/s/${storeSlug}`} target="_blank">Lihat Toko</a>
+        <a className="btn-outline" href="/seller/settings">Pengaturan Toko</a>
       </div>
     </div>
   );

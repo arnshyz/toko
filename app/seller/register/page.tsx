@@ -49,22 +49,12 @@ export default function SellerRegister() {
               </a>
             </div>
             <h1 className="text-2xl font-semibold text-gray-900">Buat akun seller baru</h1>
-            <p className="mt-2 text-sm text-gray-500">Isi data berikut untuk membuka toko dan mulai menjual produk Anda.</p>
+            <p className="mt-2 text-sm text-gray-500">
+              Isi data berikut untuk membuat akun seller Anda. Nama toko dapat ditentukan sendiri setelah proses
+              pendaftaran selesai.
+            </p>
 
             <form method="POST" action="/api/auth/register" className="mt-6 space-y-4">
-              <div className="space-y-1">
-                <label htmlFor="name" className="text-sm font-medium text-gray-700">
-                  Nama Toko
-                </label>
-                <input
-                  id="name"
-                  type="text"
-                  name="name"
-                  required
-                  placeholder="Nama toko Anda"
-                  className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm transition focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/40"
-                />
-              </div>
               <div className="space-y-1">
                 <label htmlFor="email" className="text-sm font-medium text-gray-700">
                   Email
