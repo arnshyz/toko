@@ -3,7 +3,7 @@
 Marketplace ala Shopee dengan **transfer manual + kode unik**, **COD**, **voucher**, **multi-gudang**, dan **retur per item**, plus **upload bukti transfer** & **log verifikasi**.
 
 ## Fitur
-- **Pembayaran**: TRANSFER (kode unik 111–999) & COD (tanpa kode unik)
+- **Pembayaran**: TRANSFER (kode unik 111–999), COD (tanpa kode unik), dan Midtrans Snap (pembayaran online)
 - **Voucher**: percent/fixed, min spend, expiry, active
 - **Multi-gudang**: produk dapat di-assign ke gudang seller; ongkir dihitung **per gudang** (per-shipment)
 - **Retur** per item: buyer ajukan, seller approve/reject (extendable: RECEIVED/REFUND)
@@ -33,6 +33,7 @@ Marketplace ala Shopee dengan **transfer manual + kode unik**, **COD**, **vouche
 - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI` (opsional — default ke `/api/auth/google/callback` sesuai origin) untuk login Google.
 - `REDIS_URL` untuk presence, typing indicator, dan antrian notifikasi chat.
 - `PLATFORM_NAME`, `BANK_*`, `ACCOUNT_NAME`, `BASE_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`
+- `MIDTRANS_SERVER_KEY`, `NEXT_PUBLIC_MIDTRANS_CLIENT_KEY` (dari dashboard Midtrans Snap). Gunakan `MIDTRANS_IS_PRODUCTION="true"` dan `NEXT_PUBLIC_MIDTRANS_IS_PRODUCTION="true"` saat sudah go-live.
 
 ## Deploy Vercel
 - Set ENV sesuai daftar di atas.
@@ -44,6 +45,7 @@ Marketplace ala Shopee dengan **transfer manual + kode unik**, **COD**, **vouche
 - Seller: `/seller/login`, `/seller/register`, `/seller/forgot-password`, `/seller/reset-password`, `/seller/dashboard`, `/seller/products`, `/seller/orders`, `/seller/warehouses`, `/seller/returns`
 - Admin: `/admin/orders`
 - API: lihat `/app/api/*`
+- Webhook pembayaran Midtrans: `/api/midtrans/notification`
 - WebSocket: `wss://<host>/api/chat/socket?threadId=<threadId>` (otomatis diinisialisasi ketika client memanggil endpoint tersebut dengan sesi yang valid).
 
 > Bukti transfer disimpan sebagai **Bytes**. Untuk skala besar, gunakan **Vercel Blob/S3/Cloudinary**.
