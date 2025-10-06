@@ -21,12 +21,23 @@ export default async function SellerOrders() {
           <tbody>
             {orders.map(o => {
               const subtotal = o.items.reduce((s, it) => s + it.qty*it.price, 0);
+              const paymentMethod = String(o.paymentMethod);
+              const midtransStatus = (o as any).midtransStatus as string | null;
+              const midtransPaymentType = (o as any).midtransPaymentType as string | null;
               return (
                 <tr key={o.id} className="border-b">
                   <td className="py-2">{new Date(o.createdAt).toLocaleString('id-ID')}</td>
                   <td>{o.orderCode}</td>
                   <td><span className={`badge ${o.status === 'PAID' ? 'badge-paid':'badge-pending'}`}>{o.status}</span></td>
-                  <td>{o.paymentMethod}</td>
+                  <td>
+                    <div>{paymentMethod}</div>
+                    {paymentMethod === 'MIDTRANS' && midtransStatus ? (
+                      <div className="text-xs text-gray-500">
+                        gateway: {midtransStatus}
+                        {midtransPaymentType ? ` • ${midtransPaymentType}` : ''}
+                      </div>
+                    ) : null}
+                  </td>
                   <td>Rp {new Intl.NumberFormat('id-ID').format(subtotal)}</td>
                   <td className="py-2 align-top">
                     <div className="space-y-3">

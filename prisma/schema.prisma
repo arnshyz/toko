@@ -100,6 +100,11 @@ model Order {
   totalWithUnique  Int
   voucherCode      String?
   voucherDiscount  Int           @default(0)
+  midtransToken       String?
+  midtransRedirectUrl String?
+  midtransTransactionId String?
+  midtransStatus      String?
+  midtransPaymentType String?
   proofImage       Bytes?
   proofMimeType    String?
   createdAt        DateTime      @default(now())
@@ -214,6 +219,7 @@ enum ItemStatus {
 enum PaymentMethod {
   TRANSFER
   COD
+  MIDTRANS
 }
 
 enum VoucherKind {

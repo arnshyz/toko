@@ -46,6 +46,7 @@ export default function CheckoutPage() {
             <div className="flex gap-4 text-sm">
               <label className="flex items-center gap-2"><input type="radio" name="paymentMethod" value="TRANSFER" defaultChecked/> Transfer Manual</label>
               <label className="flex items-center gap-2"><input type="radio" name="paymentMethod" value="COD"/> COD (Bayar di Tempat)</label>
+              <label className="flex items-center gap-2"><input type="radio" name="paymentMethod" value="MIDTRANS"/> Online (Midtrans)</label>
             </div>
           </div>
           <div>

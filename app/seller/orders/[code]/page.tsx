@@ -22,12 +22,19 @@ export default async function SellerOrderChat({ params }: { params: { code: stri
   }
 
   const buyerInfo = [order.buyerName?.trim(), order.buyerPhone?.trim()].filter(Boolean).join(" • ");
+  const paymentMethod = String(order.paymentMethod);
+  const midtransStatus = ((order as any).midtransStatus as string | null) ?? null;
+  const midtransPaymentType = ((order as any).midtransPaymentType as string | null) ?? null;
+  const midtransInfo = paymentMethod === "MIDTRANS" && midtransStatus
+    ? `Midtrans: ${midtransStatus}${midtransPaymentType ? ` • ${midtransPaymentType}` : ""}`
+    : null;
 
   return (
     <div className="space-y-6">
       <div className="bg-white border rounded p-4">
         <h1 className="text-xl font-semibold">Pesanan #{order.orderCode}</h1>
         <div className="mt-2 text-sm text-gray-600">{buyerInfo || "Data pembeli tidak tersedia"}</div>
+        <div className="text-xs text-gray-500 mt-1">Metode bayar: {paymentMethod}{midtransInfo ? ` • ${midtransInfo}` : ""}</div>
         <div className="mt-4 space-y-2">
           {order.items.map((item) => (
             <div key={item.id} className="rounded border p-3 text-sm">
