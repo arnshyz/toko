@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { SessionUser } from "@/lib/session";
 import { productCategories } from "@/lib/categories";
 
@@ -10,6 +11,8 @@ type SiteHeaderProps = {
 };
 
 export function SiteHeader({ user }: SiteHeaderProps) {
+  const pathname = usePathname();
+  const hideMobileHeader = pathname?.startsWith("/product/") ?? false;
   const [open, setOpen] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
@@ -245,59 +248,61 @@ export function SiteHeader({ user }: SiteHeaderProps) {
           </Link>
         </div>
       </div>
-      <div className="mx-auto w-full max-w-6xl px-4 py-3 md:hidden">
-        <div className="flex items-center justify-between">
-          <Link href="/" className="text-lg font-semibold tracking-wide">
-            🛍️ Akay Nusantara
-          </Link>
-          <div className="flex items-center gap-3 text-xl">
-            <Link href="/notifications" aria-label="Notifikasi" className="transition hover:scale-105">
-              🔔
+      {!hideMobileHeader ? (
+        <div className="mx-auto w-full max-w-6xl px-4 py-3 md:hidden">
+          <div className="flex items-center justify-between">
+            <Link href="/" className="text-lg font-semibold tracking-wide">
+              🛍️ Akay Nusantara
             </Link>
-            <Link href="/cart" aria-label="Keranjang" className="relative transition hover:scale-105">
-              🛒
-              {cartCount > 0 ? (
-                <span className="absolute -right-2 -top-2 inline-flex h-4 min-w-[18px] items-center justify-center rounded-full bg-white text-[10px] font-semibold text-[#f53d2d]">
-                  {cartCount}
-                </span>
-              ) : null}
-            </Link>
-            {user ? (
-              <Link href="/account" aria-label="Akun" className="transition hover:scale-105">
-                👤
+            <div className="flex items-center gap-3 text-xl">
+              <Link href="/notifications" aria-label="Notifikasi" className="transition hover:scale-105">
+                🔔
               </Link>
-            ) : (
-              <Link href="/seller/login" aria-label="Login" className="transition hover:scale-105">
-                🔑
+              <Link href="/cart" aria-label="Keranjang" className="relative transition hover:scale-105">
+                🛒
+                {cartCount > 0 ? (
+                  <span className="absolute -right-2 -top-2 inline-flex h-4 min-w-[18px] items-center justify-center rounded-full bg-white text-[10px] font-semibold text-[#f53d2d]">
+                    {cartCount}
+                  </span>
+                ) : null}
               </Link>
-            )}
+              {user ? (
+                <Link href="/account" aria-label="Akun" className="transition hover:scale-105">
+                  👤
+                </Link>
+              ) : (
+                <Link href="/seller/login" aria-label="Login" className="transition hover:scale-105">
+                  🔑
+                </Link>
+              )}
+            </div>
+          </div>
+          <form className="mt-3 flex items-center gap-2 rounded-full bg-white/95 px-4 py-2 text-sm text-gray-700 shadow-inner" action="/search" method="GET">
+            <span aria-hidden className="text-lg text-[#f53d2d]">🔍</span>
+            <input
+              name="q"
+              type="search"
+              placeholder="Cari produk, toko, dan voucher"
+              className="flex-1 bg-transparent outline-none"
+            />
+            <button type="submit" className="rounded-full bg-[#f53d2d] px-3 py-1 text-xs font-semibold text-white">
+              Cari
+            </button>
+          </form>
+          <div className="mt-3 flex gap-2 overflow-x-auto pb-1 text-[13px] font-medium">
+            {productCategories.slice(0, 8).map((category) => (
+              <Link
+                key={category.slug}
+                href={`/categories/${category.slug}`}
+                className="inline-flex flex-shrink-0 items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-white/90 shadow-sm ring-1 ring-white/20"
+              >
+                <span aria-hidden>{category.emoji}</span>
+                <span>{category.name}</span>
+              </Link>
+            ))}
           </div>
         </div>
-        <form className="mt-3 flex items-center gap-2 rounded-full bg-white/95 px-4 py-2 text-sm text-gray-700 shadow-inner" action="/search" method="GET">
-          <span aria-hidden className="text-lg text-[#f53d2d]">🔍</span>
-          <input
-            name="q"
-            type="search"
-            placeholder="Cari produk, toko, dan voucher"
-            className="flex-1 bg-transparent outline-none"
-          />
-          <button type="submit" className="rounded-full bg-[#f53d2d] px-3 py-1 text-xs font-semibold text-white">
-            Cari
-          </button>
-        </form>
-        <div className="mt-3 flex gap-2 overflow-x-auto pb-1 text-[13px] font-medium">
-          {productCategories.slice(0, 8).map((category) => (
-            <Link
-              key={category.slug}
-              href={`/categories/${category.slug}`}
-              className="inline-flex flex-shrink-0 items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-white/90 shadow-sm ring-1 ring-white/20"
-            >
-              <span aria-hidden>{category.emoji}</span>
-              <span>{category.name}</span>
-            </Link>
-          ))}
-        </div>
-      </div>
+      ) : null}
     </header>
   );
 }

@@ -14,6 +14,10 @@ const tabs = [
 export function MobileTabBar() {
   const pathname = usePathname();
 
+  if (pathname?.startsWith("/product/")) {
+    return null;
+  }
+
   return (
     <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-gray-200 bg-white/95 shadow-[0_-2px_20px_rgba(15,23,42,0.08)] backdrop-blur md:hidden">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-2 py-2">
