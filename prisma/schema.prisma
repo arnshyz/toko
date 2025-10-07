@@ -68,6 +68,7 @@ model Product {
   sellerId     String
   seller       User       @relation(fields: [sellerId], references: [id])
   title        String
+  slug         String     @unique
   description  String?
   price        Int
   originalPrice Int?

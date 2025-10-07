@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getIronSession } from "iron-session";
+import { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { sessionOptions, SessionUser } from "@/lib/session";
+import { generateUniqueProductSlug } from "@/lib/product-slug";
 
 function parseNumber(value: FormDataEntryValue | null, label: string) {
   if (typeof value !== "string" || value.trim() === "") {
@@ -53,16 +55,32 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   }
 
   try {
+    const existing = await prisma.product.findUnique({
+      where: { id: params.id },
+      select: { id: true, title: true },
+    });
+
+    if (!existing) {
+      throw new Error("Produk tidak ditemukan");
+    }
+
+    const trimmedTitle = title.trim();
+    const updateData: Prisma.ProductUpdateInput = {
+      title: trimmedTitle,
+      category: category.trim(),
+      description: typeof description === "string" ? description : null,
+      price,
+      stock,
+      isActive: formData.get("isActive") === "on",
+    };
+
+    if (existing.title !== trimmedTitle) {
+      updateData.slug = await generateUniqueProductSlug(trimmedTitle, existing.id);
+    }
+
     await prisma.product.update({
       where: { id: params.id },
-      data: {
-        title: title.trim(),
-        category: category.trim(),
-        description: typeof description === "string" ? description : null,
-        price,
-        stock,
-        isActive: formData.get("isActive") === "on",
-      },
+      data: updateData,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Gagal memperbarui produk";

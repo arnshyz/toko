@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getIronSession } from "iron-session";
 import { sessionOptions, SessionUser } from "@/lib/session";
 import { buildVariantPayload, parseVariantInput, resolveCategorySlug } from "@/lib/product-form";
+import { generateUniqueProductSlug } from "@/lib/product-slug";
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const form = await req.formData();
@@ -61,18 +62,24 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const variantGroups = parseVariantInput(variantsRaw);
   const variantPayload = buildVariantPayload(variantGroups);
 
+  const updateData: Prisma.ProductUpdateInput = {
+    title,
+    price,
+    stock,
+    description,
+    warehouseId: warehouseId || null,
+    category: resolveCategorySlug(categoryRaw),
+    originalPrice: finalOriginalPrice,
+    variantOptions: variantPayload ?? Prisma.JsonNull,
+  };
+
+  if (title !== prod.title) {
+    updateData.slug = await generateUniqueProductSlug(title, prod.id);
+  }
+
   await prisma.product.update({
     where: { id: prod.id },
-    data: {
-      title,
-      price,
-      stock,
-      description,
-      warehouseId: warehouseId || null,
-      category: resolveCategorySlug(categoryRaw),
-      originalPrice: finalOriginalPrice,
-      variantOptions: variantPayload ?? Prisma.JsonNull,
-    },
+    data: updateData,
   });
 
   return NextResponse.redirect(new URL('/seller/products?updated=1', req.url));

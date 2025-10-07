@@ -7,6 +7,7 @@ import { formatIDR } from "@/lib/utils";
 
 interface FlashSaleRailItem {
   id: string;
+  slug: string;
   title: string;
   sellerName: string;
   sellerSlug: string;
@@ -122,7 +123,7 @@ export function FlashSaleRail({ items }: FlashSaleRailProps) {
                 key={item.id}
                 className="group w-48 shrink-0 overflow-hidden rounded-xl border border-orange-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
               >
-                <Link href={`/product/${item.id}`} className="relative block">
+                <Link href={`/product/${item.slug}`} className="relative block">
                   <img
                     src={item.imageUrl}
                     alt={item.title}
@@ -141,7 +142,7 @@ export function FlashSaleRail({ items }: FlashSaleRailProps) {
                 </Link>
                 <div className="space-y-2 p-3">
                   <Link
-                    href={`/product/${item.id}`}
+                    href={`/product/${item.slug}`}
                     className="line-clamp-2 text-sm font-semibold text-gray-800 hover:text-orange-600"
                   >
                     {item.title}

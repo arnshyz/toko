@@ -36,6 +36,7 @@ type BuyerOrder = {
     productId: string;
     product: null | {
       id: string;
+      slug: string;
       title: string | null;
       imageUrl: string | null;
       seller: {
@@ -433,7 +434,7 @@ export default function BuyerOrdersPage() {
                         <div className="min-w-0 flex-1 space-y-1">
                           <p className="text-sm font-semibold text-gray-900">
                             {product ? (
-                              <Link href={`/product/${product.id}`} className="hover:underline">
+                              <Link href={`/product/${product.slug}`} className="hover:underline">
                                 {product.title ?? "Produk"}
                               </Link>
                             ) : (
