@@ -4,7 +4,7 @@ import { COURIERS, DEFAULT_ITEM_WEIGHT_GRAMS } from "@/lib/shipping";
 import { getSession } from "@/lib/session";
 import { calculateFlashSalePrice } from "@/lib/flash-sale";
 import { sendOrderCreatedEmail } from "@/lib/email";
-import { fetchRajaOngkirCost, findCityIdByName } from "@/lib/rajaongkir";
+import { calculateShippingCost } from "@/lib/shipping-cost";
 
 export const runtime = "nodejs";
 
@@ -178,58 +178,23 @@ export async function POST(req: NextRequest) {
     shipmentsMap.set(shipmentKey, existing);
   }
 
-  const shipments = Math.max(1, shipmentsMap.size || 0);
-  let shippingCost = courier.fallbackCost * shipments;
-
-  const destinationCityId = await findCityIdByName({
-    cityName: shippingDestinationCity,
-    provinceName: shippingDestinationProvince,
+  const shippingCalculation = await calculateShippingCost({
+    shipments: Array.from(shipmentsMap.values()),
+    courier,
+    destinationCity: shippingDestinationCity,
+    destinationProvince: shippingDestinationProvince,
   });
 
-  if (destinationCityId) {
-    try {
-      let totalCost = 0;
-
-      for (const shipment of shipmentsMap.values()) {
-        let originCityId = shipment.originCityId;
-
-        if (!originCityId && shipment.originCityName) {
-          originCityId = await findCityIdByName({ cityName: shipment.originCityName });
-        }
-
-        if (!originCityId) {
-          throw new Error(
-            `Origin city ID not found for ${shipment.originCityName ?? 'default warehouse'}.`,
-          );
-        }
-
-        const costResults = await fetchRajaOngkirCost({
-          origin: originCityId,
-          destination: destinationCityId,
-          weight: shipment.weight || DEFAULT_ITEM_WEIGHT_GRAMS,
-          courier: courier.rajaOngkir.courier,
-        });
-
-        const courierResult = costResults.find(
-          (result) => result.code.toLowerCase() === courier.rajaOngkir.courier.toLowerCase(),
-        );
-        const service = courierResult?.costs.find(
-          (option) => option.service.toUpperCase() === courier.rajaOngkir.service,
-        );
-        const firstCost = service?.cost?.[0]?.value;
-
-        if (typeof firstCost !== 'number' || Number.isNaN(firstCost)) {
-          throw new Error('RajaOngkir did not return a valid cost for the selected service.');
-        }
-
-        totalCost += firstCost;
-      }
-
-      shippingCost = totalCost;
-    } catch (error) {
-      console.error('Failed to calculate RajaOngkir shipping cost', error);
+  if (shippingCalculation.usedFallback) {
+    if (shippingCalculation.failureReason) {
+      console.warn('RajaOngkir shipping fallback in checkout:', shippingCalculation.failureReason);
+    }
+    if (shippingCalculation.debugError) {
+      console.error('Failed to calculate RajaOngkir shipping cost', shippingCalculation.debugError);
     }
   }
+
+  const shippingCost = shippingCalculation.cost;
 
   // Voucher
   let voucherDiscount = 0; let voucherUsed: string | null = null;
