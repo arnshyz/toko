@@ -10,7 +10,7 @@ export default function SellerForgotPasswordPage() {
     <div className="mx-auto max-w-md rounded border bg-white p-6 shadow-sm">
       <h1 className="text-xl font-semibold text-gray-800">Lupa Password</h1>
       <p className="mt-2 text-sm text-gray-600">
-        Masukkan email akun seller Anda. Kami akan mengirim kode OTP untuk reset password.
+        Masukkan email akun seller Anda. Kami akan mengirim tautan reset password yang berlaku selama 30 menit.
       </p>
       <div className="mt-4">
         <ForgotPasswordForm />
