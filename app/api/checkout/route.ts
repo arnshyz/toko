@@ -23,6 +23,15 @@ export async function POST(req: NextRequest) {
   const products = await prisma.product.findMany({ where: { id: { in: items.map(i => i.productId) } } });
   if (products.length !== items.length) return NextResponse.json({ error: 'Produk tidak valid' }, { status: 400 });
 
+  const session = await getSession();
+  const buyerId = session.user?.id ?? null;
+  if (buyerId) {
+    const ownsProduct = products.some((product) => product.sellerId === buyerId);
+    if (ownsProduct) {
+      return NextResponse.json({ error: 'Penjual tidak dapat membeli produknya sendiri' }, { status: 400 });
+    }
+  }
+
   const now = new Date();
   const flashSales = await prisma.flashSale.findMany({
     where: {
@@ -73,9 +82,6 @@ export async function POST(req: NextRequest) {
   const uniqueCode = paymentMethod === 'TRANSFER' ? Math.floor(111 + Math.random() * 888) : 0;
   const totalWithUnique = Math.max(0, itemsTotal - voucherDiscount) + shippingCost + uniqueCode;
   const orderCode = 'AKAY-' + Math.random().toString(36).slice(2,10).toUpperCase();
-
-  const session = await getSession();
-  const buyerId = session.user?.id ?? null;
 
   const order = await prisma.order.create({
     data: {
