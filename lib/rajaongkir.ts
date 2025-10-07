@@ -1,3 +1,5 @@
+import { STATIC_CITIES_FLAT } from "./staticCities";
+
 const DEFAULT_BASE_URL = "https://api.rajaongkir.com/starter/";
 
 export class RajaOngkirError extends Error {
@@ -146,7 +148,27 @@ export async function fetchRajaOngkir<T>(
 
 async function getAllCities(): Promise<RajaOngkirCity[]> {
   if (!cachedCities) {
-    cachedCities = await fetchRajaOngkir<RajaOngkirCity[]>("city");
+    try {
+      cachedCities = await fetchRajaOngkir<RajaOngkirCity[]>("city");
+    } catch (error) {
+      if (error instanceof RajaOngkirError) {
+        console.warn(
+          `Falling back to static city catalog because RajaOngkir city lookup failed: ${error.message}`,
+        );
+      } else {
+        console.error("Failed to load cities from RajaOngkir", error);
+        console.warn("Falling back to static city catalog for RajaOngkir helpers.");
+      }
+
+      cachedCities = STATIC_CITIES_FLAT.map((city) => ({
+        city_id: city.id,
+        city_name: city.name,
+        type: city.type,
+        province_id: city.provinceId,
+        province: city.provinceName,
+        postal_code: "",
+      }));
+    }
   }
   return cachedCities;
 }

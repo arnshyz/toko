@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { fetchRajaOngkir, RajaOngkirError } from "@/lib/rajaongkir";
+import { getStaticCitiesByProvince } from "@/lib/staticCities";
 
 type CityResult = {
   city_id: string;
@@ -37,6 +38,29 @@ export async function GET(request: Request) {
 
     return NextResponse.json(cities);
   } catch (error) {
+    const staticCities = getStaticCitiesByProvince(provinceId);
+
+    if (staticCities.length > 0) {
+      if (error instanceof RajaOngkirError) {
+        console.warn(
+          `Falling back to static city catalog for province ${provinceId}: ${error.message}`,
+        );
+      } else {
+        console.error("Failed to load cities from RajaOngkir", error);
+        console.warn(`Falling back to static city catalog for province ${provinceId}.`);
+      }
+
+      return NextResponse.json(
+        staticCities
+          .map((city) => ({
+            id: city.id,
+            name: city.name,
+            type: city.type,
+          }))
+          .sort((a, b) => a.name.localeCompare(b.name)),
+      );
+    }
+
     if (error instanceof RajaOngkirError) {
       return NextResponse.json(
         { error: error.message },
