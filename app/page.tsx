@@ -8,11 +8,12 @@ import { formatIDR } from "@/lib/utils";
 import { PromoSlider, PromoSlide } from "@/components/PromoSlider";
 import { ActiveVoucherPopup } from "@/components/ActiveVoucherPopup";
 import { ClaimVoucherButton } from "@/components/ClaimVoucherButton";
-import { getCategoryInfo } from "@/lib/categories";
 import { getPrimaryProductImageSrc } from "@/lib/productImages";
 import { calculateFlashSalePrice, getActiveFlashSale } from "@/lib/flash-sale";
 import { SalesProofTicker } from "@/components/SalesProofTicker";
 import { FlashSaleRail } from "@/components/FlashSaleRail";
+import { ProductCard } from "@/components/ProductCard";
+import { getProductRatingSummary } from "@/lib/product-ratings";
 
 const fallbackSlides: PromoSlide[] = [
   {
@@ -56,8 +57,10 @@ export default async function HomePage() {
         where: { endAt: { gte: now } },
         orderBy: { startAt: 'asc' },
       },
+      _count: { select: { orderItems: true } },
     }
   });
+  const ratingSummary = await getProductRatingSummary(products.map((product) => product.id));
   const promoBanners = await prisma.promoBanner.findMany({
     where: { isActive: true },
     orderBy: [
@@ -220,58 +223,29 @@ export default async function HomePage() {
           </Link>
         </div>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          {products.map(p => {
-            const category = getCategoryInfo(p.category);
-            const originalPrice = typeof p.originalPrice === 'number' ? p.originalPrice : null;
-            const activeFlashSale = getActiveFlashSale(p.flashSales ?? [], now);
+          {products.map((product) => {
+            const activeFlashSale = getActiveFlashSale(product.flashSales ?? [], now);
             const salePrice = activeFlashSale
-              ? calculateFlashSalePrice(p.price, activeFlashSale)
-              : p.price;
-            const referenceOriginal = activeFlashSale
-              ? originalPrice && originalPrice > p.price
-                ? originalPrice
-                : p.price
-              : originalPrice;
-            const showOriginal = referenceOriginal !== null && referenceOriginal > salePrice;
-            const categoryLabel = category?.name ?? p.category.replace(/-/g, ' ');
-            const categoryEmoji = category?.emoji ?? '🏷️';
+              ? calculateFlashSalePrice(product.price, activeFlashSale)
+              : product.price;
+            const rating = ratingSummary.get(product.id);
+            const soldCount = product._count?.orderItems ?? 0;
+
             return (
-              <div
-                key={p.id}
-                className="overflow-hidden rounded-lg border bg-white shadow transition hover:-translate-y-1 hover:shadow-lg"
-              >
-                <Link href={`/product/${p.id}`} className="block">
-                  <img
-                    src={getPrimaryProductImageSrc(p)}
-                    className="h-40 w-full object-cover"
-                    alt={p.title}
-                  />
-                </Link>
-                <div className="p-3">
-                  <div className="mb-1 inline-flex items-center gap-1 rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-600">
-                    <span>{categoryEmoji}</span>
-                    <span className="capitalize">{categoryLabel}</span>
-                  </div>
-                  <Link href={`/product/${p.id}`} className="font-medium line-clamp-1 hover:text-indigo-600">
-                    {p.title}
-                  </Link>
-                  <div className="text-sm text-gray-500">
-                    Seller:{' '}
-                    <Link className="underline hover:text-indigo-600" href={`/s/${p.seller.slug}`}>
-                      {p.seller.name}
-                    </Link>
-                  </div>
-                  {activeFlashSale && (
-                    <div className="mb-1 inline-flex items-center rounded-full bg-orange-100 px-2 py-0.5 text-[11px] font-semibold text-orange-700">
-                      Flash Sale • {activeFlashSale.discountPercent}%
-                    </div>
-                  )}
-                  {showOriginal && (
-                    <div className="text-xs text-gray-400 line-through">Rp {formatIDR(referenceOriginal!)}</div>
-                  )}
-                  <div className="mt-1 text-lg font-semibold text-indigo-600">Rp {formatIDR(salePrice)}</div>
-                </div>
-              </div>
+              <ProductCard
+                key={product.id}
+                href={`/product/${product.id}`}
+                title={product.title}
+                imageUrl={getPrimaryProductImageSrc(product)}
+                salePrice={salePrice}
+                basePrice={product.price}
+                originalPrice={product.originalPrice}
+                ratingAverage={rating?.average ?? 0}
+                ratingCount={rating?.count ?? 0}
+                soldCount={soldCount}
+                storeBadge={product.seller.storeBadge}
+                discountPercent={activeFlashSale?.discountPercent ?? null}
+              />
             );
           })}
         </div>
