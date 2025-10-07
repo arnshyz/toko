@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getIronSession } from "iron-session";
 
 import { prisma } from "@/lib/prisma";
+import { parseFlashSaleDateTime } from "@/lib/flash-sale";
 import { sessionOptions, SessionUser } from "@/lib/session";
 
 export const runtime = "nodejs";
@@ -19,8 +20,8 @@ export async function POST(req: NextRequest) {
   const endAtRaw = String(form.get("endAt") || "").trim();
 
   const discountPercent = Number.parseInt(discountRaw, 10);
-  const startAt = startAtRaw ? new Date(startAtRaw) : null;
-  const endAt = endAtRaw ? new Date(endAtRaw) : null;
+  const startAt = parseFlashSaleDateTime(startAtRaw);
+  const endAt = parseFlashSaleDateTime(endAtRaw);
 
   const res = new NextResponse(null);
   const session = await getIronSession<{ user?: SessionUser }>(req, res, sessionOptions);

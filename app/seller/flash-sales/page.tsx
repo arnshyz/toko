@@ -1,15 +1,14 @@
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
-import { calculateFlashSalePrice, formatFlashSaleWindow, isFlashSaleActive } from "@/lib/flash-sale";
+import {
+  calculateFlashSalePrice,
+  formatFlashSaleWindow,
+  isFlashSaleActive,
+  toFlashSaleInputValue,
+} from "@/lib/flash-sale";
 import { formatIDR } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
-
-function toLocalInputValue(date: Date) {
-  const tzOffset = date.getTimezoneOffset();
-  const local = new Date(date.getTime() - tzOffset * 60 * 1000);
-  return local.toISOString().slice(0, 16);
-}
 
 export default async function SellerFlashSalesPage({
   searchParams,
@@ -65,8 +64,8 @@ export default async function SellerFlashSalesPage({
     }),
   ]);
 
-  const minStartValue = toLocalInputValue(new Date(Date.now() + 15 * 60 * 1000));
-  const minEndValue = toLocalInputValue(new Date(Date.now() + 60 * 60 * 1000));
+  const minStartValue = toFlashSaleInputValue(new Date(Date.now() + 15 * 60 * 1000));
+  const minEndValue = toFlashSaleInputValue(new Date(Date.now() + 60 * 60 * 1000));
 
   const successMessage = typeof searchParams?.success === "string" ? searchParams?.success : null;
   const errorMessage = typeof searchParams?.error === "string" ? searchParams?.error : null;
