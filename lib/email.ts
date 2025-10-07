@@ -4,6 +4,20 @@ import { PASSWORD_RESET_TOKEN_EXPIRATION_MINUTES } from "@/lib/password-reset";
 
 let cachedTransport: Transporter | null | undefined;
 
+const currencyFormatter = new Intl.NumberFormat("id-ID", {
+  style: "currency",
+  currency: "IDR",
+  minimumFractionDigits: 0,
+});
+
+function formatCurrencyIDR(value: number) {
+  return currencyFormatter.format(value);
+}
+
+const DEFAULT_BANK_NAME = process.env.PAYMENT_BANK_NAME ?? "BCA";
+const DEFAULT_BANK_ACCOUNT = process.env.PAYMENT_BANK_ACCOUNT ?? "1234567890";
+const DEFAULT_BANK_HOLDER = process.env.PAYMENT_ACCOUNT_NAME ?? "PT Akay Nusantara";
+
 function resolveTransport(): Transporter | null {
   if (cachedTransport !== undefined) {
     return cachedTransport;
@@ -139,11 +153,7 @@ export async function sendOrderCreatedEmail(params: OrderEmailBase & {
   const subject = `Pesanan ${orderCode} berhasil dibuat`;
   const greeting = `Halo ${name},`;
   const paymentLabel = paymentMethod === "COD" ? "COD (Bayar di Tempat)" : "Transfer Manual";
-  const totalDisplay = new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    minimumFractionDigits: 0,
-  }).format(total);
+  const totalDisplay = formatCurrencyIDR(total);
   const text = `${greeting}
 
 Terima kasih telah berbelanja di Toko Nusantara. Pesanan Anda dengan kode ${orderCode} berhasil dibuat.
@@ -220,6 +230,132 @@ Tim Toko Nusantara`;
     <p>Selamat! Semua item pada pesanan <strong>${orderCode}</strong> telah diterima. Terima kasih sudah berbelanja di Toko Nusantara.</p>
     <p>Kami berharap dapat melayani Anda kembali.</p>
     <p>Salam,<br/>Tim Toko Nusantara</p>
+  `;
+
+  await sendMail({ to: email, subject, text, html });
+}
+
+export async function sendOrderProcessingEmail(params: OrderEmailBase & {
+  estimatedShipping?: string | Date | null;
+}): Promise<void> {
+  const { email, name, orderCode, estimatedShipping } = params;
+  const subject = `Pesanan ${orderCode} sedang diproses`;
+  const greeting = `Halo ${name},`;
+  const estimateText = estimatedShipping
+    ? `Perkiraan pengiriman pada ${new Intl.DateTimeFormat("id-ID", {
+        dateStyle: "full",
+      }).format(typeof estimatedShipping === "string" ? new Date(estimatedShipping) : estimatedShipping)}.`
+    : "Pesanan Anda sedang kami siapkan untuk dikirim.";
+
+  const text = `${greeting}
+
+Pesanan Anda dengan kode ${orderCode} sedang diproses oleh penjual.
+${estimateText}
+
+Kami akan mengirimkan notifikasi tambahan setelah paket dikirim.`;
+
+  const html = `
+    <p>${greeting}</p>
+    <p>Pesanan Anda dengan kode <strong>${orderCode}</strong> sedang diproses oleh penjual.</p>
+    <p>${estimateText}</p>
+    <p>Kami akan mengirimkan notifikasi tambahan setelah paket dikirim.</p>
+  `;
+
+  await sendMail({ to: email, subject, text, html });
+}
+
+export async function sendOrderCancelledEmail(params: OrderEmailBase & {
+  reason?: string | null;
+}): Promise<void> {
+  const { email, name, orderCode, reason } = params;
+  const subject = `Pesanan ${orderCode} dibatalkan`;
+  const greeting = `Halo ${name},`;
+  const extra = reason ? `Alasan pembatalan: ${reason}` : "Pesanan dibatalkan oleh admin atau penjual.";
+
+  const text = `${greeting}
+
+Pesanan dengan kode ${orderCode} telah dibatalkan.
+${extra}
+
+Jika Anda sudah melakukan pembayaran, tim kami akan membantu proses pengembalian dana.`;
+
+  const html = `
+    <p>${greeting}</p>
+    <p>Pesanan dengan kode <strong>${orderCode}</strong> telah dibatalkan.</p>
+    <p>${extra}</p>
+    <p>Jika Anda telah melakukan pembayaran, kami akan membantu proses pengembalian dana sesuai prosedur.</p>
+  `;
+
+  await sendMail({ to: email, subject, text, html });
+}
+
+export async function sendOrderPaymentPendingEmail(params: OrderEmailBase & {
+  paymentMethod: string;
+  total: number;
+  uniqueCode?: number | null;
+  bankName?: string | null;
+  bankAccountNumber?: string | null;
+  bankAccountName?: string | null;
+  paymentInstructions?: string | null;
+  dueDate?: Date | string | null;
+}): Promise<void> {
+  const {
+    email,
+    name,
+    orderCode,
+    paymentMethod,
+    total,
+    uniqueCode,
+    bankName = DEFAULT_BANK_NAME,
+    bankAccountNumber = DEFAULT_BANK_ACCOUNT,
+    bankAccountName = DEFAULT_BANK_HOLDER,
+    paymentInstructions,
+    dueDate,
+  } = params;
+
+  const subject = `Menunggu pembayaran pesanan ${orderCode}`;
+  const greeting = `Halo ${name},`;
+  const totalDisplay = formatCurrencyIDR(total);
+  const uniqueCodeDisplay = typeof uniqueCode === "number" && uniqueCode > 0 ? `${uniqueCode}` : null;
+  const dueDisplay = dueDate
+    ? new Intl.DateTimeFormat("id-ID", { dateStyle: "full", timeStyle: "short" }).format(
+        typeof dueDate === "string" ? new Date(dueDate) : dueDate,
+      )
+    : null;
+  const instructionText =
+    paymentInstructions ??
+    `Transfer manual melalui ${bankName} ke nomor rekening ${bankAccountNumber} a.n ${bankAccountName}. Setelah pembayaran, unggah bukti di halaman pesanan.`;
+
+  const textLines = [
+    greeting,
+    "",
+    `Pesanan Anda dengan kode ${orderCode} berhasil dibuat dan menunggu pembayaran (${paymentMethod}).`,
+    `Total yang harus dibayar: ${totalDisplay}.`,
+    instructionText,
+  ];
+  if (uniqueCodeDisplay) {
+    textLines.push(`Kode unik pembayaran: ${uniqueCodeDisplay}`);
+  }
+  if (dueDisplay) {
+    textLines.push(`Selesaikan pembayaran sebelum ${dueDisplay}.`);
+  }
+  textLines.push("Terima kasih telah berbelanja di Akay Nusantara.");
+
+  const text = textLines.join("\n");
+
+  const html = `
+    <p>${greeting}</p>
+    <p>Pesanan Anda dengan kode <strong>${orderCode}</strong> berhasil dibuat dan menunggu pembayaran (<strong>${paymentMethod}</strong>).</p>
+    <p>Total yang harus dibayar: <strong>${totalDisplay}</strong></p>
+    <ul>
+      <li>Bank: <strong>${bankName}</strong></li>
+      <li>Nomor Rekening: <strong>${bankAccountNumber}</strong></li>
+      <li>Atas Nama: <strong>${bankAccountName}</strong></li>
+      ${uniqueCodeDisplay ? `<li>Kode unik pembayaran: <strong>${uniqueCodeDisplay}</strong></li>` : ""}
+    </ul>
+    <p>${instructionText}</p>
+    ${dueDisplay ? `<p>Selesaikan pembayaran sebelum <strong>${dueDisplay}</strong>.</p>` : ""}
+    <p>Terima kasih telah berbelanja di Akay Nusantara.</p>
   `;
 
   await sendMail({ to: email, subject, text, html });

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { formatIDR } from "@/lib/utils";
 import { getCategoryInfo } from "@/lib/categories";
 import { VariantSelector } from "@/components/VariantSelector";
+import { AddToCartForm } from "@/components/AddToCartForm";
 import { VariantGroup } from "@/types/product";
 import {
   getPrimaryProductImageSrc,
@@ -264,6 +265,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
   const displayVariantGroups: VariantGroup[] = variantGroups.length > 0
     ? variantGroups
     : [{ name: "Varian", options: ["Standar"] }];
+  const primaryImage = getPrimaryProductImageSrc(product);
 
   const seller = product.seller;
   const badgeKey = seller.storeBadge ?? "BASIC";
@@ -469,39 +471,14 @@ export default async function ProductPage({ params }: { params: { id: string } }
                 </div>
               </div>
 
-              <form className="space-y-4 rounded-xl border border-gray-200 bg-white p-4" method="POST" action="/api/cart/add">
-                <input type="hidden" name="productId" value={product.id} />
-                <div>
-                  <label className="mb-2 block text-sm font-semibold text-gray-700">Jumlah</label>
-                  <div className="flex flex-wrap items-center gap-3">
-                    <input
-                      type="number"
-                      name="qty"
-                      defaultValue={1}
-                      min={1}
-                      className="w-24 rounded-lg border border-gray-300 px-3 py-2 text-center text-sm focus:border-orange-500 focus:outline-none"
-                    />
-                    <span className="text-xs text-gray-500">Stok tersedia: {product.stock}</span>
-                  </div>
-                </div>
-                <div className="flex flex-wrap items-center gap-3">
-                  <button className="flex-1 rounded-full bg-orange-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-orange-600">
-                    Masukkan Keranjang
-                  </button>
-                  <button
-                    type="button"
-                    className="flex-1 rounded-full border border-orange-500 px-6 py-3 text-sm font-semibold text-orange-600 transition hover:bg-orange-50"
-                  >
-                    Beli Sekarang
-                  </button>
-                  <button
-                    type="button"
-                    className="rounded-full border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-600 transition hover:border-orange-200 hover:text-orange-600"
-                  >
-                    ❤ Favorit
-                  </button>
-                </div>
-              </form>
+              <AddToCartForm
+                productId={product.id}
+                title={product.title}
+                price={salePrice}
+                sellerId={product.sellerId}
+                stock={product.stock}
+                imageUrl={primaryImage}
+              />
             </div>
           </div>
 

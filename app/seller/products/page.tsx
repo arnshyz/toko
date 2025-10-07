@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
-import { productCategories, getCategoryInfo } from "@/lib/categories";
+import { productCategories, productCategoryOptions, getCategoryInfo } from "@/lib/categories";
 import { formatFlashSaleWindow, isFlashSaleActive } from "@/lib/flash-sale";
 
 export const dynamic = 'force-dynamic';
@@ -98,9 +98,9 @@ export default async function SellerProducts({
         >
           <select name="category" required className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm md:col-span-2">
             <option value="">Pilih Kategori Produk</option>
-            {productCategories.map((category) => (
+            {productCategoryOptions.map((category) => (
               <option key={category.slug} value={category.slug}>
-                {category.emoji} {category.name}
+                {category.emoji} {category.parentName ? `${category.parentName} • ${category.name}` : category.name}
               </option>
             ))}
           </select>
