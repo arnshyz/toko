@@ -28,6 +28,7 @@ model User {
   orderItems   OrderItem[] @relation("SellerItems")
   orders       Order[]     @relation("BuyerOrders")
   orderReviews OrderReview[]
+  reviewHelpfulVotes OrderReviewHelpful[]
   warehouses   Warehouse[]
   passwordResetTokens PasswordResetToken[]
 }
@@ -130,6 +131,18 @@ model OrderReview {
   comment   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  helpfulVotes OrderReviewHelpful[]
+}
+
+model OrderReviewHelpful {
+  id        String   @id @default(cuid())
+  reviewId  String
+  review    OrderReview @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([reviewId, userId])
 }
 
 model OrderItem {

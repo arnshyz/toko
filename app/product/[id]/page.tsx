@@ -8,6 +8,8 @@ import {
   getPrimaryProductImageSrc,
   getProductImageSources,
 } from "@/lib/productImages";
+import { getSession } from "@/lib/session";
+import { ReviewHelpfulButton } from "@/components/ReviewHelpfulButton";
 
 const BADGE_STYLES: Record<string, { label: string; className: string }> = {
   BASIC: { label: "Basic", className: "bg-gray-100 text-gray-700" },
@@ -97,10 +99,22 @@ function formatRelativeTime(value: Date) {
   return `${years} tahun lalu`;
 }
 
+function formatReviewDateTime(value: Date) {
+  return new Intl.DateTimeFormat("id-ID", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(value);
+}
+
 const HERO_PLACEHOLDER = "https://placehold.co/900x600?text=Produk";
 const THUMB_PLACEHOLDER = "https://placehold.co/300x200?text=Preview";
 
 export default async function ProductPage({ params }: { params: { id: string } }) {
+  const sessionPromise = getSession();
+
   const product = await prisma.product.findUnique({
     where: { id: params.id },
     include: {
@@ -119,7 +133,16 @@ export default async function ProductPage({ params }: { params: { id: string } }
     );
   }
 
-  const [siblingProducts, recommendedProducts, reviewAggregate, productReviews] = await Promise.all([
+  const session = await sessionPromise;
+  const currentUserId = session.user?.id ?? null;
+
+  const [
+    siblingProducts,
+    recommendedProducts,
+    reviewAggregate,
+    productReviews,
+    likedReviewRows,
+  ] = await Promise.all([
     prisma.product.findMany({
       where: {
         sellerId: product.sellerId,
@@ -179,9 +202,29 @@ export default async function ProductPage({ params }: { params: { id: string } }
             },
           },
         },
+        _count: { select: { helpfulVotes: true } },
       },
     }),
+    currentUserId
+      ? prisma.orderReviewHelpful.findMany({
+          where: {
+            userId: currentUserId,
+            review: {
+              order: {
+                items: {
+                  some: {
+                    productId: product.id,
+                  },
+                },
+              },
+            },
+          },
+          select: { reviewId: true },
+        })
+      : Promise.resolve([] as { reviewId: string }[]),
   ]);
+
+  const likedReviewIds = new Set(likedReviewRows.map((row) => row.reviewId));
 
   const category = getCategoryInfo(product.category);
   const originalPrice = typeof product.originalPrice === "number" ? product.originalPrice : null;
@@ -536,6 +579,9 @@ export default async function ProductPage({ params }: { params: { id: string } }
                   const purchaseInfo = firstItem
                     ? `${firstItem.qty} barang dibeli`
                     : "Pesanan diverifikasi";
+                  const helpfulCount = review._count.helpfulVotes ?? 0;
+                  const likedByCurrentUser = likedReviewIds.has(review.id);
+                  const isOwnReview = currentUserId ? review.buyerId === currentUserId : false;
 
                   return (
                     <article key={review.id} className="space-y-3 rounded-xl border border-gray-100 p-4">
@@ -547,13 +593,20 @@ export default async function ProductPage({ params }: { params: { id: string } }
                         <span>{formatRelativeTime(review.createdAt)}</span>
                       </div>
                       <div className="flex flex-wrap items-center gap-3 text-xs font-medium text-orange-600">
-                        <span>Kode Pesanan: {review.order.orderCode}</span>
+                        <span>Diulas pada {formatReviewDateTime(review.createdAt)}</span>
                         <span className="text-gray-400">•</span>
                         <span className="text-orange-500">{purchaseInfo}</span>
                       </div>
                       <p className="text-sm text-gray-700">
                         {review.comment?.trim() || "Pembeli tidak meninggalkan komentar."}
                       </p>
+                      <ReviewHelpfulButton
+                        reviewId={review.id}
+                        initialCount={helpfulCount}
+                        initialLiked={likedByCurrentUser}
+                        isAuthenticated={Boolean(currentUserId)}
+                        isOwnReview={isOwnReview}
+                      />
                     </article>
                   );
                 })}
