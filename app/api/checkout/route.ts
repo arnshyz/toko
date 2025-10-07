@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { COURIERS, DEFAULT_ITEM_WEIGHT_GRAMS } from "@/lib/shipping";
 import { getSession } from "@/lib/session";
 import { calculateFlashSalePrice } from "@/lib/flash-sale";
-import { sendOrderCreatedEmail } from "@/lib/email";
+import { sendOrderCreatedEmail, sendOrderPaymentPendingEmail } from "@/lib/email";
 import { calculateShippingCost } from "@/lib/shipping-cost";
 
 export const runtime = "nodejs";
@@ -214,6 +214,7 @@ export async function POST(req: NextRequest) {
   const uniqueCode = paymentMethod === 'TRANSFER' ? Math.floor(111 + Math.random() * 888) : 0;
   const totalWithUnique = Math.max(0, itemsTotal - voucherDiscount) + shippingCost + uniqueCode;
   const orderCode = 'AKAY-' + Math.random().toString(36).slice(2,10).toUpperCase();
+  const paymentDueAt = paymentMethod === 'TRANSFER' ? new Date(now.getTime() + 24 * 60 * 60 * 1000) : null;
 
   const order = await prisma.order.create({
     data: {
@@ -241,6 +242,17 @@ export async function POST(req: NextRequest) {
         paymentMethod,
         total: order.totalWithUnique,
       });
+      if (paymentMethod === 'TRANSFER') {
+        await sendOrderPaymentPendingEmail({
+          email: buyerEmail,
+          name: buyerName,
+          orderCode: order.orderCode,
+          paymentMethod: 'Transfer Manual',
+          total: order.totalWithUnique,
+          uniqueCode: order.uniqueCode,
+          dueDate: paymentDueAt,
+        });
+      }
     } catch (error) {
       console.error("Failed to send order created email", error);
     }

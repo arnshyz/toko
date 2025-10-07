@@ -39,10 +39,18 @@ export default async function AdminOrders() {
                 <td>Rp {new Intl.NumberFormat('id-ID').format(o.itemsTotal)}</td>
                 <td>Rp {new Intl.NumberFormat('id-ID').format(o.shippingCost)}</td>
                 <td>Rp {new Intl.NumberFormat('id-ID').format(o.totalWithUnique)}</td>
-                <td>
+                <td className="space-y-2">
                   {o.status !== 'PAID' ? (
                     <form method="POST" action={`/api/admin/orders/${o.orderCode}/mark-paid`}>
                       <button className="btn-primary">Mark Paid</button>
+                    </form>
+                  ) : null}
+                  {o.status !== 'CANCELLED' ? (
+                    <form method="POST" action={`/api/admin/orders/${o.orderCode}/cancel`}>
+                      <input type="hidden" name="reason" value="Pembatalan manual oleh admin" />
+                      <button className="rounded bg-red-100 px-3 py-1 text-sm font-semibold text-red-600 transition hover:bg-red-200">
+                        Batalkan Pesanan
+                      </button>
                     </form>
                   ) : null}
                 </td>

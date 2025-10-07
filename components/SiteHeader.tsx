@@ -12,6 +12,7 @@ type SiteHeaderProps = {
 export function SiteHeader({ user }: SiteHeaderProps) {
   const [open, setOpen] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
+  const [cartCount, setCartCount] = useState(0);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const categoryRef = useRef<HTMLDivElement | null>(null);
 
@@ -36,6 +37,57 @@ export function SiteHeader({ user }: SiteHeaderProps) {
     window.addEventListener("click", handleClick);
     return () => window.removeEventListener("click", handleClick);
   }, [categoryOpen]);
+
+  useEffect(() => {
+    function computeCartCount(source?: string | null) {
+      try {
+        const raw = typeof window !== "undefined" ? window.localStorage.getItem("cart") : null;
+        if (!raw) {
+          setCartCount(0);
+          return;
+        }
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) {
+          setCartCount(0);
+          return;
+        }
+        const total = parsed.reduce<number>((sum, item) => {
+          if (!item || typeof item !== "object") return sum;
+          const qty = Number((item as any).qty);
+          return sum + (Number.isFinite(qty) ? qty : 0);
+        }, 0);
+        setCartCount(total);
+      } catch (error) {
+        console.error("Failed to parse cart from", source ?? "localStorage", error);
+        setCartCount(0);
+      }
+    }
+
+    computeCartCount("initial");
+
+    function handleStorage(event: StorageEvent) {
+      if (event.key === "cart") {
+        computeCartCount("storage");
+      }
+    }
+
+    function handleCartUpdated(event: Event) {
+      const detail = (event as CustomEvent<{ totalQty?: number }>).detail;
+      if (detail && typeof detail.totalQty === "number") {
+        setCartCount(detail.totalQty);
+        return;
+      }
+      computeCartCount("custom-event");
+    }
+
+    window.addEventListener("storage", handleStorage);
+    window.addEventListener("cart:updated", handleCartUpdated as EventListener);
+
+    return () => {
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("cart:updated", handleCartUpdated as EventListener);
+    };
+  }, []);
 
   return (
     <header className="bg-gradient-to-r from-[#f53d2d] via-[#f63] to-[#ff6f3c] text-white shadow">
@@ -133,17 +185,35 @@ export function SiteHeader({ user }: SiteHeaderProps) {
               <span>Kategori</span>
             </button>
             {categoryOpen && (
-              <div className="absolute z-50 mt-2 w-56 overflow-hidden rounded-lg bg-white py-2 text-sm text-gray-700 shadow-xl">
+              <div className="absolute z-50 mt-2 w-64 overflow-hidden rounded-lg bg-white py-2 text-sm text-gray-700 shadow-xl">
                 {productCategories.map((category) => (
-                  <Link
-                    key={category.slug}
-                    href={`/#kategori-${category.slug}`}
-                    className="flex items-center gap-2 px-4 py-2 transition hover:bg-gray-100"
-                    onClick={() => setCategoryOpen(false)}
-                  >
-                    <span aria-hidden>{category.emoji}</span>
-                    <span>{category.name}</span>
-                  </Link>
+                  <div key={category.slug} className="px-2 py-1">
+                    <Link
+                      href={`/categories/${category.slug}`}
+                      className="flex items-center gap-2 rounded-md px-2 py-2 transition hover:bg-gray-100"
+                      onClick={() => setCategoryOpen(false)}
+                    >
+                      <span aria-hidden>{category.emoji}</span>
+                      <div className="flex flex-col">
+                        <span className="font-semibold">{category.name}</span>
+                        <span className="text-xs text-gray-500">{category.description}</span>
+                      </div>
+                    </Link>
+                    {category.subCategories?.length ? (
+                      <div className="mt-1 space-y-1 border-l border-dashed border-gray-200 pl-4">
+                        {category.subCategories.map((sub) => (
+                          <Link
+                            key={sub.slug}
+                            href={`/categories/${sub.slug}`}
+                            className="block rounded-md px-2 py-1 text-xs text-gray-600 transition hover:bg-orange-50 hover:text-orange-600"
+                            onClick={() => setCategoryOpen(false)}
+                          >
+                            {sub.name}
+                          </Link>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
                 ))}
               </div>
             )}
@@ -164,9 +234,14 @@ export function SiteHeader({ user }: SiteHeaderProps) {
           </button>
         </form>
         <div className="flex items-center justify-end gap-3 text-sm font-medium md:w-auto">
-          <Link href="/cart" className="flex items-center gap-2 hover:underline">
+          <Link href="/cart" className="relative flex items-center gap-2 hover:underline">
             <span aria-hidden>🛒</span>
             Keranjang
+            {cartCount > 0 ? (
+              <span className="absolute -right-4 -top-2 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-white px-1 text-xs font-semibold text-[#f53d2d]">
+                {cartCount}
+              </span>
+            ) : null}
           </Link>
         </div>
       </div>
@@ -179,8 +254,13 @@ export function SiteHeader({ user }: SiteHeaderProps) {
             <Link href="/notifications" aria-label="Notifikasi" className="transition hover:scale-105">
               🔔
             </Link>
-            <Link href="/cart" aria-label="Keranjang" className="transition hover:scale-105">
+            <Link href="/cart" aria-label="Keranjang" className="relative transition hover:scale-105">
               🛒
+              {cartCount > 0 ? (
+                <span className="absolute -right-2 -top-2 inline-flex h-4 min-w-[18px] items-center justify-center rounded-full bg-white text-[10px] font-semibold text-[#f53d2d]">
+                  {cartCount}
+                </span>
+              ) : null}
             </Link>
             {user ? (
               <Link href="/account" aria-label="Akun" className="transition hover:scale-105">
@@ -209,7 +289,7 @@ export function SiteHeader({ user }: SiteHeaderProps) {
           {productCategories.slice(0, 8).map((category) => (
             <Link
               key={category.slug}
-              href={`/#kategori-${category.slug}`}
+              href={`/categories/${category.slug}`}
               className="inline-flex flex-shrink-0 items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-white/90 shadow-sm ring-1 ring-white/20"
             >
               <span aria-hidden>{category.emoji}</span>

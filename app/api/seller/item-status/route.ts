@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getIronSession } from "iron-session";
 import { sessionOptions, SessionUser } from "@/lib/session";
-import { sendOrderCompletedEmail, sendOrderShippedEmail } from "@/lib/email";
+import { sendOrderCompletedEmail, sendOrderProcessingEmail, sendOrderShippedEmail } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
   const form = await req.formData();
@@ -43,10 +43,24 @@ export async function POST(req: NextRequest) {
   if (order.buyerEmail) {
     const previousStatuses = order.items.map((it) => it.status);
     const statuses = order.items.map((it) => (it.id === item.id ? status : it.status));
+    const allPackedOrProcessing = statuses.every((s) => s === 'PACKED' || s === 'SHIPPED' || s === 'DELIVERED');
     const allShippedOrDelivered = statuses.every((s) => s === 'SHIPPED' || s === 'DELIVERED');
     const allDelivered = statuses.every((s) => s === 'DELIVERED');
+    const previouslyAllPackedOrProcessing = previousStatuses.every((s) => s === 'PACKED' || s === 'SHIPPED' || s === 'DELIVERED');
     const previouslyAllShippedOrDelivered = previousStatuses.every((s) => s === 'SHIPPED' || s === 'DELIVERED');
     const previouslyAllDelivered = previousStatuses.every((s) => s === 'DELIVERED');
+
+    if (allPackedOrProcessing && !previouslyAllPackedOrProcessing) {
+      try {
+        await sendOrderProcessingEmail({
+          email: order.buyerEmail,
+          name: order.buyerName,
+          orderCode: order.orderCode,
+        });
+      } catch (error) {
+        console.error('Failed to send order processing email', error);
+      }
+    }
 
     if (status === 'SHIPPED' && allShippedOrDelivered && !previouslyAllShippedOrDelivered) {
       try {
