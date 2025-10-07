@@ -118,16 +118,16 @@ export function SiteHeader({ user }: SiteHeaderProps) {
           </div>
         </div>
       </div>
-      <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-4 md:flex-row md:items-center md:gap-6">
-        <div className="flex items-center gap-3">
-          <Link href="/" className="text-2xl font-bold tracking-wide">
+      <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-3 md:flex-row md:items-center md:justify-between md:gap-4">
+        <div className="flex items-center gap-2 md:gap-3">
+          <Link href="/" className="text-2xl font-bold tracking-wide md:text-[26px]">
             🛍️ Akay Nusantara
           </Link>
           <div className="relative" ref={categoryRef}>
             <button
               type="button"
               onClick={() => setCategoryOpen((prev) => !prev)}
-              className="flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/25"
+              className="flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-white/25"
             >
               <span aria-hidden>📂</span>
               <span>Kategori</span>
@@ -149,21 +149,21 @@ export function SiteHeader({ user }: SiteHeaderProps) {
             )}
           </div>
         </div>
-        <form className="flex w-full flex-1 overflow-hidden rounded-full bg-white shadow-inner" action="/search" method="GET">
+        <form className="flex w-full flex-1 overflow-hidden rounded-full bg-white shadow-inner md:max-w-xl" action="/search" method="GET">
           <input
             name="q"
             type="search"
             placeholder="Cari produk unggulan, voucher, dan promo..."
-            className="w-full px-4 py-2 text-sm text-gray-700 outline-none"
+            className="w-full px-3 py-2 text-sm text-gray-700 outline-none"
           />
           <button
             type="submit"
-            className="bg-[#f53d2d] px-5 text-sm font-semibold text-white transition hover:bg-[#d73224]"
+            className="bg-[#f53d2d] px-4 text-sm font-semibold text-white transition hover:bg-[#d73224]"
           >
             Cari
           </button>
         </form>
-        <div className="flex items-center gap-4 text-sm font-medium">
+        <div className="flex items-center justify-end gap-3 text-sm font-medium md:w-auto">
           <Link href="/cart" className="flex items-center gap-2 hover:underline">
             <span aria-hidden>🛒</span>
             Keranjang
