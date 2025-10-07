@@ -6,6 +6,7 @@ import { PromoSlider, PromoSlide } from "@/components/PromoSlider";
 import { ActiveVoucherPopup } from "@/components/ActiveVoucherPopup";
 import { getCategoryInfo, productCategories } from "@/lib/categories";
 import { getPrimaryProductImageSrc } from "@/lib/productImages";
+import { SalesProofTicker } from "@/components/SalesProofTicker";
 
 const fallbackSlides: PromoSlide[] = [
   {
@@ -80,6 +81,7 @@ export default async function HomePage() {
   const categories = productCategories;
   return (
     <div className="space-y-10">
+      <SalesProofTicker />
       {highlightedVoucher ? (
         <ActiveVoucherPopup
           voucher={{
