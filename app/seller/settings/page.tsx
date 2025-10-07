@@ -75,12 +75,15 @@ export default async function SellerSettings({ searchParams }: SettingsPageProps
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Pengaturan Toko</h1>
+          <h1 className="text-2xl font-semibold text-gray-900">Pengaturan Toko</h1>
           <p className="text-sm text-gray-600">Atur nama dan tampilan toko agar mudah ditemukan pembeli.</p>
         </div>
-        <Link href="/seller/dashboard" className="btn-outline">
+        <Link
+          href="/seller/dashboard"
+          className="inline-flex w-full items-center justify-center rounded-full border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:border-gray-300 hover:text-gray-900 md:w-auto"
+        >
           Kembali ke dashboard
         </Link>
       </div>
@@ -95,7 +98,7 @@ export default async function SellerSettings({ searchParams }: SettingsPageProps
         </div>
       ) : null}
 
-      <div className="rounded border bg-white p-6 shadow-sm">
+      <div className="rounded-3xl border border-gray-100 bg-white p-5 shadow-sm md:p-6">
         <form method="POST" action="/api/seller/store/profile" className="space-y-4">
           <input type="hidden" name="redirectTo" value="/seller/settings" />
           <div className="space-y-1">
@@ -117,25 +120,25 @@ export default async function SellerSettings({ searchParams }: SettingsPageProps
 
           <div className="space-y-1">
             <span className="text-sm font-medium text-gray-700">Alamat etalase</span>
-            <div className="flex items-center gap-2 text-sm">
-              <span className="rounded-lg bg-gray-100 px-3 py-2 text-gray-700">https://akay.id/s/</span>
-              <span className="rounded-lg border border-dashed border-gray-300 px-3 py-2 font-mono text-gray-800">{account.slug}</span>
+            <div className="flex flex-col gap-2 text-sm md:flex-row md:items-center">
+              <span className="rounded-lg bg-gray-100 px-3 py-2 text-center text-gray-700 md:text-left">https://akay.id/s/</span>
+              <span className="rounded-lg border border-dashed border-gray-300 px-3 py-2 text-center font-mono text-gray-800 md:text-left">{account.slug}</span>
             </div>
             <p className="text-xs text-gray-500">
               Alamat toko akan mengikuti nama toko secara otomatis dan dapat berubah ketika nama diperbarui.
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <button className="btn-primary" type="submit">
+          <div className="flex flex-col gap-2 md:flex-row md:items-center">
+            <button className="rounded-full bg-[#f53d2d] px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#d73224]" type="submit">
               Simpan perubahan
             </button>
-            <span className="text-xs text-gray-500">Perubahan dapat memerlukan waktu beberapa menit untuk muncul di hasil pencarian.</span>
+            <span className="text-xs text-gray-500 md:ml-3">Perubahan dapat memerlukan waktu beberapa menit untuk muncul di hasil pencarian.</span>
           </div>
         </form>
       </div>
 
-      <div className="rounded border bg-white p-6 shadow-sm space-y-4">
+      <div className="space-y-4 rounded-3xl border border-gray-100 bg-white p-5 shadow-sm md:p-6">
         <div>
           <h2 className="text-lg font-semibold">Alamat Toko</h2>
           <p className="text-sm text-gray-600">
@@ -248,11 +251,11 @@ export default async function SellerSettings({ searchParams }: SettingsPageProps
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <button className="btn-primary" type="submit">
+          <div className="flex flex-col gap-2 md:flex-row md:items-center">
+            <button className="rounded-full bg-[#f53d2d] px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#d73224]" type="submit">
               Simpan alamat
             </button>
-            <span className="text-xs text-gray-500">Pastikan kota sesuai dengan data RajaOngkir agar ongkir otomatis berhasil.</span>
+            <span className="text-xs text-gray-500 md:ml-3">Pastikan kota sesuai dengan data RajaOngkir agar ongkir otomatis berhasil.</span>
           </div>
         </form>
       </div>

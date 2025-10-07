@@ -102,26 +102,26 @@ export function SalesProofTicker() {
   const item = items[currentIndex];
 
   return (
-    <div className="pointer-events-none fixed bottom-6 left-6 z-50">
+    <div className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex justify-center px-4 md:inset-x-auto md:bottom-6 md:left-6 md:justify-start md:px-0">
       <div
-        className={`pointer-events-auto flex max-w-xs items-center gap-3 rounded-xl bg-white p-3 shadow-xl ring-1 ring-black/5 transition duration-300 ease-out ${
-          isVisible ? "translate-x-0 opacity-100" : "-translate-x-3 opacity-0"
+        className={`pointer-events-auto flex w-full max-w-sm items-center gap-2 rounded-2xl bg-white/95 p-2.5 text-xs shadow-xl ring-1 ring-black/5 backdrop-blur transition-all duration-300 ease-out md:max-w-xs md:gap-3 md:rounded-xl md:bg-white md:p-3 md:text-sm ${
+          isVisible ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
         }`}
       >
         <img
           src={item.imageUrl}
           alt={item.product}
-          className="h-12 w-12 flex-shrink-0 rounded-lg object-cover"
+          className="h-10 w-10 flex-shrink-0 rounded-lg object-cover md:h-12 md:w-12"
         />
-        <div className="space-y-0.5 text-sm">
-          <p className="text-xs font-medium uppercase tracking-wide text-emerald-500">
+        <div className="space-y-1">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-500 md:text-xs">
             {item.timeAgo}
           </p>
-          <p className="text-gray-800">
+          <p className="text-[11px] leading-snug text-gray-800 md:text-sm">
             <span className="font-semibold text-indigo-600">{item.buyer}</span>{" "}
             dari {item.location} baru saja membeli
           </p>
-          <p className="font-medium text-gray-900">{item.product}</p>
+          <p className="font-semibold text-gray-900 md:font-medium">{item.product}</p>
         </div>
       </div>
     </div>

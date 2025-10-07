@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { formatIDR } from "@/lib/utils";
 import { PromoSlider, PromoSlide } from "@/components/PromoSlider";
 import { ActiveVoucherPopup } from "@/components/ActiveVoucherPopup";
+import { ClaimVoucherButton } from "@/components/ClaimVoucherButton";
 import { getCategoryInfo } from "@/lib/categories";
 import { getPrimaryProductImageSrc } from "@/lib/productImages";
 import { calculateFlashSalePrice, getActiveFlashSale } from "@/lib/flash-sale";
@@ -134,7 +135,77 @@ export default async function HomePage() {
       ) : null}
       <PromoSlider slides={slides.length > 0 ? slides : fallbackSlides} />
 
-      <section>
+      <div className="space-y-4 md:hidden">
+        <div className="rounded-3xl bg-gradient-to-br from-white/95 via-white/90 to-white/70 px-4 py-4 text-gray-900 shadow-xl shadow-[#f53d2d]/10 ring-1 ring-white/70">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-wide text-gray-500">Voucher Pilihan</p>
+              <p className="text-lg font-semibold text-[#f53d2d]">
+                {highlightedVoucher ? highlightedVoucher.code : "Diskon Spesial"}
+              </p>
+              <p className="text-xs text-gray-500">
+                {highlightedVoucher
+                  ? `Potongan hingga Rp ${formatIDR(highlightedVoucher.value)}`
+                  : "Nikmati penawaran terbaik setiap hari"}
+              </p>
+            </div>
+            {highlightedVoucher ? (
+              <ClaimVoucherButton
+                voucherId={highlightedVoucher.id}
+                voucherCode={highlightedVoucher.code}
+                size="sm"
+                color="salmon"
+                className="shadow"
+              >
+                Klaim
+              </ClaimVoucherButton>
+            ) : (
+              <Link
+                href="/promo"
+                className="rounded-full bg-[#f53d2d] px-4 py-2 text-xs font-semibold text-white shadow"
+              >
+                Jelajahi
+              </Link>
+            )}
+          </div>
+        </div>
+        <div className="grid grid-cols-4 gap-3 text-center text-xs font-medium text-gray-700">
+          <Link href="/promo" className="flex flex-col items-center gap-2 rounded-2xl bg-white p-3 shadow-sm">
+            <span className="text-lg">💳</span>
+            <span>Pulsa</span>
+          </Link>
+          <Link href="/promo" className="flex flex-col items-center gap-2 rounded-2xl bg-white p-3 shadow-sm">
+            <span className="text-lg">🧾</span>
+            <span>Tagihan</span>
+          </Link>
+          <Link href="/promo" className="flex flex-col items-center gap-2 rounded-2xl bg-white p-3 shadow-sm">
+            <span className="text-lg">🎟️</span>
+            <span>Voucher</span>
+          </Link>
+          <Link href="#flash-sale" className="flex flex-col items-center gap-2 rounded-2xl bg-white p-3 shadow-sm">
+            <span className="text-lg">🔥</span>
+            <span>Flash</span>
+          </Link>
+          <Link href="/promo" className="flex flex-col items-center gap-2 rounded-2xl bg-white p-3 shadow-sm">
+            <span className="text-lg">🍱</span>
+            <span>Food</span>
+          </Link>
+          <Link href="/promo" className="flex flex-col items-center gap-2 rounded-2xl bg-white p-3 shadow-sm">
+            <span className="text-lg">📺</span>
+            <span>Video</span>
+          </Link>
+          <Link href="/promo" className="flex flex-col items-center gap-2 rounded-2xl bg-white p-3 shadow-sm">
+            <span className="text-lg">📡</span>
+            <span>Live</span>
+          </Link>
+          <Link href="/support" className="flex flex-col items-center gap-2 rounded-2xl bg-white p-3 shadow-sm">
+            <span className="text-lg">🆘</span>
+            <span>Bantuan</span>
+          </Link>
+      </div>
+      </div>
+
+      <section id="flash-sale">
         <FlashSaleRail items={flashSaleProducts} />
       </section>
 

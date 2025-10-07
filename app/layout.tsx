@@ -1,6 +1,7 @@
 import "./globals.css";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SiteHeader } from "@/components/SiteHeader";
+import { MobileTabBar } from "@/components/MobileTabBar";
 import { getSession, SessionUser } from "@/lib/session";
 
 export const metadata = {
@@ -20,8 +21,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="id">
       <body className="bg-gray-50 text-gray-900">
         <SiteHeader user={user} />
-        <main className="mx-auto max-w-6xl px-4 py-6">{children}</main>
+        <main className="mx-auto max-w-6xl px-4 pb-28 pt-6 md:pb-12">{children}</main>
         <SiteFooter />
+        <MobileTabBar />
       </body>
     </html>
   );

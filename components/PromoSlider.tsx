@@ -55,39 +55,38 @@ export function PromoSlider({
         className ?? ""
       }`}
     >
-      <div className="relative min-h-[240px]">
+      <div className="relative min-h-[200px] md:min-h-[260px]">
         {slides.map((slide, index) => (
           <div
             key={`${slide.title}-${index}`}
-            className={`absolute inset-0 flex flex-col gap-6 p-8 transition-all duration-700 ease-in-out md:flex-row md:items-center ${
+            className={`absolute inset-0 flex flex-col-reverse gap-4 p-5 transition-all duration-700 ease-in-out sm:gap-6 sm:p-6 md:flex-row md:flex-row-reverse md:items-center md:gap-8 md:p-8 ${
               index === activeIndex
                 ? "opacity-100 translate-x-0"
                 : "pointer-events-none -translate-x-12 opacity-0"
             }`}
           >
-            <div className="flex-1 space-y-3">
-              <span className="inline-flex items-center rounded-full bg-white/20 px-4 py-1 text-sm font-semibold uppercase tracking-wide">
+            <div className="flex-1 space-y-3 text-center md:text-left">
+              <span className="inline-flex items-center justify-center rounded-full bg-white/20 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide md:px-4 md:text-sm">
                 {slide.highlight}
               </span>
-              <h2 className="text-3xl font-bold leading-tight md:text-4xl">
+              <h2 className="text-2xl font-bold leading-tight sm:text-3xl md:text-4xl">
                 {slide.title}
               </h2>
-              <p className="max-w-xl text-sm md:text-base md:leading-relaxed">
+              <p className="mx-auto max-w-xl text-sm text-white/90 sm:text-base md:mx-0 md:leading-relaxed">
                 {slide.description}
               </p>
               <Link
                 href={slide.ctaHref}
-                className="inline-flex w-fit items-center justify-center rounded-full bg-white px-5 py-2 text-sm font-semibold text-indigo-600 transition hover:bg-indigo-50"
+                className="inline-flex w-fit items-center justify-center rounded-full bg-white px-4 py-2 text-sm font-semibold text-indigo-600 transition hover:bg-indigo-50 md:px-5"
               >
                 {slide.ctaLabel}
               </Link>
             </div>
-            <div className="relative flex-1">
-              <div className="absolute inset-0 rounded-xl bg-black/20" />
+            <div className="relative flex-1 overflow-hidden rounded-xl shadow-lg">
               <img
                 src={slide.imageUrl}
                 alt={slide.title}
-                className="h-48 w-full rounded-xl object-cover shadow-lg md:h-64"
+                className="h-44 w-full object-cover sm:h-52 md:h-64"
               />
             </div>
           </div>
