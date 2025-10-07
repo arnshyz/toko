@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
+import { JAKARTA_TIME_ZONE } from "@/lib/time";
 
 const storeBadges = ["BASIC", "STAR", "STAR_PLUS", "MALL", "PREMIUM"] as const;
 
@@ -104,7 +105,8 @@ export default async function AdminUsersPage({
                       <div>
                         <div className="font-medium">{user.name}</div>
                         <div className="text-xs text-gray-500">
-                          Bergabung {new Date(user.createdAt).toLocaleDateString("id-ID")}
+                          Bergabung{' '}
+                          {new Date(user.createdAt).toLocaleDateString("id-ID", { timeZone: JAKARTA_TIME_ZONE })}
                         </div>
                       </div>
                     </div>

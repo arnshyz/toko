@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { formatIDR } from "@/lib/utils";
+import { JAKARTA_TIME_ZONE } from "@/lib/time";
 
 type BuyerOrderReview = {
   rating: number;
@@ -110,6 +111,7 @@ function formatDateTime(value: string) {
   return new Intl.DateTimeFormat("id-ID", {
     dateStyle: "long",
     timeStyle: "short",
+    timeZone: JAKARTA_TIME_ZONE,
   }).format(date);
 }
 

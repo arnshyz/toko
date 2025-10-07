@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
+import { JAKARTA_TIME_ZONE } from "@/lib/time";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -217,11 +218,13 @@ export default async function AdminVouchersPage({
                       Perbarui Voucher
                     </button>
                     <span className="text-xs text-gray-500">
-                      Dibuat: {voucher.createdAt.toLocaleString("id-ID")}
+                      Dibuat:{" "}
+                      {voucher.createdAt.toLocaleString("id-ID", { timeZone: JAKARTA_TIME_ZONE })}
                     </span>
                     {voucher.expiresAt ? (
                       <span className="text-xs text-gray-500">
-                        Berlaku hingga: {voucher.expiresAt.toLocaleString("id-ID")}
+                        Berlaku hingga:{" "}
+                        {voucher.expiresAt.toLocaleString("id-ID", { timeZone: JAKARTA_TIME_ZONE })}
                       </span>
                     ) : (
                       <span className="text-xs text-gray-400">Tanpa kedaluwarsa</span>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatIDR } from "@/lib/utils";
+import { JAKARTA_TIME_ZONE } from "@/lib/time";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +26,7 @@ function formatDateTime(date: Date) {
   return new Intl.DateTimeFormat("id-ID", {
     dateStyle: "long",
     timeStyle: "short",
+    timeZone: JAKARTA_TIME_ZONE,
   }).format(date);
 }
 

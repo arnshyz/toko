@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
+import { JAKARTA_TIME_ZONE } from "@/lib/time";
 
 export default async function SellerReturns() {
   const session = await getSession();
@@ -43,7 +44,7 @@ export default async function SellerReturns() {
           <tbody>
             {returns.map(r => (
               <tr key={r.id} className="border-b">
-                <td className="py-2">{new Date(r.createdAt).toLocaleString('id-ID')}</td>
+                <td className="py-2">{new Date(r.createdAt).toLocaleString('id-ID', { timeZone: JAKARTA_TIME_ZONE })}</td>
                 <td>{r.order.orderCode}</td>
                 <td>{r.orderItem.product.title}</td>
                 <td>{r.reason}</td>

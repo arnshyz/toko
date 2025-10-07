@@ -16,6 +16,7 @@ import {
   getActiveFlashSale,
   getNextFlashSale,
 } from "@/lib/flash-sale";
+import { formatJakartaDate } from "@/lib/time";
 
 const BADGE_STYLES: Record<string, { label: string; className: string }> = {
   BASIC: { label: "Basic", className: "bg-gray-100 text-gray-700" },
@@ -106,13 +107,13 @@ function formatRelativeTime(value: Date) {
 }
 
 function formatReviewDateTime(value: Date) {
-  return new Intl.DateTimeFormat("id-ID", {
+  return formatJakartaDate(value, {
     day: "2-digit",
     month: "long",
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
-  }).format(value);
+  });
 }
 
 const HERO_PLACEHOLDER = "https://placehold.co/900x600?text=Produk";
@@ -298,7 +299,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
     },
     {
       label: "Diposting",
-      value: product.createdAt.toLocaleDateString("id-ID", {
+      value: formatJakartaDate(product.createdAt, {
         day: "numeric",
         month: "long",
         year: "numeric",
@@ -418,7 +419,13 @@ export default async function ProductPage({ params }: { params: { id: string } }
                   <span className="rounded bg-orange-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide">
                     Flash Sale
                   </span>
-                  <span>Berakhir {activeFlashSale.endAt.toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })}</span>
+                  <span>
+                    Berakhir{' '}
+                    {formatJakartaDate(activeFlashSale.endAt, {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                    })}
+                  </span>
                 </div>
               ) : nextFlashSale ? (
                 <div className="inline-flex flex-wrap items-center gap-2 rounded-lg bg-white px-3 py-2 text-xs font-medium text-orange-500">

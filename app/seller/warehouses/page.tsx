@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
+import { JAKARTA_TIME_ZONE } from "@/lib/time";
 
 export default async function Warehouses() {
   const session = await getSession();
@@ -49,7 +50,7 @@ export default async function Warehouses() {
               <tr key={w.id} className="border-b">
                 <td className="py-2">{w.name}</td>
                 <td>{w.city || '-'}</td>
-                <td>{new Date(w.createdAt).toLocaleString('id-ID')}</td>
+                <td>{new Date(w.createdAt).toLocaleString('id-ID', { timeZone: JAKARTA_TIME_ZONE })}</td>
               </tr>
             ))}
           </tbody>

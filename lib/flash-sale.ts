@@ -1,10 +1,12 @@
+import { JAKARTA_TIME_ZONE } from "./time";
+
 export interface FlashSaleLike {
   startAt: Date;
   endAt: Date;
   discountPercent: number;
 }
 
-export const FLASH_SALE_DEFAULT_TIMEZONE = "Asia/Jakarta";
+export const FLASH_SALE_DEFAULT_TIMEZONE = JAKARTA_TIME_ZONE;
 const FLASH_SALE_DEFAULT_OFFSET_MINUTES = 7 * 60;
 
 export function parseFlashSaleDateTime(value: string | null | undefined): Date | null {

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
 import { formatIDR } from "@/lib/utils";
+import { JAKARTA_TIME_ZONE } from "@/lib/time";
 
 type VoucherSummary = {
   id: string;
@@ -54,6 +55,7 @@ export function ActiveVoucherPopup({ voucher }: { voucher: VoucherSummary }) {
     const formatter = new Intl.DateTimeFormat("id-ID", {
       dateStyle: "medium",
       timeStyle: "short",
+      timeZone: JAKARTA_TIME_ZONE,
     });
     return `Berlaku hingga ${formatter.format(new Date(voucher.expiresAt))}`;
   }, [voucher.expiresAt]);

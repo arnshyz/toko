@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
+import { JAKARTA_TIME_ZONE } from "@/lib/time";
 
 export default async function SellerOrders() {
   const session = await getSession();
@@ -45,7 +46,7 @@ export default async function SellerOrders() {
               const subtotal = o.items.reduce((s, it) => s + it.qty*it.price, 0);
               return (
                 <tr key={o.id} className="border-b">
-                  <td className="py-2">{new Date(o.createdAt).toLocaleString('id-ID')}</td>
+                  <td className="py-2">{new Date(o.createdAt).toLocaleString('id-ID', { timeZone: JAKARTA_TIME_ZONE })}</td>
                   <td>{o.orderCode}</td>
                   <td><span className={`badge ${o.status === 'PAID' ? 'badge-paid':'badge-pending'}`}>{o.status}</span></td>
                   <td>{o.paymentMethod}</td>
