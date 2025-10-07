@@ -34,7 +34,10 @@ export function BackButton() {
 
   const label = useMemo(() => (canGoBack ? "Kembali" : "Beranda"), [canGoBack]);
 
-  if (pathname === "/") {
+  const isHome = pathname === "/";
+  const isProductPage = pathname?.startsWith("/product/") ?? false;
+
+  if (isHome || isProductPage) {
     return null;
   }
 

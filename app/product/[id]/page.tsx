@@ -113,6 +113,61 @@ function formatReviewDateTime(value: Date) {
 const HERO_PLACEHOLDER = "https://placehold.co/900x600?text=Produk";
 const THUMB_PLACEHOLDER = "https://placehold.co/300x200?text=Preview";
 
+type IconProps = { className?: string };
+
+function IconChevronLeft({ className }: IconProps) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      className={className}
+    >
+      <path d="m15 18-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function IconShare({ className }: IconProps) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      className={className}
+    >
+      <path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M16 8 12 4 8 8" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M12 5v10" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function IconShoppingCart({ className }: IconProps) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      className={className}
+    >
+      <path
+        d="M4 6h2l1.2 9.6A2 2 0 0 0 9.18 17h7.64a2 2 0 0 0 1.98-1.4L20 8H7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <circle cx="9" cy="20" r="1" />
+      <circle cx="17" cy="20" r="1" />
+    </svg>
+  );
+}
+
 export default async function ProductPage({ params }: { params: { id: string } }) {
   const sessionPromise = getSession();
   const now = new Date();
@@ -329,21 +384,76 @@ export default async function ProductPage({ params }: { params: { id: string } }
   ).slice(0, 5);
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-10 pb-36 lg:pb-0">
       <section className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
         <div className="space-y-4">
-          <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
-            <img
-              src={heroImageSrc}
-              alt={product.title}
-              className="w-full rounded-xl object-cover"
-            />
+          <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+            <div className="lg:p-4">
+              <img
+                src={heroImageSrc}
+                alt={product.title}
+                className="aspect-[3/4] w-full object-cover lg:aspect-[4/3] lg:rounded-xl"
+              />
+            </div>
+            <div className="absolute inset-x-0 top-0 flex items-center justify-between p-4 text-white lg:hidden">
+              <Link href="/" aria-label="Kembali">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-black/40 backdrop-blur">
+                  <IconChevronLeft className="h-5 w-5" />
+                </span>
+              </Link>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-black/40 backdrop-blur"
+                  aria-label="Bagikan produk"
+                >
+                  <IconShare className="h-5 w-5" />
+                </button>
+                <Link
+                  href="/cart"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-black/40 backdrop-blur"
+                  aria-label="Lihat keranjang"
+                >
+                  <IconShoppingCart className="h-5 w-5" />
+                </Link>
+              </div>
+            </div>
           </div>
-          <div className="grid grid-cols-4 gap-3 sm:grid-cols-5">
+          <div className="space-y-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm lg:hidden">
+            <div className="flex items-end justify-between gap-3">
+              <div>
+                <div className="text-2xl font-semibold text-orange-600">Rp {formatIDR(salePrice)}</div>
+                {showOriginal && referenceOriginal ? (
+                  <div className="mt-1 flex items-center gap-2 text-xs">
+                    <span className="text-gray-400 line-through">Rp {formatIDR(referenceOriginal)}</span>
+                    {discountPercent ? (
+                      <span className="rounded-full bg-orange-100 px-2 py-0.5 text-[11px] font-semibold text-orange-600">
+                        -{discountPercent}%
+                      </span>
+                    ) : null}
+                  </div>
+                ) : null}
+              </div>
+              <span className="text-xs font-semibold text-gray-500">
+                {soldCount > 0 ? `${formatCompactNumber(soldCount)} terjual` : "Belum ada penjualan"}
+              </span>
+            </div>
+            <h1 className="text-lg font-semibold text-gray-900">{product.title}</h1>
+            <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
+              <span className="flex items-center gap-1 text-sm font-semibold text-gray-700">
+                <span className="flex items-center gap-0.5 text-base">{renderStars(ratingValue)}</span>
+                {ratingValue.toFixed(1)}
+              </span>
+              <span>({formatCompactNumber(Math.max(ratingCount, 0))} penilaian)</span>
+              <span>•</span>
+              <span>{formatCompactNumber(favoriteEstimate)} favorit</span>
+            </div>
+          </div>
+          <div className="flex gap-3 overflow-x-auto lg:grid lg:grid-cols-4 lg:gap-3 lg:overflow-visible xl:grid-cols-5">
             {thumbnailImages.map((image, index) => (
               <div
                 key={image.id}
-                className="flex h-20 items-center justify-center overflow-hidden rounded-lg border border-dashed border-gray-200 bg-white"
+                className="flex h-20 min-w-[80px] items-center justify-center overflow-hidden rounded-lg border border-dashed border-gray-200 bg-white"
               >
                 <img
                   src={image.src}
@@ -368,7 +478,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
 
         <div className="space-y-6">
           <div className="space-y-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <nav className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
+            <nav className="hidden flex-wrap items-center gap-2 text-xs text-gray-500 lg:flex">
               <Link href="/" className="hover:text-orange-500">
                 Beranda
               </Link>
@@ -378,7 +488,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
               <span className="capitalize">{categoryLabel}</span>
             </nav>
 
-            <div className="space-y-2">
+            <div className="hidden space-y-2 lg:block">
               <h1 className="text-2xl font-semibold text-gray-900">{product.title}</h1>
               <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500">
                 <span className="flex items-center gap-1">
@@ -393,7 +503,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
               </div>
             </div>
 
-            <div className="space-y-3 rounded-xl bg-orange-50 p-5">
+            <div className="hidden space-y-3 rounded-xl bg-orange-50 p-5 lg:block">
               <div className="flex flex-wrap items-end gap-4">
                 <div className="text-3xl font-semibold text-orange-600">Rp {formatIDR(salePrice)}</div>
                 {showOriginal && referenceOriginal && (
@@ -463,6 +573,17 @@ export default async function ProductPage({ params }: { params: { id: string } }
                 </div>
               </div>
 
+              <div className="hidden lg:block">
+                <AddToCartForm
+                  productId={product.id}
+                  title={product.title}
+                  price={salePrice}
+                  sellerId={product.sellerId}
+                  stock={product.stock}
+                  imageUrl={primaryImage}
+                  isLoggedIn={Boolean(currentUserId)}
+                />
+              </div>
               <AddToCartForm
                 productId={product.id}
                 title={product.title}
@@ -471,6 +592,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
                 stock={product.stock}
                 imageUrl={primaryImage}
                 isLoggedIn={Boolean(currentUserId)}
+                variant="mobile"
               />
             </div>
           </div>
