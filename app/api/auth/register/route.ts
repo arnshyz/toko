@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
+import { sendRegistrationSuccessEmail } from "@/lib/email";
 import bcrypt from "bcryptjs";
 
 export async function POST(req: NextRequest) {
@@ -16,6 +17,12 @@ export async function POST(req: NextRequest) {
 
   const passwordHash = await bcrypt.hash(password, 10);
   await prisma.user.create({ data: { name, email, passwordHash, slug: slugify(name), isAdmin: false } });
+
+  try {
+    await sendRegistrationSuccessEmail({ email, name });
+  } catch (error) {
+    console.error("Failed to send registration email", error);
+  }
 
   return NextResponse.redirect(new URL('/seller/login', req.url));
 }
