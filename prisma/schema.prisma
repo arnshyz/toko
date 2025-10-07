@@ -91,6 +91,7 @@ model Order {
   buyerName        String
   buyerPhone       String
   buyerAddress     String
+  buyerEmail       String?
   courier          String
   shippingCost     Int
   status           OrderStatus   @default(PENDING)

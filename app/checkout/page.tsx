@@ -33,6 +33,7 @@ export default function CheckoutPage() {
         <form onSubmit={submit} className="space-y-3">
           <input name="buyerName" required placeholder="Nama Lengkap" className="border rounded w-full px-3 py-2"/>
           <input name="buyerPhone" required placeholder="No. WhatsApp (08xxxx)" className="border rounded w-full px-3 py-2"/>
+          <input name="buyerEmail" type="email" required placeholder="Email" className="border rounded w-full px-3 py-2"/>
           <textarea name="buyerAddress" required placeholder="Alamat Lengkap" className="border rounded w-full px-3 py-2"/>
           <div>
             <label className="block text-sm mb-1">Kurir</label>

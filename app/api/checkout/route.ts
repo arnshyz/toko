@@ -1,18 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { COURIERS } from "@/lib/shipping";
+import { sendOrderCreatedEmail } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
   const form = await req.formData();
   const buyerName = String(form.get('buyerName') || '');
   const buyerPhone = String(form.get('buyerPhone') || '');
+  const buyerEmail = String(form.get('buyerEmail') || '').toLowerCase();
   const buyerAddress = String(form.get('buyerAddress') || '');
   const courierKey = String(form.get('courier') || 'JNE_REG') as keyof typeof COURIERS;
   const items = JSON.parse(String(form.get('items') || '[]')) as { productId: string; qty: number }[];
   const paymentMethod = String(form.get('paymentMethod') || 'TRANSFER') as 'TRANSFER'|'COD';
   const voucherCode = String(form.get('voucher') || '').trim().toUpperCase();
 
-  if (!buyerName || !buyerPhone || !buyerAddress || !items.length) {
+  if (!buyerName || !buyerPhone || !buyerAddress || !buyerEmail || !items.length) {
     return NextResponse.json({ error: 'Invalid' }, { status: 400 });
   }
   const courier = COURIERS[courierKey];
@@ -51,7 +53,7 @@ export async function POST(req: NextRequest) {
   const order = await prisma.order.create({
     data: {
       orderCode,
-      buyerName, buyerPhone, buyerAddress,
+      buyerName, buyerPhone, buyerAddress, buyerEmail,
       courier: courier.label,
       shippingCost,
       uniqueCode,
@@ -63,6 +65,20 @@ export async function POST(req: NextRequest) {
       items: { create: createdItems }
     }
   });
+
+  if (buyerEmail) {
+    try {
+      await sendOrderCreatedEmail({
+        email: buyerEmail,
+        name: buyerName,
+        orderCode: order.orderCode,
+        paymentMethod,
+        total: order.totalWithUnique,
+      });
+    } catch (error) {
+      console.error("Failed to send order created email", error);
+    }
+  }
 
   return NextResponse.json({ orderCode: order.orderCode });
 }
