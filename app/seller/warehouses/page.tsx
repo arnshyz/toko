@@ -1,10 +1,48 @@
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
+import { JAKARTA_TIME_ZONE } from "@/lib/time";
 
 export default async function Warehouses() {
   const session = await getSession();
   const user = session.user;
   if (!user) return <div>Harap login.</div>;
+
+  const account = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { isBanned: true, sellerOnboardingStatus: true },
+  });
+
+  if (!account || account.isBanned) {
+    return (
+      <div>
+        <h1 className="text-2xl font-semibold mb-4">Gudang</h1>
+        <div className="rounded border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          Tidak dapat mengelola gudang karena akun diblokir. Hubungi
+          {" "}
+          <a className="underline" href="mailto:support@akay.id">
+            support@akay.id
+          </a>
+          {" "}
+          untuk mengaktifkan kembali akses Anda.
+        </div>
+      </div>
+    );
+  }
+
+  if (account.sellerOnboardingStatus !== "ACTIVE") {
+    return (
+      <div>
+        <h1 className="text-2xl font-semibold mb-4">Gudang</h1>
+        <div className="rounded border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
+          Fitur gudang tersedia setelah toko Anda aktif. Ikuti tahapan pada
+          <a className="ml-1 font-semibold underline" href="/seller/onboarding">
+            halaman onboarding seller
+          </a>
+          .
+        </div>
+      </div>
+    );
+  }
 
   const warehouses = await prisma.warehouse.findMany({ where: { ownerId: user.id }, orderBy: { createdAt: 'desc' } });
 
@@ -27,7 +65,7 @@ export default async function Warehouses() {
               <tr key={w.id} className="border-b">
                 <td className="py-2">{w.name}</td>
                 <td>{w.city || '-'}</td>
-                <td>{new Date(w.createdAt).toLocaleString('id-ID')}</td>
+                <td>{new Date(w.createdAt).toLocaleString('id-ID', { timeZone: JAKARTA_TIME_ZONE })}</td>
               </tr>
             ))}
           </tbody>

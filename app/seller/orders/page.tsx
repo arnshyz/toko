@@ -1,10 +1,48 @@
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
+import { JAKARTA_TIME_ZONE } from "@/lib/time";
 
 export default async function SellerOrders() {
   const session = await getSession();
   const user = session.user;
   if (!user) return <div>Harap login.</div>;
+
+  const account = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { isBanned: true, sellerOnboardingStatus: true },
+  });
+
+  if (!account || account.isBanned) {
+    return (
+      <div>
+        <h1 className="text-2xl font-semibold mb-4">Pesanan (Produk Saya)</h1>
+        <div className="rounded border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          Anda tidak dapat mengelola pesanan karena akun sedang diblokir. Hubungi
+          {" "}
+          <a className="underline" href="mailto:support@akay.id">
+            support@akay.id
+          </a>
+          {" "}
+          untuk klarifikasi lebih lanjut.
+        </div>
+      </div>
+    );
+  }
+
+  if (account.sellerOnboardingStatus !== "ACTIVE") {
+    return (
+      <div>
+        <h1 className="text-2xl font-semibold mb-4">Pesanan (Produk Saya)</h1>
+        <div className="rounded border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
+          Akses pesanan seller akan tersedia setelah proses onboarding selesai. Silakan cek panduan pada halaman
+          <a className="ml-1 font-semibold underline" href="/seller/onboarding">
+            onboarding seller
+          </a>
+          .
+        </div>
+      </div>
+    );
+  }
 
   const orders = await prisma.order.findMany({
     orderBy: { createdAt: 'desc' },
@@ -23,7 +61,7 @@ export default async function SellerOrders() {
               const subtotal = o.items.reduce((s, it) => s + it.qty*it.price, 0);
               return (
                 <tr key={o.id} className="border-b">
-                  <td className="py-2">{new Date(o.createdAt).toLocaleString('id-ID')}</td>
+                  <td className="py-2">{new Date(o.createdAt).toLocaleString('id-ID', { timeZone: JAKARTA_TIME_ZONE })}</td>
                   <td>{o.orderCode}</td>
                   <td><span className={`badge ${o.status === 'PAID' ? 'badge-paid':'badge-pending'}`}>{o.status}</span></td>
                   <td>{o.paymentMethod}</td>

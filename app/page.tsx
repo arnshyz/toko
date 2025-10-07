@@ -1,10 +1,17 @@
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import Link from "next/link";
 
 import { prisma } from "@/lib/prisma";
 import { formatIDR } from "@/lib/utils";
 import { PromoSlider, PromoSlide } from "@/components/PromoSlider";
-import { getCategoryInfo, productCategories } from "@/lib/categories";
+import { ActiveVoucherPopup } from "@/components/ActiveVoucherPopup";
+import { getCategoryInfo } from "@/lib/categories";
 import { getPrimaryProductImageSrc } from "@/lib/productImages";
+import { calculateFlashSalePrice, getActiveFlashSale } from "@/lib/flash-sale";
+import { SalesProofTicker } from "@/components/SalesProofTicker";
+import { FlashSaleRail } from "@/components/FlashSaleRail";
 
 const fallbackSlides: PromoSlide[] = [
   {
@@ -37,12 +44,17 @@ const fallbackSlides: PromoSlide[] = [
 ];
 
 export default async function HomePage() {
+  const now = new Date();
   const products = await prisma.product.findMany({
     where: { isActive: true },
     orderBy: { createdAt: 'desc' },
     include: {
       seller: true,
       images: { select: { id: true }, orderBy: { sortOrder: 'asc' } },
+      flashSales: {
+        where: { endAt: { gte: now } },
+        orderBy: { startAt: 'asc' },
+      },
     }
   });
   const promoBanners = await prisma.promoBanner.findMany({
@@ -52,6 +64,21 @@ export default async function HomePage() {
       { createdAt: "asc" },
     ],
   });
+  const activeVouchers = await prisma.voucher.findMany({
+    where: {
+      active: true,
+      OR: [
+        { expiresAt: null },
+        { expiresAt: { gt: now } },
+      ],
+    },
+    orderBy: [
+      { createdAt: "desc" },
+      { code: "asc" },
+    ],
+    take: 1,
+  });
+  const highlightedVoucher = activeVouchers[0];
   const slides: PromoSlide[] = promoBanners.map((banner) => ({
     title: banner.title,
     description: banner.description,
@@ -60,28 +87,55 @@ export default async function HomePage() {
     ctaLabel: banner.ctaLabel,
     ctaHref: banner.ctaHref,
   }));
-  const categories = productCategories;
+  const flashSaleProducts = products
+    .map((product) => {
+      const activeFlashSale = getActiveFlashSale(product.flashSales ?? [], now);
+      if (!activeFlashSale) {
+        return null;
+      }
+
+      const salePrice = calculateFlashSalePrice(product.price, activeFlashSale);
+      const originalReference = product.originalPrice && product.originalPrice > product.price
+        ? product.originalPrice
+        : product.price;
+      const originalPrice = originalReference > salePrice ? originalReference : null;
+
+      return {
+        id: product.id,
+        title: product.title,
+        sellerName: product.seller.name,
+        sellerSlug: product.seller.slug,
+        salePrice,
+        discountPercent: activeFlashSale.discountPercent,
+        originalPrice,
+        imageUrl: getPrimaryProductImageSrc(product),
+        endsAt: activeFlashSale.endAt.toISOString(),
+        stock: product.stock,
+      };
+    })
+    .filter((value): value is NonNullable<typeof value> => value !== null)
+    .sort((a, b) => new Date(a.endsAt).getTime() - new Date(b.endsAt).getTime());
   return (
     <div className="space-y-10">
+      <SalesProofTicker />
+      {highlightedVoucher ? (
+        <ActiveVoucherPopup
+          voucher={{
+            id: highlightedVoucher.id,
+            code: highlightedVoucher.code,
+            kind: highlightedVoucher.kind,
+            value: highlightedVoucher.value,
+            minSpend: highlightedVoucher.minSpend,
+            expiresAt: highlightedVoucher.expiresAt
+              ? highlightedVoucher.expiresAt.toISOString()
+              : null,
+          }}
+        />
+      ) : null}
       <PromoSlider slides={slides.length > 0 ? slides : fallbackSlides} />
 
       <section>
-        <h2 className="mb-4 text-xl font-semibold">Kategori Populer</h2>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
-          {categories.map(category => (
-            <Link
-              key={category.slug}
-              href={`/?category=${category.slug}`}
-              className="group rounded-xl border bg-white p-4 text-center shadow-sm transition hover:-translate-y-1 hover:shadow-md"
-            >
-              <div className="text-2xl">{category.emoji}</div>
-              <div className="mt-2 font-semibold text-gray-800">{category.name}</div>
-              <div className="text-xs text-gray-500 transition group-hover:text-gray-700">
-                {category.description}
-              </div>
-            </Link>
-          ))}
-        </div>
+        <FlashSaleRail items={flashSaleProducts} />
       </section>
 
       <section>
@@ -98,7 +152,16 @@ export default async function HomePage() {
           {products.map(p => {
             const category = getCategoryInfo(p.category);
             const originalPrice = typeof p.originalPrice === 'number' ? p.originalPrice : null;
-            const showOriginal = originalPrice !== null && originalPrice > p.price;
+            const activeFlashSale = getActiveFlashSale(p.flashSales ?? [], now);
+            const salePrice = activeFlashSale
+              ? calculateFlashSalePrice(p.price, activeFlashSale)
+              : p.price;
+            const referenceOriginal = activeFlashSale
+              ? originalPrice && originalPrice > p.price
+                ? originalPrice
+                : p.price
+              : originalPrice;
+            const showOriginal = referenceOriginal !== null && referenceOriginal > salePrice;
             const categoryLabel = category?.name ?? p.category.replace(/-/g, ' ');
             const categoryEmoji = category?.emoji ?? '🏷️';
             return (
@@ -127,10 +190,15 @@ export default async function HomePage() {
                       {p.seller.name}
                     </Link>
                   </div>
-                  {showOriginal && (
-                    <div className="text-xs text-gray-400 line-through">Rp {formatIDR(originalPrice)}</div>
+                  {activeFlashSale && (
+                    <div className="mb-1 inline-flex items-center rounded-full bg-orange-100 px-2 py-0.5 text-[11px] font-semibold text-orange-700">
+                      Flash Sale • {activeFlashSale.discountPercent}%
+                    </div>
                   )}
-                  <div className="mt-1 text-lg font-semibold text-indigo-600">Rp {formatIDR(p.price)}</div>
+                  {showOriginal && (
+                    <div className="text-xs text-gray-400 line-through">Rp {formatIDR(referenceOriginal!)}</div>
+                  )}
+                  <div className="mt-1 text-lg font-semibold text-indigo-600">Rp {formatIDR(salePrice)}</div>
                 </div>
               </div>
             );

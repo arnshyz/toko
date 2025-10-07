@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
+import { JAKARTA_TIME_ZONE } from "@/lib/time";
 
 const storeBadges = ["BASIC", "STAR", "STAR_PLUS", "MALL", "PREMIUM"] as const;
 
@@ -48,6 +49,9 @@ export default async function AdminUsersPage({
         <Link className="link" href="/admin/banners">
           Kelola Banner Promo
         </Link>
+        <Link className="link" href="/admin/vouchers">
+          Kelola Voucher Publik
+        </Link>
         <Link className="link" href="/admin/orders">
           Pantau Pesanan
         </Link>
@@ -69,6 +73,7 @@ export default async function AdminUsersPage({
               <th className="py-2">Nama</th>
               <th>Email</th>
               <th>Peran</th>
+              <th>Status</th>
               <th>Toko</th>
               <th>Produk</th>
               <th>Penjualan</th>
@@ -80,6 +85,7 @@ export default async function AdminUsersPage({
               const isCurrent = user.id === currentUser.id;
               const hasWarehouse = user.warehouses.length > 0;
               const isSeller = user._count.products > 0 || hasWarehouse;
+              const isBanned = user.isBanned;
               return (
                 <tr key={user.id} id={`user-${user.id}`} className="border-b align-top">
                   <td className="py-3">
@@ -99,17 +105,23 @@ export default async function AdminUsersPage({
                       <div>
                         <div className="font-medium">{user.name}</div>
                         <div className="text-xs text-gray-500">
-                          Bergabung {new Date(user.createdAt).toLocaleDateString("id-ID")}
+                          Bergabung{' '}
+                          {new Date(user.createdAt).toLocaleDateString("id-ID", { timeZone: JAKARTA_TIME_ZONE })}
                         </div>
                       </div>
                     </div>
                   </td>
                   <td className="py-3">{user.email}</td>
-                  <td className="py-3">
-                    <span className={`badge ${user.isAdmin ? "badge-paid" : "badge-pending"}`}>
-                      {user.isAdmin ? "ADMIN" : "USER"}
-                    </span>
-                  </td>
+                <td className="py-3">
+                  <span className={`badge ${user.isAdmin ? "badge-paid" : "badge-pending"}`}>
+                    {user.isAdmin ? "ADMIN" : "USER"}
+                  </span>
+                </td>
+                <td className="py-3">
+                  <span className={`badge ${isBanned ? "badge-danger" : "badge-paid"}`}>
+                    {isBanned ? "Diblokir" : "Aktif"}
+                  </span>
+                </td>
                   <td className="py-3">
                     {isSeller ? (
                       <div className="space-y-1">
@@ -183,6 +195,28 @@ export default async function AdminUsersPage({
                         title={isCurrent ? "Tidak dapat mengubah status admin sendiri" : undefined}
                       >
                         {user.isAdmin ? "Cabut Admin" : "Jadikan Admin"}
+                      </button>
+                    </form>
+                    <form
+                      method="POST"
+                      action={`/api/admin/users/${user.id}/toggle-ban`}
+                      className="inline"
+                    >
+                      <button
+                        className={`text-xs font-semibold text-white rounded px-3 py-1 ${
+                          isBanned
+                            ? "bg-emerald-600 hover:bg-emerald-700"
+                            : "bg-red-600 hover:bg-red-700"
+                        } disabled:cursor-not-allowed disabled:bg-gray-300`}
+                        type="submit"
+                        disabled={isCurrent}
+                        title={
+                          isCurrent
+                            ? "Tidak dapat mengubah status ban sendiri"
+                            : undefined
+                        }
+                      >
+                        {isBanned ? "Cabut Ban" : "Ban Pengguna"}
                       </button>
                     </form>
                     {isSeller ? (

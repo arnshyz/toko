@@ -3,6 +3,9 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { slugify } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 export async function GET(req: NextRequest) {
   const adminEmail = (process.env.ADMIN_EMAIL || "admin@akay.id").toLowerCase();
   const adminPass = process.env.ADMIN_PASSWORD || "admin123";

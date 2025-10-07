@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 
+import { JAKARTA_TIME_ZONE } from "@/lib/time";
+
 type Msg = { id: string; sender: string; content: string | null; createdAt: string };
 
 export default function OrderChat({ orderCode, role }: { orderCode: string; role: "buyer" | "seller" }) {
@@ -47,7 +49,9 @@ export default function OrderChat({ orderCode, role }: { orderCode: string; role
             <div key={m.id} className={`mb-2 flex ${mine ? "justify-end" : "justify-start"}`}>
               <div className={`max-w-[75%] px-3 py-2 rounded-lg text-sm ${mine ? "bg-green-800 text-white" : "bg-white border"}`}>
                 <div className="opacity-70 text-[10px] mb-1">
-                  {isSeller ? "Seller" : "Buyer"} • {new Date(m.createdAt).toLocaleTimeString("id-ID")}
+                  {isSeller ? "Seller" : "Buyer"} •
+                  {" "}
+                  {new Date(m.createdAt).toLocaleTimeString("id-ID", { timeZone: JAKARTA_TIME_ZONE })}
                 </div>
                 <div>{m.content}</div>
               </div>

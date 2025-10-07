@@ -49,6 +49,9 @@ export default async function AdminProductsPage({
           <Link className="link" href="/admin/banners">
             Kelola Banner Promo
           </Link>
+          <Link className="link" href="/admin/vouchers">
+            Kelola Voucher Publik
+          </Link>
           <Link className="link" href="/admin/users">
             &larr; Kembali ke pengguna
           </Link>

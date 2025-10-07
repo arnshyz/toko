@@ -1,10 +1,48 @@
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
+import { JAKARTA_TIME_ZONE } from "@/lib/time";
 
 export default async function SellerReturns() {
   const session = await getSession();
   const user = session.user;
   if (!user) return <div>Harap login.</div>;
+
+  const account = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { isBanned: true, sellerOnboardingStatus: true },
+  });
+
+  if (!account || account.isBanned) {
+    return (
+      <div>
+        <h1 className="text-2xl font-semibold mb-4">Retur Masuk</h1>
+        <div className="rounded border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          Anda tidak dapat memproses retur selama akun diblokir. Silakan hubungi
+          {" "}
+          <a className="underline" href="mailto:support@akay.id">
+            support@akay.id
+          </a>
+          {" "}
+          untuk peninjauan akun.
+        </div>
+      </div>
+    );
+  }
+
+  if (account.sellerOnboardingStatus !== "ACTIVE") {
+    return (
+      <div>
+        <h1 className="text-2xl font-semibold mb-4">Retur Masuk</h1>
+        <div className="rounded border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
+          Proses retur hanya tersedia untuk seller aktif. Lengkapi tahapan pada
+          <a className="ml-1 font-semibold underline" href="/seller/onboarding">
+            halaman onboarding seller
+          </a>
+          .
+        </div>
+      </div>
+    );
+  }
 
   const returns = await prisma.returnRequest.findMany({
     orderBy: { createdAt: 'desc' },
@@ -21,7 +59,7 @@ export default async function SellerReturns() {
           <tbody>
             {returns.map(r => (
               <tr key={r.id} className="border-b">
-                <td className="py-2">{new Date(r.createdAt).toLocaleString('id-ID')}</td>
+                <td className="py-2">{new Date(r.createdAt).toLocaleString('id-ID', { timeZone: JAKARTA_TIME_ZONE })}</td>
                 <td>{r.order.orderCode}</td>
                 <td>{r.orderItem.product.title}</td>
                 <td>{r.reason}</td>

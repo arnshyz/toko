@@ -22,8 +22,9 @@ export default function CheckoutPage() {
     const res = await fetch('/api/checkout', { method: 'POST', body: fd });
     if (!res.ok) { alert('Gagal membuat pesanan'); return; }
     const data = await res.json();
+    const orderCode = typeof data?.orderCode === 'string' ? data.orderCode : '';
     localStorage.removeItem('cart');
-    window.location.href = `/order/${data.orderCode}`;
+    window.location.href = `/order/${orderCode || data.orderCode}`;
   }
 
   return (

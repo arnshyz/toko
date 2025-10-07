@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
+import { JAKARTA_TIME_ZONE } from "@/lib/time";
 
 export default async function AdminBannersPage({
   searchParams,
@@ -37,6 +38,9 @@ export default async function AdminBannersPage({
           </Link>
           <Link className="link" href="/admin/products">
             Kelola Produk
+          </Link>
+          <Link className="link" href="/admin/vouchers">
+            Kelola Voucher
           </Link>
         </div>
       </div>
@@ -208,7 +212,10 @@ export default async function AdminBannersPage({
                   </form>
                   <div id={`banner-${banner.id}`} className="rounded border border-gray-200 bg-gray-50 p-3 text-xs text-gray-600">
                     <div>Urutan: {banner.sortOrder}</div>
-                    <div>Diupdate: {banner.updatedAt.toLocaleString("id-ID")}</div>
+                    <div>
+                      Diupdate:{" "}
+                      {banner.updatedAt.toLocaleString("id-ID", { timeZone: JAKARTA_TIME_ZONE })}
+                    </div>
                     <div>Status: {banner.isActive ? "Aktif" : "Non-aktif"}</div>
                   </div>
                 </div>

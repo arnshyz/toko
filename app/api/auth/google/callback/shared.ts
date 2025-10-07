@@ -109,7 +109,7 @@ export async function handleGoogleCallback(req: NextRequest): Promise<NextRespon
   const emailVerified = profile.email_verified !== false;
   const fullName =
     typeof profile.name === "string" && profile.name.trim().length > 0
-      ? profile.name
+      ? profile.name.trim()
       : email.split("@")[0];
 
   if (!email || !emailVerified) {
@@ -118,25 +118,47 @@ export async function handleGoogleCallback(req: NextRequest): Promise<NextRespon
     );
   }
 
-  let user = await prisma.user.findUnique({ where: { email } });
+  let user = await prisma.user.findUnique({
+    where: { email },
+  });
 
   if (!user) {
     const passwordFallback = randomUUID();
     const passwordHash = await bcrypt.hash(passwordFallback, 10);
-    const slug = await buildUniqueSlug(fullName);
+    const nameBase = fullName || email.split("@")[0] || "Pengguna";
+    const slug = await buildUniqueSlug(nameBase);
 
     user = await prisma.user.create({
       data: {
-        name: fullName || "Seller Akay",
+        name: nameBase,
         email,
         passwordHash,
         slug,
         isAdmin: false,
+        sellerOnboardingStatus: "NOT_STARTED",
       },
     });
   }
 
-  const redirectTo = new URL("/seller/dashboard", url.origin);
+  if (!user.sellerOnboardingStatus) {
+    user = await prisma.user.update({
+      where: { id: user.id },
+      data: { sellerOnboardingStatus: "NOT_STARTED" },
+    });
+  }
+
+  if (user.isBanned) {
+    return clearStateCookie(
+      NextResponse.redirect(new URL("/seller/login?error=banned", url.origin)),
+    );
+  }
+
+  const redirectTo = new URL(
+    user.sellerOnboardingStatus === "ACTIVE"
+      ? "/seller/dashboard"
+      : `/seller/onboarding?status=${user.sellerOnboardingStatus}`,
+    url.origin,
+  );
   const response = clearStateCookie(NextResponse.redirect(redirectTo));
 
   const session = await getIronSession<{ user?: SessionUser }>(
