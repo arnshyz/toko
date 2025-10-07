@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-import { ProvinceSelect } from "@/components/ProvinceSelect";
+import { AddressRegionFields } from "@/components/AddressRegionFields";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
 import type { Gender } from "@prisma/client";
@@ -341,46 +341,12 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
               />
             </div>
 
-            <div className="space-y-1">
-              <label htmlFor="editProvince" className="text-sm font-medium text-gray-700">
-                Provinsi
-              </label>
-              <ProvinceSelect
-                id="editProvince"
-                name="province"
-                required
-                defaultValue={editingAddress.province}
-                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/30"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label htmlFor="editCity" className="text-sm font-medium text-gray-700">
-                Kota / Kabupaten
-              </label>
-              <input
-                id="editCity"
-                name="city"
-                type="text"
-                required
-                defaultValue={editingAddress.city}
-                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/30"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <label htmlFor="editDistrict" className="text-sm font-medium text-gray-700">
-                Kecamatan
-              </label>
-              <input
-                id="editDistrict"
-                name="district"
-                type="text"
-                required
-                defaultValue={editingAddress.district}
-                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/30"
-              />
-            </div>
+            <AddressRegionFields
+              idPrefix="edit-address"
+              defaultProvince={editingAddress.province}
+              defaultCity={editingAddress.city}
+              defaultDistrict={editingAddress.district}
+            />
 
             <div className="space-y-1">
               <label htmlFor="editPostalCode" className="text-sm font-medium text-gray-700">
@@ -471,43 +437,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
             />
           </div>
 
-          <div className="space-y-1">
-            <label htmlFor="province" className="text-sm font-medium text-gray-700">
-              Provinsi
-            </label>
-            <ProvinceSelect
-              id="province"
-              name="province"
-              required
-              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/30"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label htmlFor="city" className="text-sm font-medium text-gray-700">
-              Kota / Kabupaten
-            </label>
-            <input
-              id="city"
-              name="city"
-              type="text"
-              required
-              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/30"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label htmlFor="district" className="text-sm font-medium text-gray-700">
-              Kecamatan
-            </label>
-            <input
-              id="district"
-              name="district"
-              type="text"
-              required
-              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/30"
-            />
-          </div>
+          <AddressRegionFields idPrefix="new-address" />
 
           <div className="space-y-1">
             <label htmlFor="postalCode" className="text-sm font-medium text-gray-700">
