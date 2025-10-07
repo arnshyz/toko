@@ -1,5 +1,58 @@
+import { Prisma } from "@prisma/client";
+
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
+
+const SELLER_SELECTION = {
+  isBanned: true,
+  storeIsOnline: true,
+  name: true,
+  slug: true,
+  sellerOnboardingStatus: true,
+} satisfies Prisma.UserSelect;
+
+type SellerAccount = Prisma.UserGetPayload<{ select: typeof SELLER_SELECTION }>;
+
+async function getSellerDashboardAccount(userId: string): Promise<SellerAccount | null> {
+  try {
+    return await prisma.user.findUnique({
+      where: { id: userId },
+      select: SELLER_SELECTION,
+    });
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2022" &&
+      typeof error.meta?.column === "string" &&
+      error.meta.column.includes("storeCity")
+    ) {
+      const fallbackAccount = await prisma.$queryRaw<
+        Array<{
+          isBanned: boolean;
+          storeIsOnline: boolean | null;
+          name: string;
+          slug: string;
+          sellerOnboardingStatus: string;
+        }>
+      >`SELECT "isBanned", "storeIsOnline", "name", "slug", "sellerOnboardingStatus" FROM "User" WHERE "id" = ${userId} LIMIT 1`;
+
+      const row = fallbackAccount[0];
+      if (!row) {
+        return null;
+      }
+
+      return {
+        isBanned: row.isBanned,
+        storeIsOnline: row.storeIsOnline ?? false,
+        name: row.name,
+        slug: row.slug,
+        sellerOnboardingStatus: row.sellerOnboardingStatus as SellerAccount['sellerOnboardingStatus'],
+      } satisfies SellerAccount;
+    }
+
+    throw error;
+  }
+}
 
 export const dynamic = "force-dynamic";
 
@@ -8,10 +61,7 @@ export default async function Dashboard() {
   const user = session.user;
   if (!user) return <div>Harap login sebagai seller.</div>;
 
-  const account = await prisma.user.findUnique({
-    where: { id: user.id },
-    select: { isBanned: true, storeIsOnline: true, name: true, slug: true, sellerOnboardingStatus: true },
-  });
+  const account = await getSellerDashboardAccount(user.id);
 
   if (!account || account.isBanned) {
     return (
