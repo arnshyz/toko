@@ -3,28 +3,55 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
 
-const SELLER_SELECTION = {
+const SELLER_SELECTION = Prisma.validator<Prisma.UserSelect>()({
   isBanned: true,
   storeIsOnline: true,
   name: true,
   slug: true,
   sellerOnboardingStatus: true,
-} satisfies Prisma.UserSelect;
+});
 
-type SellerAccount = Prisma.UserGetPayload<{ select: typeof SELLER_SELECTION }>;
+type SellerAccount = Prisma.UserGetPayload<{ select: typeof SELLER_SELECTION }> & {
+  storeCity: string | null;
+  storeProvince: string | null;
+  storeAddressLine: string | null;
+};
+
+async function getPrimaryWarehouseCity(userId: string): Promise<string | null> {
+  const warehouse = await prisma.warehouse.findFirst({
+    where: { ownerId: userId },
+    orderBy: { createdAt: "asc" },
+    select: { city: true },
+  });
+
+  return warehouse?.city?.trim() || null;
+}
 
 async function getSellerDashboardAccount(userId: string): Promise<SellerAccount | null> {
   try {
-    return await prisma.user.findUnique({
+    const account = await prisma.user.findUnique({
       where: { id: userId },
       select: SELLER_SELECTION,
     });
+
+    if (!account) {
+      return null;
+    }
+
+    const warehouseCity = await getPrimaryWarehouseCity(userId);
+
+    return {
+      ...account,
+      storeCity: warehouseCity,
+      storeProvince: null,
+      storeAddressLine: null,
+    } satisfies SellerAccount;
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === "P2022" &&
       typeof error.meta?.column === "string" &&
-      error.meta.column.includes("storeCity")
+      error.meta.column.startsWith("User.store")
     ) {
       const fallbackAccount = await prisma.$queryRaw<
         Array<{
@@ -41,12 +68,17 @@ async function getSellerDashboardAccount(userId: string): Promise<SellerAccount 
         return null;
       }
 
+      const warehouseCity = await getPrimaryWarehouseCity(userId);
+
       return {
         isBanned: row.isBanned,
         storeIsOnline: row.storeIsOnline ?? false,
         name: row.name,
         slug: row.slug,
         sellerOnboardingStatus: row.sellerOnboardingStatus as SellerAccount['sellerOnboardingStatus'],
+        storeCity: warehouseCity,
+        storeProvince: null,
+        storeAddressLine: null,
       } satisfies SellerAccount;
     }
 
@@ -112,14 +144,23 @@ export default async function Dashboard() {
   return (
     <div>
       <h1 className="text-2xl font-semibold mb-4">Dashboard Seller</h1>
-      <div className="bg-white border rounded p-4 mb-6 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div className="space-y-3">
-          <div>
-            <h2 className="font-semibold text-lg">Profil Toko</h2>
-            <div className="text-sm text-gray-600">
-              <div className="font-medium text-gray-900">{storeName}</div>
-              <div className="text-xs text-gray-500">Alamat etalase: https://akay.id/s/{storeSlug}</div>
-            </div>
+      <div className="bg-white border rounded p-4 mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="space-y-1">
+          <h2 className="font-semibold text-lg">Profil Toko</h2>
+          <div className="text-sm text-gray-600">
+            <div className="font-medium text-gray-900">{storeName}</div>
+            <div className="text-xs text-gray-500">Alamat etalase: https://akay.id/s/{storeSlug}</div>
+            {hasStoreOrigin ? (
+              <div className="mt-1 text-xs text-gray-500">
+                Gudang: {storeAddressLine ? `${storeAddressLine}, ` : ""}
+                {storeCity}
+                {storeProvince ? `, ${storeProvince}` : ""}
+              </div>
+            ) : (
+              <div className="mt-1 text-xs text-amber-600">
+                Tambahkan alamat gudang di pengaturan toko agar ongkos kirim dapat dihitung otomatis.
+              </div>
+            )}
           </div>
           {hasStoreOrigin ? (
             <div className="text-sm text-gray-600">
