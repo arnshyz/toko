@@ -77,6 +77,7 @@ export function AddressRegionFields({
   const [cityError, setCityError] = useState<string | null>(null);
   const [cityValue, setCityValue] = useState(normalizedDefaultCity);
   const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
+  const [selectedCityIsStatic, setSelectedCityIsStatic] = useState(false);
 
   const [subdistrictOptions, setSubdistrictOptions] = useState<SubdistrictOption[]>([]);
   const [subdistrictStatus, setSubdistrictStatus] = useState<
@@ -131,6 +132,7 @@ export function AddressRegionFields({
       setCityStatus("idle");
       setCityError(null);
       setSelectedCityId(null);
+      setSelectedCityIsStatic(false);
       return;
     }
 
@@ -154,6 +156,7 @@ export function AddressRegionFields({
         console.error("Failed to fetch cities", error);
         setCityError("Gagal memuat kota/kabupaten. Silakan isi manual.");
         setCityStatus("error");
+        setSelectedCityIsStatic(false);
       }
     }
 
@@ -167,10 +170,12 @@ export function AddressRegionFields({
   useEffect(() => {
     if (cityStatus !== "loaded") {
       setSelectedCityId(null);
+      setSelectedCityIsStatic(false);
       return;
     }
     if (!cityValue) {
       setSelectedCityId(null);
+      setSelectedCityIsStatic(false);
       return;
     }
     const normalized = normalize(cityValue);
@@ -178,7 +183,13 @@ export function AddressRegionFields({
       const displayName = `${option.type} ${option.name}`.replace(/\s+/g, " ").trim();
       return normalize(displayName) === normalized || normalize(option.name) === normalized;
     });
-    setSelectedCityId(matched ? matched.id : null);
+    if (matched) {
+      setSelectedCityId(matched.id);
+      setSelectedCityIsStatic(!/^\d+$/.test(matched.id));
+    } else {
+      setSelectedCityId(null);
+      setSelectedCityIsStatic(false);
+    }
   }, [cityStatus, cityOptions, cityValue]);
 
   useEffect(() => {
@@ -186,6 +197,15 @@ export function AddressRegionFields({
       setSubdistrictOptions([]);
       setSubdistrictStatus("idle");
       setSubdistrictError(null);
+      return;
+    }
+
+    if (selectedCityIsStatic) {
+      setSubdistrictOptions([]);
+      setSubdistrictStatus("unsupported");
+      setSubdistrictError(
+        "Daftar kecamatan tidak tersedia ketika menggunakan data kota statis. Silakan isi manual.",
+      );
       return;
     }
 
@@ -342,6 +362,7 @@ export function AddressRegionFields({
               setSubdistrictOptions([]);
               setSubdistrictStatus("idle");
               setSubdistrictError(null);
+              setSelectedCityIsStatic(false);
             }}
             disabled={provinceStatus !== "loaded" || !selectedProvinceId || cityStatus === "loading"}
           >
@@ -388,7 +409,15 @@ export function AddressRegionFields({
               placeholder="Tulis kecamatan"
               className={FIELD_CLASSNAME}
             />
-            {subdistrictError ? <p className="text-xs text-red-600">{subdistrictError}</p> : null}
+            {subdistrictError ? (
+              <p
+                className={`text-xs ${
+                  subdistrictStatus === "unsupported" ? "text-amber-600" : "text-red-600"
+                }`}
+              >
+                {subdistrictError}
+              </p>
+            ) : null}
           </>
         ) : (
           <select

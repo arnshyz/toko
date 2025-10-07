@@ -20,6 +20,16 @@ export async function GET(request: Request) {
     );
   }
 
+  if (!/^\d+$/.test(cityId)) {
+    return NextResponse.json(
+      {
+        error:
+          "Daftar kecamatan hanya tersedia ketika RajaOngkir berhasil dimuat. Silakan isi manual.",
+      },
+      { status: 501 },
+    );
+  }
+
   try {
     const results = await fetchRajaOngkir<SubdistrictResult[]>("subdistrict", {
       city: cityId,
