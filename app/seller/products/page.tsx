@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
 import { productCategories, getCategoryInfo } from "@/lib/categories";
@@ -5,7 +7,11 @@ import { formatFlashSaleWindow, isFlashSaleActive } from "@/lib/flash-sale";
 
 export const dynamic = 'force-dynamic';
 
-export default async function SellerProducts() {
+export default async function SellerProducts({
+  searchParams,
+}: {
+  searchParams?: Record<string, string | string[] | undefined>;
+}) {
   const session = await getSession();
   const user = session.user;
   if (!user) return <div>Harap login.</div>;
@@ -66,9 +72,16 @@ export default async function SellerProducts() {
 
   const categoryLabel = (slug: string) => getCategoryInfo(slug)?.name ?? slug.replace(/-/g, ' ');
 
+  const updatedFlag = typeof searchParams?.updated === 'string' || Array.isArray(searchParams?.updated);
+
   return (
     <div>
       <h1 className="text-2xl font-semibold mb-4">Produk Saya</h1>
+      {updatedFlag ? (
+        <div className="mb-4 rounded border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">
+          Perubahan produk berhasil disimpan.
+        </div>
+      ) : null}
       <div className="bg-white border rounded p-4 mb-6">
         <h2 className="font-semibold mb-2">Tambah Produk</h2>
         <form
@@ -176,6 +189,9 @@ export default async function SellerProducts() {
                   })()}
                 </td>
                 <td className="space-x-2">
+                  <Link href={`/seller/products/${p.id}/edit`} className="btn-outline inline-block">
+                    Edit
+                  </Link>
                   <form method="POST" action={`/api/seller/products/update/${p.id}`} className="inline">
                     <input type="hidden" name="toggle" value="1"/>
                     <button className="btn-outline">{p.isActive ? 'Nonaktifkan':'Aktifkan'}</button>
