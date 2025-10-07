@@ -77,7 +77,7 @@ export function SiteHeader({ user }: SiteHeaderProps) {
                 {open && (
                   <div className="absolute right-0 z-50 mt-2 w-48 overflow-hidden rounded-md bg-white text-gray-700 shadow-lg">
                     <Link
-                      href="/seller/dashboard"
+                      href="/account"
                       className="block px-4 py-3 text-sm font-medium hover:bg-gray-100"
                       onClick={() => setOpen(false)}
                     >
