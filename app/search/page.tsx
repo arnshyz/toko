@@ -102,7 +102,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               return (
                 <ProductCard
                   key={product.id}
-                  href={`/product/${product.id}`}
+                  href={`/product/${product.slug}`}
                   title={product.title}
                   imageUrl={imageUrl}
                   salePrice={salePrice}

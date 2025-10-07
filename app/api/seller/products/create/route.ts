@@ -5,10 +5,11 @@ import { prisma } from "@/lib/prisma";
 import { getIronSession } from "iron-session";
 import { sessionOptions, SessionUser } from "@/lib/session";
 import { buildVariantPayload, parseVariantInput, resolveCategorySlug } from "@/lib/product-form";
+import { generateUniqueProductSlug } from "@/lib/product-slug";
 
 export async function POST(req: NextRequest) {
   const form = await req.formData();
-  const title = String(form.get('title') || '');
+  const title = String(form.get('title') || '').trim();
   const price = parseInt(String(form.get('price') || '0'))||0;
   const stock = parseInt(String(form.get('stock') || '0'))||0;
   const originalPriceValue = String(form.get('originalPrice') || '').trim();
@@ -56,10 +57,13 @@ export async function POST(req: NextRequest) {
 
   const validatedFiles = files.filter((file) => file.type.startsWith('image/'));
 
+  const slug = await generateUniqueProductSlug(title || 'produk');
+
   const product = await prisma.product.create({
     data: {
       sellerId: user.id,
       title,
+      slug,
       price,
       stock,
       description,

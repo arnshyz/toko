@@ -178,7 +178,7 @@ export default async function Storefront({ params }: { params: { slug: string } 
               return (
                 <a
                   key={p.id}
-                  href={`/product/${p.id}`}
+                  href={`/product/${p.slug}`}
                   className="flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white transition hover:-translate-y-1 hover:shadow-lg"
                 >
                   <img
