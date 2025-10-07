@@ -25,31 +25,121 @@ const exploreLinks = [
 ];
 
 const paymentProviders = [
-  "BCA",
-  "Mandiri",
-  "BRI",
-  "BNI",
-  "Visa",
-  "Mastercard",
-  "Gopay",
-  "Dana",
-  "AkayPay",
-  "Kredivo",
+  {
+    label: "BCA",
+    image:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Bank_Central_Asia.svg/960px-Bank_Central_Asia.svg.png",
+  },
+  {
+    label: "Mandiri",
+    image:
+      "https://upload.wikimedia.org/wikipedia/en/thumb/f/fa/Bank_Mandiri_logo.svg/222px-Bank_Mandiri_logo.svg.png",
+  },
+  {
+    label: "BRI",
+    image:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/BANK_BRI_logo.svg/126px-BANK_BRI_logo.svg.png",
+  },
+  {
+    label: "BNI",
+    image:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Logo_Wondr_by_BNI.svg/600px-Logo_Wondr_by_BNI.svg.png",
+  },
+  {
+    label: "Visa",
+    image:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/960px-Visa_Inc._logo.svg.png",
+  },
+  {
+    label: "Mastercard",
+    image:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/960px-Mastercard-logo.svg.png",
+  },
+  {
+    label: "Gopay",
+    image:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/Gopay_logo.svg/63px-Gopay_logo.svg.png?20251006142655",
+  },
+  {
+    label: "Dana",
+    image:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Logo_dana_blue.svg/768px-Logo_dana_blue.svg.png",
+  },
+  {
+    label: "AkayPay",
+    image: "https://i.ibb.co.com/VYr4cq1L/Chat-GPT-Image-8-Okt-2025-02-33-44.png",
+  },
+  {
+    label: "Kredivo",
+    image: "https://i.ibb.co.com/VYr4cq1L/Chat-GPT-Image-8-Okt-2025-02-33-44.png",
+  },
+  {
+    label: "QRIS",
+    image:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/QRIS_logo.svg/384px-QRIS_logo.svg.png",
+  },
 ];
 
 const shippingProviders = [
-  "JNE",
-  "J&T Express",
-  "SiCepat",
-  "Ninja Xpress",
-  "Pos Indonesia",
-  "Anteraja",
-  "Wahana",
-  "GrabExpress",
-  "Gojek",
+  {
+    label: "JNE",
+    image:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/New_Logo_JNE.png/250px-New_Logo_JNE.png",
+  },
+  {
+    label: "J&T Express",
+    image:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/J%26T_Express_logo.svg/648px-J%26T_Express_logo.svg.png",
+  },
+  {
+    label: "SiCepat",
+    image: "https://www.nuwori.com/wp-content/uploads/2017/10/logo-sicepat.png",
+  },
+  {
+    label: "Ninja Xpress",
+    image:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Ninjavan.svg/1200px-Ninjavan.svg.png",
+  },
+  {
+    label: "Pos Indonesia",
+    image:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/POSIND_2023_%28with_wordmark%29.svg/1200px-POSIND_2023_%28with_wordmark%29.svg.png",
+  },
+  {
+    label: "Anteraja",
+    image:
+      "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgptDhruUEVvL-uVI1kQOYuANx7pM50JEqvTJCdOO7Pb5ByZQXxk36jsgVo9N8TrLB8stiEDhFEJupO0jZGIFlsneJOm5fBZJee3SDr_rl_Hd8r-6KT9qaOPi1vJC9bFqzuObQypK6kkpf_/s1254/logo-anteraja.png",
+  },
+  {
+    label: "Wahana",
+    image:
+      "https://iconlogovector.com/uploads/images/2023/11/lg-655c004b3b012-wahana-express.png",
+  },
+  {
+    label: "GrabExpress",
+    image: "https://my.hdistore.com/img/grabexpress.png",
+  },
+  {
+    label: "Gojek",
+    image:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Gojek_logo_2022.svg/1280px-Gojek_logo_2022.svg.png",
+  },
 ];
 
-const securityBadges = ["PCI DSS", "ISO 27001", "Verisign"];
+const securityBadges = [
+  {
+    label: "PCI DSS",
+    image: "https://nationalprocessing.com/wp-content/uploads/2021/07/2032868.png",
+  },
+  {
+    label: "ISO 27001",
+    image: "https://vectorez.biz.id/wp-content/uploads/2023/12/Logo-ISO-27001.png",
+  },
+  {
+    label: "Verisign",
+    image: "https://upload.wikimedia.org/wikipedia/commons/8/8e/VeriSign.svg",
+  },
+];
 
 const socialLinks = [
   { label: "Facebook", href: "https://facebook.com", icon: "📘" },
@@ -63,12 +153,14 @@ const downloadButtons = [
   {
     label: "App Store",
     href: "https://apps.apple.com",
-    image: "https://placehold.co/120x36?text=App+Store",
+    image:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Download_on_the_App_Store_Badge.svg/2560px-Download_on_the_App_Store_Badge.svg.png",
   },
   {
     label: "Google Play",
     href: "https://play.google.com",
-    image: "https://placehold.co/120x36?text=Google+Play",
+    image:
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Google_Play_Store_badge_EN.svg/1200px-Google_Play_Store_badge_EN.svg.png",
   },
 ];
 
@@ -111,21 +203,37 @@ export function SiteFooter() {
           <div className="space-y-6">
             <div>
               <h2 className="text-base font-semibold text-gray-800">Pembayaran</h2>
-              <div className="mt-4 grid grid-cols-3 gap-2 text-xs">
+              <div className="mt-4 grid grid-cols-3 gap-3">
                 {paymentProviders.map((provider) => (
-                  <span key={provider} className="rounded border border-gray-200 bg-gray-50 px-2 py-1 text-center font-medium">
-                    {provider}
-                  </span>
+                  <div
+                    key={provider.label}
+                    className="flex items-center justify-center rounded border border-gray-200 bg-white p-2"
+                  >
+                    <img
+                      src={provider.image}
+                      alt={provider.label}
+                      className="h-8 w-full object-contain"
+                      loading="lazy"
+                    />
+                  </div>
                 ))}
               </div>
             </div>
             <div>
               <h2 className="text-base font-semibold text-gray-800">Pengiriman</h2>
-              <div className="mt-4 grid grid-cols-3 gap-2 text-xs">
+              <div className="mt-4 grid grid-cols-3 gap-3">
                 {shippingProviders.map((provider) => (
-                  <span key={provider} className="rounded border border-gray-200 bg-gray-50 px-2 py-1 text-center font-medium">
-                    {provider}
-                  </span>
+                  <div
+                    key={provider.label}
+                    className="flex items-center justify-center rounded border border-gray-200 bg-white p-2"
+                  >
+                    <img
+                      src={provider.image}
+                      alt={provider.label}
+                      className="h-8 w-full object-contain"
+                      loading="lazy"
+                    />
+                  </div>
                 ))}
               </div>
             </div>
@@ -147,11 +255,19 @@ export function SiteFooter() {
             </div>
             <div>
               <h2 className="text-base font-semibold text-gray-800">Keamanan</h2>
-              <div className="mt-4 flex flex-wrap gap-2 text-xs">
+              <div className="mt-4 flex flex-wrap gap-3">
                 {securityBadges.map((badge) => (
-                  <span key={badge} className="rounded border border-gray-200 bg-gray-50 px-3 py-1 font-medium">
-                    {badge}
-                  </span>
+                  <div
+                    key={badge.label}
+                    className="flex items-center justify-center rounded border border-gray-200 bg-white p-2"
+                  >
+                    <img
+                      src={badge.image}
+                      alt={badge.label}
+                      className="h-8 w-24 object-contain"
+                      loading="lazy"
+                    />
+                  </div>
                 ))}
               </div>
             </div>
