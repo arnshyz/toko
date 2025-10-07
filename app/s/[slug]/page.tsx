@@ -4,11 +4,20 @@ import { formatIDR } from "@/lib/utils";
 import { calculateFlashSalePrice, getActiveFlashSale } from "@/lib/flash-sale";
 import { getPrimaryProductImageSrc } from "@/lib/productImages";
 
-const BADGE_STYLES: Record<string, { label: string; className: string }> = {
+const BADGE_STYLES: Record<
+  string,
+  { label: string; className: string; imageSrc?: string; imageClassName?: string }
+> = {
   BASIC: { label: "Basic", className: "bg-gray-100 text-gray-700" },
   STAR: { label: "Star", className: "bg-amber-100 text-amber-700" },
   STAR_PLUS: { label: "Star+", className: "bg-orange-100 text-orange-700" },
-  MALL: { label: "MALL", className: "bg-red-100 text-red-600" },
+  MALL: {
+    label: "MALL",
+    className: "bg-transparent p-0",
+    imageSrc:
+      "https://deo.shopeemobile.com/shopee/shopee-pcmall-live-sg/productdetailspage/b1a5d6e20b0093b1b8f0.svg",
+    imageClassName: "h-4 w-auto",
+  },
   PREMIUM: { label: "Premium", className: "bg-indigo-100 text-indigo-600" },
 };
 
@@ -78,8 +87,21 @@ export default async function Storefront({ params }: { params: { slug: string } 
                   </span>
                 )}
               </div>
-              <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${badge.className}`}>
-                {badge.label}
+              <span
+                className={`inline-flex items-center rounded-full text-xs font-medium ${
+                  badge.imageSrc ? "" : "px-3 py-1"
+                } ${badge.className}`}
+              >
+                {badge.imageSrc ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={badge.imageSrc}
+                    alt={badge.label}
+                    className={badge.imageClassName ?? "h-4 w-auto"}
+                  />
+                ) : (
+                  badge.label
+                )}
               </span>
             </div>
 
