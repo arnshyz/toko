@@ -20,7 +20,18 @@ export default async function SellerSettings({ searchParams }: SettingsPageProps
 
   const account = await prisma.user.findUnique({
     where: { id: user.id },
-    select: { name: true, slug: true, isBanned: true, sellerOnboardingStatus: true },
+    select: {
+      name: true,
+      slug: true,
+      isBanned: true,
+      sellerOnboardingStatus: true,
+      storeAddressLine: true,
+      storeProvince: true,
+      storeCity: true,
+      storeDistrict: true,
+      storePostalCode: true,
+      storeOriginCityId: true,
+    },
   });
 
   if (!account) {
@@ -59,6 +70,8 @@ export default async function SellerSettings({ searchParams }: SettingsPageProps
 
   const errorMessage = typeof searchParams?.error === "string" ? searchParams?.error : null;
   const successMessage = searchParams?.updated === "1";
+  const addressError = typeof searchParams?.addressError === "string" ? searchParams.addressError : null;
+  const addressSuccess = searchParams?.addressUpdated === "1";
 
   return (
     <div className="space-y-6">
@@ -118,6 +131,128 @@ export default async function SellerSettings({ searchParams }: SettingsPageProps
               Simpan perubahan
             </button>
             <span className="text-xs text-gray-500">Perubahan dapat memerlukan waktu beberapa menit untuk muncul di hasil pencarian.</span>
+          </div>
+        </form>
+      </div>
+
+      <div className="rounded border bg-white p-6 shadow-sm space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold">Alamat Toko</h2>
+          <p className="text-sm text-gray-600">
+            Alamat ini digunakan sebagai kota asal pengiriman default ketika produk belum terhubung ke gudang tertentu.
+          </p>
+        </div>
+
+        {addressError ? (
+          <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">{addressError}</div>
+        ) : null}
+
+        {addressSuccess ? (
+          <div className="rounded border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">
+            Alamat toko berhasil diperbarui.
+          </div>
+        ) : null}
+
+        <form method="POST" action="/api/seller/store/address" className="space-y-4">
+          <input type="hidden" name="redirectTo" value="/seller/settings" />
+          <div className="space-y-1">
+            <label htmlFor="storeAddressLine" className="text-sm font-medium text-gray-700">
+              Alamat lengkap
+            </label>
+            <textarea
+              id="storeAddressLine"
+              name="addressLine"
+              defaultValue={account.storeAddressLine ?? ""}
+              placeholder="Contoh: Jl. Melati No. 10, Blok B"
+              rows={3}
+              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm transition focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/40"
+            />
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-1">
+              <label htmlFor="storeProvince" className="text-sm font-medium text-gray-700">
+                Provinsi<span className="text-red-500">*</span>
+              </label>
+              <input
+                id="storeProvince"
+                name="province"
+                type="text"
+                required
+                defaultValue={account.storeProvince ?? ""}
+                placeholder="Contoh: Jawa Barat"
+                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm transition focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/40"
+              />
+            </div>
+            <div className="space-y-1">
+              <label htmlFor="storeCity" className="text-sm font-medium text-gray-700">
+                Kota / Kabupaten<span className="text-red-500">*</span>
+              </label>
+              <input
+                id="storeCity"
+                name="city"
+                type="text"
+                required
+                defaultValue={account.storeCity ?? ""}
+                placeholder="Contoh: Bandung"
+                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm transition focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/40"
+              />
+            </div>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-1">
+              <label htmlFor="storeDistrict" className="text-sm font-medium text-gray-700">
+                Kecamatan
+              </label>
+              <input
+                id="storeDistrict"
+                name="district"
+                type="text"
+                defaultValue={account.storeDistrict ?? ""}
+                placeholder="Contoh: Sukajadi"
+                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm transition focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/40"
+              />
+            </div>
+            <div className="space-y-1">
+              <label htmlFor="storePostalCode" className="text-sm font-medium text-gray-700">
+                Kode pos
+              </label>
+              <input
+                id="storePostalCode"
+                name="postalCode"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                defaultValue={account.storePostalCode ?? ""}
+                placeholder="Contoh: 40162"
+                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm transition focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/40"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <label htmlFor="storeOriginCityId" className="text-sm font-medium text-gray-700">
+              Kode Kota RajaOngkir
+            </label>
+            <input
+              id="storeOriginCityId"
+              name="originCityId"
+              type="text"
+              defaultValue={account.storeOriginCityId ?? ""}
+              placeholder="Opsional, isi jika Anda tahu kode kota RajaOngkir"
+              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm transition focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/40"
+            />
+            <p className="text-xs text-gray-500">
+              Mengisi kode kota RajaOngkir membantu mempercepat pencocokan kota asal secara otomatis.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button className="btn-primary" type="submit">
+              Simpan alamat
+            </button>
+            <span className="text-xs text-gray-500">Pastikan kota sesuai dengan data RajaOngkir agar ongkir otomatis berhasil.</span>
           </div>
         </form>
       </div>

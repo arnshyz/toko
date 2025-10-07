@@ -36,6 +36,13 @@ export async function POST(req: NextRequest) {
           city: true,
         },
       },
+      seller: {
+        select: {
+          id: true,
+          storeCity: true,
+          storeOriginCityId: true,
+        },
+      },
     },
   });
   if (products.length !== items.length) return NextResponse.json({ error: 'Produk tidak valid' }, { status: 400 });
@@ -152,7 +159,7 @@ export async function POST(req: NextRequest) {
     itemsTotal += unitPrice * it.qty;
     createdItems.push({ productId: p.id, sellerId: p.sellerId, qty: it.qty, price: unitPrice });
 
-    const shipmentKey = p.warehouseId ?? 'default';
+    const shipmentKey = p.warehouseId ?? `seller:${p.sellerId}`;
     const existing =
       shipmentsMap.get(shipmentKey) ?? {
         originCityName: null as string | null,
@@ -162,15 +169,23 @@ export async function POST(req: NextRequest) {
 
     if (!existing.originCityName) {
       const warehouseCity = p.warehouse?.city?.trim();
+      const sellerCity = p.seller?.storeCity?.trim();
       if (warehouseCity) {
         existing.originCityName = warehouseCity;
+      } else if (sellerCity) {
+        existing.originCityName = sellerCity;
       } else if (defaultOriginCityName) {
         existing.originCityName = defaultOriginCityName;
       }
     }
 
-    if (!existing.originCityId && !p.warehouse?.city && defaultOriginCityId) {
-      existing.originCityId = defaultOriginCityId;
+    if (!existing.originCityId) {
+      const sellerOriginCityId = p.seller?.storeOriginCityId?.trim();
+      if (!p.warehouse?.city && sellerOriginCityId) {
+        existing.originCityId = sellerOriginCityId;
+      } else if (!p.warehouse?.city && defaultOriginCityId) {
+        existing.originCityId = defaultOriginCityId;
+      }
     }
 
     const quantity = Math.max(1, Number.isFinite(it.qty) ? it.qty : 1);
