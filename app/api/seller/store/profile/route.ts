@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
 
   const account = await prisma.user.findUnique({
     where: { id: user.id },
-    select: { isBanned: true },
+    select: { isBanned: true, sellerOnboardingStatus: true },
   });
 
   if (!account) {
@@ -55,6 +55,11 @@ export async function POST(req: NextRequest) {
 
   if (account.isBanned) {
     return NextResponse.redirect(new URL("/seller/login?error=banned", req.url));
+  }
+
+  if (account.sellerOnboardingStatus !== "ACTIVE") {
+    redirectUrl.searchParams.set("error", "Aktifkan toko Anda melalui onboarding sebelum mengubah profil.");
+    return NextResponse.redirect(redirectUrl);
   }
 
   const baseSlugRaw = slugify(name);

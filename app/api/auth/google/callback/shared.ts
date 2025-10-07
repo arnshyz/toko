@@ -118,23 +118,32 @@ export async function handleGoogleCallback(req: NextRequest): Promise<NextRespon
     );
   }
 
-  let user = await prisma.user.findUnique({ where: { email } });
+  let user = await prisma.user.findUnique({
+    where: { email },
+  });
 
   if (!user) {
     const passwordFallback = randomUUID();
     const passwordHash = await bcrypt.hash(passwordFallback, 10);
-    const storeNameBase = fullName || email.split("@")[0] || "Seller";
-    const storeName = `Toko ${storeNameBase}`.trim();
-    const slug = await buildUniqueSlug(storeName);
+    const nameBase = fullName || email.split("@")[0] || "Pengguna";
+    const slug = await buildUniqueSlug(nameBase);
 
     user = await prisma.user.create({
       data: {
-        name: storeName || "Seller Akay",
+        name: nameBase,
         email,
         passwordHash,
         slug,
         isAdmin: false,
+        sellerOnboardingStatus: "NOT_STARTED",
       },
+    });
+  }
+
+  if (!user.sellerOnboardingStatus) {
+    user = await prisma.user.update({
+      where: { id: user.id },
+      data: { sellerOnboardingStatus: "NOT_STARTED" },
     });
   }
 
@@ -144,7 +153,12 @@ export async function handleGoogleCallback(req: NextRequest): Promise<NextRespon
     );
   }
 
-  const redirectTo = new URL("/seller/dashboard", url.origin);
+  const redirectTo = new URL(
+    user.sellerOnboardingStatus === "ACTIVE"
+      ? "/seller/dashboard"
+      : `/seller/onboarding?status=${user.sellerOnboardingStatus}`,
+    url.origin,
+  );
   const response = clearStateCookie(NextResponse.redirect(redirectTo));
 
   const session = await getIronSession<{ user?: SessionUser }>(

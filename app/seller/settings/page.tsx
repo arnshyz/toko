@@ -20,7 +20,7 @@ export default async function SellerSettings({ searchParams }: SettingsPageProps
 
   const account = await prisma.user.findUnique({
     where: { id: user.id },
-    select: { name: true, slug: true, isBanned: true },
+    select: { name: true, slug: true, isBanned: true, sellerOnboardingStatus: true },
   });
 
   if (!account) {
@@ -37,6 +37,21 @@ export default async function SellerSettings({ searchParams }: SettingsPageProps
             support@akay.id
           </a>{" "}
           untuk proses banding atau informasi lebih lanjut.
+        </div>
+      </div>
+    );
+  }
+
+  if (account.sellerOnboardingStatus !== "ACTIVE") {
+    return (
+      <div>
+        <h1 className="text-2xl font-semibold mb-4">Pengaturan Toko</h1>
+        <div className="rounded border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
+          Pengaturan toko baru tersedia setelah proses onboarding selesai. Silakan ikuti panduan pada halaman
+          <a className="ml-1 font-semibold underline" href="/seller/onboarding">
+            onboarding seller
+          </a>
+          .
         </div>
       </div>
     );

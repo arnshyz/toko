@@ -10,7 +10,7 @@ export default async function Dashboard() {
 
   const account = await prisma.user.findUnique({
     where: { id: user.id },
-    select: { isBanned: true, storeIsOnline: true, name: true, slug: true },
+    select: { isBanned: true, storeIsOnline: true, name: true, slug: true, sellerOnboardingStatus: true },
   });
 
   if (!account || account.isBanned) {
@@ -25,6 +25,21 @@ export default async function Dashboard() {
           </a>
           {" "}
           untuk proses banding atau informasi lebih lanjut.
+        </div>
+      </div>
+    );
+  }
+
+  if (account.sellerOnboardingStatus !== "ACTIVE") {
+    return (
+      <div>
+        <h1 className="text-2xl font-semibold mb-4">Dashboard Seller</h1>
+        <div className="rounded border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
+          Akun Anda belum diaktifkan sebagai seller. Ikuti tahapan onboarding dan ajukan aktivasi melalui halaman
+          <a className="ml-1 font-semibold text-amber-800 underline" href="/seller/onboarding">
+            onboarding seller
+          </a>
+          .
         </div>
       </div>
     );

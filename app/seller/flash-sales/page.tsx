@@ -24,7 +24,7 @@ export default async function SellerFlashSalesPage({
 
   const account = await prisma.user.findUnique({
     where: { id: user.id },
-    select: { isBanned: true },
+    select: { isBanned: true, sellerOnboardingStatus: true },
   });
 
   if (!account || account.isBanned) {
@@ -37,6 +37,21 @@ export default async function SellerFlashSalesPage({
             support@akay.id
           </a>{' '}
           untuk bantuan lebih lanjut.
+        </div>
+      </div>
+    );
+  }
+
+  if (account.sellerOnboardingStatus !== "ACTIVE") {
+    return (
+      <div>
+        <h1 className="mb-4 text-2xl font-semibold">Flash Sale</h1>
+        <div className="rounded border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
+          Fitur flash sale dapat digunakan setelah toko Anda aktif. Selesaikan langkah onboarding pada{' '}
+          <a className="font-semibold underline" href="/seller/onboarding">
+            halaman onboarding seller
+          </a>
+          .
         </div>
       </div>
     );

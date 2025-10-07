@@ -9,7 +9,19 @@ export async function POST(req: NextRequest) {
   const email = String(form.get('email') || '').toLowerCase();
   const password = String(form.get('password') || '');
 
-  const user = await prisma.user.findUnique({ where: { email } });
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      slug: true,
+      isAdmin: true,
+      isBanned: true,
+      passwordHash: true,
+      sellerOnboardingStatus: true,
+    },
+  });
   if (!user) return NextResponse.json({ error: 'Invalid' }, { status: 400 });
   const ok = await bcrypt.compare(password, user.passwordHash);
   if (!ok) return NextResponse.json({ error: 'Invalid' }, { status: 400 });
@@ -18,7 +30,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.redirect(new URL('/seller/login?error=banned', req.url));
   }
 
-  const redirectTo = new URL('/seller/dashboard', req.url);
+  const redirectTo =
+    user.sellerOnboardingStatus === 'ACTIVE'
+      ? new URL('/seller/dashboard', req.url)
+      : new URL(`/seller/onboarding?status=${user.sellerOnboardingStatus}`, req.url);
   const res = new NextResponse();
   const session = await getIronSession<{ user?: SessionUser }>(req, res, sessionOptions);
   session.user = { id: user.id, name: user.name, email: user.email, slug: user.slug, isAdmin: user.isAdmin };

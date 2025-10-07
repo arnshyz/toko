@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
 
   const account = await prisma.user.findUnique({
     where: { id: user.id },
-    select: { isBanned: true, storeIsOnline: true },
+    select: { isBanned: true, storeIsOnline: true, sellerOnboardingStatus: true },
   });
 
   if (!account) {
@@ -31,6 +31,10 @@ export async function POST(req: NextRequest) {
 
   if (account.isBanned) {
     return NextResponse.redirect(new URL("/seller/login?error=banned", req.url));
+  }
+
+  if (account.sellerOnboardingStatus !== "ACTIVE") {
+    return NextResponse.redirect(new URL("/seller/onboarding", req.url));
   }
 
   const shouldOnline = status === "online";

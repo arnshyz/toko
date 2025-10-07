@@ -9,7 +9,7 @@ export default async function Warehouses() {
 
   const account = await prisma.user.findUnique({
     where: { id: user.id },
-    select: { isBanned: true },
+    select: { isBanned: true, sellerOnboardingStatus: true },
   });
 
   if (!account || account.isBanned) {
@@ -24,6 +24,21 @@ export default async function Warehouses() {
           </a>
           {" "}
           untuk mengaktifkan kembali akses Anda.
+        </div>
+      </div>
+    );
+  }
+
+  if (account.sellerOnboardingStatus !== "ACTIVE") {
+    return (
+      <div>
+        <h1 className="text-2xl font-semibold mb-4">Gudang</h1>
+        <div className="rounded border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
+          Fitur gudang tersedia setelah toko Anda aktif. Ikuti tahapan pada
+          <a className="ml-1 font-semibold underline" href="/seller/onboarding">
+            halaman onboarding seller
+          </a>
+          .
         </div>
       </div>
     );

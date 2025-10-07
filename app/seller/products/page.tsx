@@ -12,7 +12,7 @@ export default async function SellerProducts() {
 
   const account = await prisma.user.findUnique({
     where: { id: user.id },
-    select: { isBanned: true },
+    select: { isBanned: true, sellerOnboardingStatus: true },
   });
 
   if (!account || account.isBanned) {
@@ -27,6 +27,21 @@ export default async function SellerProducts() {
           </a>
           {" "}
           untuk bantuan lebih lanjut.
+        </div>
+      </div>
+    );
+  }
+
+  if (account.sellerOnboardingStatus !== "ACTIVE") {
+    return (
+      <div>
+        <h1 className="text-2xl font-semibold mb-4">Produk Saya</h1>
+        <div className="rounded border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
+          Fitur manajemen produk tersedia setelah toko Anda diaktifkan. Selesaikan langkah onboarding pada halaman
+          <a className="ml-1 font-semibold underline" href="/seller/onboarding">
+            onboarding seller
+          </a>
+          .
         </div>
       </div>
     );

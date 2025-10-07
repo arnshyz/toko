@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
 
 export default async function SellerLogin({
@@ -10,11 +11,20 @@ export default async function SellerLogin({
   const session = await getSession();
 
   if (session.user) {
+    const account = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { sellerOnboardingStatus: true },
+    });
+    if (!account || account.sellerOnboardingStatus !== "ACTIVE") {
+      redirect("/seller/onboarding");
+    }
     redirect("/seller/dashboard");
   }
 
   const errorParam =
     typeof searchParams?.error === "string" ? searchParams.error : undefined;
+  const statusParam =
+    typeof searchParams?.status === "string" ? searchParams.status : undefined;
   let errorMessage: string | undefined;
   if (errorParam === "banned") {
     errorMessage =
@@ -22,6 +32,10 @@ export default async function SellerLogin({
   } else if (errorParam) {
     errorMessage = "Gagal masuk. Silakan coba lagi atau reset password Anda.";
   }
+  const infoMessage =
+    statusParam && !errorMessage
+      ? "Akun Anda belum diaktifkan sebagai seller. Ikuti panduan onboarding untuk membuka toko."
+      : undefined;
 
   return (
     <div className="mx-auto w-full max-w-5xl">
@@ -70,12 +84,19 @@ export default async function SellerLogin({
                 Butuh bantuan?
               </a>
             </div>
-            <h1 className="text-2xl font-semibold text-gray-900">Log in ke akun seller</h1>
-            <p className="mt-2 text-sm text-gray-500">Masuk untuk mengelola toko dan menerima pesanan terbaru Anda.</p>
+            <h1 className="text-2xl font-semibold text-gray-900">Masuk ke akun Akay Nusantara</h1>
+            <p className="mt-2 text-sm text-gray-500">
+              Login untuk melanjutkan belanja Anda. Aktivasi toko tersedia setelah proses onboarding seller selesai.
+            </p>
 
             {errorMessage ? (
               <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
                 {errorMessage}
+              </div>
+            ) : null}
+            {!errorMessage && infoMessage ? (
+              <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
+                {infoMessage}
               </div>
             ) : null}
             <form method="POST" action="/api/auth/login" className="mt-6 space-y-4">
@@ -85,7 +106,7 @@ export default async function SellerLogin({
                 </label>
                 <input
                   id="email"
-                  type="email"
+                  type="text"
                   name="email"
                   required
                   placeholder="contoh@email.com"

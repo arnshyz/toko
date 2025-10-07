@@ -47,11 +47,15 @@ export async function POST(req: NextRequest) {
 
   const account = await prisma.user.findUnique({
     where: { id: user.id },
-    select: { isBanned: true },
+    select: { isBanned: true, sellerOnboardingStatus: true },
   });
 
   if (!account || account.isBanned) {
     return NextResponse.redirect(new URL("/seller/login?error=banned", req.url));
+  }
+
+  if (account.sellerOnboardingStatus !== "ACTIVE") {
+    return NextResponse.redirect(new URL("/seller/onboarding", req.url));
   }
 
   const product = await prisma.product.findUnique({
