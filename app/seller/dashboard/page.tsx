@@ -10,7 +10,16 @@ export default async function Dashboard() {
 
   const account = await prisma.user.findUnique({
     where: { id: user.id },
-    select: { isBanned: true, storeIsOnline: true, name: true, slug: true, sellerOnboardingStatus: true },
+    select: {
+      isBanned: true,
+      storeIsOnline: true,
+      name: true,
+      slug: true,
+      sellerOnboardingStatus: true,
+      storeCity: true,
+      storeProvince: true,
+      storeAddressLine: true,
+    },
   });
 
   if (!account || account.isBanned) {
@@ -48,6 +57,10 @@ export default async function Dashboard() {
   const storeIsOnline = account.storeIsOnline ?? false;
   const storeName = account.name;
   const storeSlug = account.slug;
+  const storeCity = account.storeCity?.trim() ?? "";
+  const storeProvince = account.storeProvince?.trim() ?? "";
+  const storeAddressLine = account.storeAddressLine?.trim() ?? "";
+  const hasStoreOrigin = Boolean(storeCity);
 
   const [pcount, orders, revenue] = await Promise.all([
     prisma.product.count({ where: { sellerId: user.id } }),
@@ -58,13 +71,30 @@ export default async function Dashboard() {
   return (
     <div>
       <h1 className="text-2xl font-semibold mb-4">Dashboard Seller</h1>
-      <div className="bg-white border rounded p-4 mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="space-y-1">
-          <h2 className="font-semibold text-lg">Profil Toko</h2>
-          <div className="text-sm text-gray-600">
-            <div className="font-medium text-gray-900">{storeName}</div>
-            <div className="text-xs text-gray-500">Alamat etalase: https://akay.id/s/{storeSlug}</div>
+      <div className="bg-white border rounded p-4 mb-6 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div className="space-y-3">
+          <div>
+            <h2 className="font-semibold text-lg">Profil Toko</h2>
+            <div className="text-sm text-gray-600">
+              <div className="font-medium text-gray-900">{storeName}</div>
+              <div className="text-xs text-gray-500">Alamat etalase: https://akay.id/s/{storeSlug}</div>
+            </div>
           </div>
+          {hasStoreOrigin ? (
+            <div className="text-sm text-gray-600">
+              <div className="font-medium text-gray-900">Alamat pengiriman toko</div>
+              <p>
+                {[storeAddressLine, storeCity, storeProvince]
+                  .filter((part) => part && part.length > 0)
+                  .join(", ")}
+              </p>
+            </div>
+          ) : (
+            <div className="rounded border border-amber-200 bg-amber-50 p-3 text-xs text-amber-700">
+              Lengkapi alamat toko Anda agar ongkir otomatis dapat menggunakan kota asal toko saat produk belum diatur ke
+              gudang tertentu.
+            </div>
+          )}
           <a className="text-sm font-semibold text-[#f53d2d] hover:text-[#d63b22]" href="/seller/settings">
             Atur nama &amp; alamat toko →
           </a>
