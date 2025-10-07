@@ -23,7 +23,7 @@ export default function ForgotPasswordForm() {
       const body = await response.json().catch(() => ({}));
 
       if (response.ok) {
-        setMessage(String(body.message ?? 'Kami telah mengirim OTP reset password apabila email terdaftar.'));
+        setMessage(String(body.message ?? 'Kami telah mengirim tautan reset password apabila email terdaftar.'));
         form.reset();
       } else {
         setError(String(body.message ?? body.error ?? 'Terjadi kesalahan. Coba lagi.'));
@@ -48,12 +48,12 @@ export default function ForgotPasswordForm() {
         className="w-full rounded bg-indigo-600 py-2 text-white hover:bg-indigo-700 disabled:opacity-50"
         disabled={isPending}
       >
-        {isPending ? 'Mengirim OTP...' : 'Kirim OTP Reset Password'}
+        {isPending ? 'Mengirim tautan...' : 'Kirim Link Reset Password'}
       </button>
       {message && <p className="rounded bg-green-50 px-3 py-2 text-sm text-green-700">{message}</p>}
       {error && <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
       <p className="text-sm text-gray-600">
-        Kami akan mengirim kode OTP ke email Anda jika terdaftar. Gunakan kode tersebut untuk membuat password baru.
+        Kami akan mengirim tautan reset password ke email Anda jika terdaftar. Gunakan tautan tersebut untuk membuat password baru.
       </p>
     </form>
   );

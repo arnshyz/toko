@@ -162,6 +162,21 @@ export default async function Dashboard() {
               </div>
             )}
           </div>
+          {hasStoreOrigin ? (
+            <div className="text-sm text-gray-600">
+              <div className="font-medium text-gray-900">Alamat pengiriman toko</div>
+              <p>
+                {[storeAddressLine, storeCity, storeProvince]
+                  .filter((part) => part && part.length > 0)
+                  .join(", ")}
+              </p>
+            </div>
+          ) : (
+            <div className="rounded border border-amber-200 bg-amber-50 p-3 text-xs text-amber-700">
+              Lengkapi alamat toko Anda agar ongkir otomatis dapat menggunakan kota asal toko saat produk belum diatur ke
+              gudang tertentu.
+            </div>
+          )}
           <a className="text-sm font-semibold text-[#f53d2d] hover:text-[#d63b22]" href="/seller/settings">
             Atur nama &amp; alamat toko →
           </a>

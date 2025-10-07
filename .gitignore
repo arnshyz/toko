@@ -4,5 +4,4 @@ node_modules/
 .env.*
 
 # Prisma
-prisma/migrations/
 tsconfig.tsbuildinfo
