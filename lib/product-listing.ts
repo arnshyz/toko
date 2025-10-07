@@ -1,3 +1,5 @@
+import { Prisma } from "@prisma/client";
+
 import { prisma } from "@/lib/prisma";
 import { calculateFlashSalePrice, getActiveFlashSale } from "@/lib/flash-sale";
 import { getPrimaryProductImageSrc } from "@/lib/productImages";
@@ -34,7 +36,7 @@ export async function fetchProductListing(filters: ProductListingFilters) {
     ? getCategoryWithChildrenSlugs(filters.categorySlug)
     : undefined;
 
-  const where: Parameters<typeof prisma.product.findMany>[0]["where"] = {
+  const where: Prisma.ProductWhereInput = {
     isActive: true,
   };
 
@@ -54,7 +56,7 @@ export async function fetchProductListing(filters: ProductListingFilters) {
     }
   }
 
-  const orderBy: Parameters<typeof prisma.product.findMany>[0]["orderBy"] = (() => {
+  const orderBy: Prisma.ProductOrderByWithRelationInput[] = (() => {
     switch (filters.sort) {
       case "price-asc":
         return [{ price: "asc" }];

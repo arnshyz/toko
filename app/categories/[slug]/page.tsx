@@ -33,11 +33,21 @@ export default async function CategoryDetailPage({
     ? productCategories.find((item) => item.slug === category.parentSlug)
     : category?.parent;
 
-  const relatedSubCategories = category?.parentSlug
-    ? productCategoryOptions.filter((option) => option.parentSlug === category.parentSlug)
-    : category?.parent
-      ? productCategoryOptions.filter((option) => option.parentSlug === category.parent.slug)
-      : productCategoryOptions.filter((option) => option.parentSlug === category?.slug);
+  let relatedSubCategories = [] as typeof productCategoryOptions;
+  if (category?.parentSlug) {
+    relatedSubCategories = productCategoryOptions.filter(
+      (option) => option.parentSlug === category.parentSlug,
+    );
+  } else if (category?.parent?.slug) {
+    const parentSlug = category.parent.slug;
+    relatedSubCategories = productCategoryOptions.filter(
+      (option) => option.parentSlug === parentSlug,
+    );
+  } else if (category?.slug) {
+    relatedSubCategories = productCategoryOptions.filter(
+      (option) => option.parentSlug === category.slug,
+    );
+  }
 
   const buildSortLink = (value: CategorySort) => {
     const next = new URLSearchParams();
@@ -103,7 +113,7 @@ export default async function CategoryDetailPage({
           <div className="flex items-center gap-2 text-sm">
             <span className="text-gray-600">Urutkan:</span>
             <div className="flex flex-wrap gap-2">
-              {["best", "sold", "rating", "price-asc", "price-desc"].map((value) => {
+              {(["best", "sold", "rating", "price-asc", "price-desc"] as CategorySort[]).map((value) => {
                 const labels: Record<CategorySort, string> = {
                   best: "Direkomendasikan",
                   sold: "Terlaris",
