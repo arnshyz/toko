@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
 
   const uniqueCode = paymentMethod === 'TRANSFER' ? Math.floor(111 + Math.random() * 888) : 0;
   const totalWithUnique = Math.max(0, itemsTotal - voucherDiscount) + shippingCost + uniqueCode;
-  const orderCode = 'ORD-' + Math.random().toString(36).slice(2,10).toUpperCase();
+  const orderCode = 'AKAY-' + Math.random().toString(36).slice(2,10).toUpperCase();
 
   const order = await prisma.order.create({
     data: {

@@ -278,7 +278,7 @@ export default function BuyerOrdersPage() {
               name="code"
               value={lookupCode}
               onChange={(event) => setLookupCode(event.target.value)}
-              placeholder="Contoh: ORD-1A2B3C4D"
+              placeholder="Contoh: AKAY-1A2B3C4D"
               className="w-full rounded-md border border-orange-200 bg-white px-3 py-2 text-sm focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-200"
             />
           </div>
