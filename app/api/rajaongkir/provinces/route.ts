@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { fetchRajaOngkir, RajaOngkirError } from "@/lib/rajaongkir";
+import { STATIC_PROVINCES } from "@/lib/staticProvinces";
 
 type ProvinceResult = {
   province_id: string;
@@ -23,6 +24,11 @@ export async function GET() {
     return NextResponse.json(provinces);
   } catch (error) {
     if (error instanceof RajaOngkirError) {
+      if (error.statusCode >= 500 || error.statusCode === 401 || error.statusCode === 403) {
+        console.warn("Falling back to static province list:", error.message);
+        return NextResponse.json(STATIC_PROVINCES);
+      }
+
       return NextResponse.json(
         { error: error.message },
         { status: error.statusCode >= 400 ? error.statusCode : 502 },
