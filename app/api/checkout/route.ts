@@ -87,12 +87,8 @@ export async function POST(req: NextRequest) {
   const order = await prisma.order.create({
     data: {
       orderCode,
-<<<<<<< codex/create-prisma-migration-for-midtrans-columns
       buyerName, buyerPhone, buyerAddress,
       buyerId,
-=======
-      buyerName, buyerPhone, buyerAddress, buyerEmail,
->>>>>>> main
       courier: courier.label,
       shippingCost,
       uniqueCode,
