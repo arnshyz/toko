@@ -32,6 +32,7 @@ Marketplace ala Shopee dengan **transfer manual + kode unik**, **COD**, **vouche
 - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` (untuk mengirim OTP reset password). Saat variabel ini tidak diisi, email akan dicetak ke log saja.
 - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI` (opsional — default ke `/api/auth/google/callback` sesuai origin) untuk login Google.
 - `REDIS_URL` untuk presence, typing indicator, dan antrian notifikasi chat.
+- `RAJAONGKIR_API_KEY` (wajib) dan `RAJAONGKIR_API_BASE_URL` (opsional, default `https://api.rajaongkir.com/starter/`) untuk sinkronisasi daftar provinsi/kota/kecamatan.
 - `PLATFORM_NAME`, `BANK_*`, `ACCOUNT_NAME`, `BASE_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`
 
 ## Deploy Vercel
