@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { AddressRegionFields } from "@/components/AddressRegionFields";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
 import type { Gender } from "@prisma/client";
@@ -60,6 +61,12 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
   const profileUpdated = searchParams?.profileUpdated === "1";
   const addressError = typeof searchParams?.addressError === "string" ? searchParams.addressError : null;
   const addressAdded = searchParams?.addressAdded === "1";
+  const addressUpdated = searchParams?.addressUpdated === "1";
+  const editAddressId = typeof searchParams?.editAddress === "string" ? searchParams.editAddress : null;
+  const editingAddress = editAddressId
+    ? account.addresses.find((address) => address.id === editAddressId)
+    : null;
+  const isEditingInvalid = Boolean(editAddressId && !editingAddress);
 
   return (
     <div className="mx-auto max-w-5xl space-y-8 px-4 py-8">
@@ -232,6 +239,18 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
           </div>
         ) : null}
 
+        {addressUpdated ? (
+          <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+            Alamat berhasil diperbarui.
+          </div>
+        ) : null}
+
+        {isEditingInvalid ? (
+          <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+            Alamat yang ingin diedit tidak ditemukan.
+          </div>
+        ) : null}
+
         <div className="mb-6 grid gap-4 md:grid-cols-2">
           {account.addresses.length === 0 ? (
             <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-6 text-sm text-gray-600">
@@ -239,17 +258,32 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
             </div>
           ) : (
             account.addresses.map((address) => (
-              <div key={address.id} className="rounded-xl border border-gray-200 p-5 shadow-sm">
-                <div className="flex items-center justify-between">
+              <div
+                key={address.id}
+                className={`rounded-xl border p-5 shadow-sm transition ${
+                  address.id === editingAddress?.id
+                    ? "border-[#f53d2d] ring-2 ring-[#f53d2d]/20"
+                    : "border-gray-200"
+                }`}
+              >
+                <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-sm font-semibold text-gray-900">{address.fullName}</p>
                     <p className="text-xs text-gray-500">{address.phoneNumber}</p>
                   </div>
-                  <span className="text-xs text-gray-400">
-                    {new Intl.DateTimeFormat("id-ID", {
-                      dateStyle: "medium",
-                    }).format(new Date(address.createdAt))}
-                  </span>
+                  <div className="flex flex-col items-end gap-2 text-right">
+                    <span className="text-xs text-gray-400">
+                      {new Intl.DateTimeFormat("id-ID", {
+                        dateStyle: "medium",
+                      }).format(new Date(address.createdAt))}
+                    </span>
+                    <a
+                      href={`/account?editAddress=${encodeURIComponent(address.id)}`}
+                      className="inline-flex items-center gap-1 rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-gray-600 transition hover:border-[#f53d2d] hover:text-[#f53d2d]"
+                    >
+                      Edit
+                    </a>
+                  </div>
                 </div>
                 <div className="mt-3 space-y-1 text-sm text-gray-600">
                   <p>
@@ -265,8 +299,116 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
           )}
         </div>
 
+        {editingAddress ? (
+          <form
+            method="POST"
+            action={`/api/account/addresses/${editingAddress.id}`}
+            className="mb-10 grid gap-4 rounded-2xl border border-gray-200 p-6 md:grid-cols-2"
+          >
+            <input
+              type="hidden"
+              name="redirectTo"
+              value={`/account?editAddress=${encodeURIComponent(editingAddress.id)}`}
+            />
+            <h3 className="md:col-span-2 text-lg font-semibold text-gray-900">Edit alamat</h3>
+
+            <div className="space-y-1">
+              <label htmlFor="editFullName" className="text-sm font-medium text-gray-700">
+                Nama Lengkap
+              </label>
+              <input
+                id="editFullName"
+                name="fullName"
+                type="text"
+                required
+                defaultValue={editingAddress.fullName}
+                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/30"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label htmlFor="editPhoneNumber" className="text-sm font-medium text-gray-700">
+                Nomor Telepon
+              </label>
+              <input
+                id="editPhoneNumber"
+                name="phoneNumber"
+                type="tel"
+                inputMode="tel"
+                required
+                defaultValue={editingAddress.phoneNumber}
+                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/30"
+              />
+            </div>
+
+            <AddressRegionFields
+              idPrefix="edit-address"
+              defaultProvince={editingAddress.province}
+              defaultCity={editingAddress.city}
+              defaultDistrict={editingAddress.district}
+            />
+
+            <div className="space-y-1">
+              <label htmlFor="editPostalCode" className="text-sm font-medium text-gray-700">
+                Kode Pos
+              </label>
+              <input
+                id="editPostalCode"
+                name="postalCode"
+                type="text"
+                required
+                pattern="\d{4,10}"
+                defaultValue={editingAddress.postalCode}
+                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/30"
+              />
+            </div>
+
+            <div className="space-y-1 md:col-span-2">
+              <label htmlFor="editAddressLine" className="text-sm font-medium text-gray-700">
+                Alamat Lengkap
+              </label>
+              <textarea
+                id="editAddressLine"
+                name="addressLine"
+                required
+                rows={3}
+                defaultValue={editingAddress.addressLine}
+                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/30"
+              />
+            </div>
+
+            <div className="space-y-1 md:col-span-2">
+              <label htmlFor="editAdditionalInfo" className="text-sm font-medium text-gray-700">
+                Detail Lainnya (opsional)
+              </label>
+              <textarea
+                id="editAdditionalInfo"
+                name="additionalInfo"
+                rows={2}
+                defaultValue={editingAddress.additionalInfo ?? ""}
+                placeholder="Contoh: Patokan rumah warna hijau, blok B nomor 3"
+                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/30"
+              />
+            </div>
+
+            <div className="md:col-span-2 flex items-center justify-end gap-3 pt-2">
+              <a
+                href="/account"
+                className="rounded-full border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 transition hover:border-gray-300 hover:text-gray-800"
+              >
+                Batal
+              </a>
+              <button type="submit" className="btn-primary">
+                Simpan Perubahan
+              </button>
+            </div>
+          </form>
+        ) : null}
+
         <form method="POST" action="/api/account/addresses" className="grid gap-4 md:grid-cols-2">
           <input type="hidden" name="redirectTo" value="/account" />
+
+          <h3 className="md:col-span-2 text-lg font-semibold text-gray-900">Tambah alamat baru</h3>
 
           <div className="space-y-1">
             <label htmlFor="fullName" className="text-sm font-medium text-gray-700">
@@ -295,44 +437,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
             />
           </div>
 
-          <div className="space-y-1">
-            <label htmlFor="province" className="text-sm font-medium text-gray-700">
-              Provinsi
-            </label>
-            <input
-              id="province"
-              name="province"
-              type="text"
-              required
-              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/30"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label htmlFor="city" className="text-sm font-medium text-gray-700">
-              Kota / Kabupaten
-            </label>
-            <input
-              id="city"
-              name="city"
-              type="text"
-              required
-              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/30"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label htmlFor="district" className="text-sm font-medium text-gray-700">
-              Kecamatan
-            </label>
-            <input
-              id="district"
-              name="district"
-              type="text"
-              required
-              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/30"
-            />
-          </div>
+          <AddressRegionFields idPrefix="new-address" />
 
           <div className="space-y-1">
             <label htmlFor="postalCode" className="text-sm font-medium text-gray-700">
