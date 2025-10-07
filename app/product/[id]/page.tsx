@@ -10,6 +10,12 @@ import {
 } from "@/lib/productImages";
 import { getSession } from "@/lib/session";
 import { ReviewHelpfulButton } from "@/components/ReviewHelpfulButton";
+import {
+  calculateFlashSalePrice,
+  formatFlashSaleWindow,
+  getActiveFlashSale,
+  getNextFlashSale,
+} from "@/lib/flash-sale";
 
 const BADGE_STYLES: Record<string, { label: string; className: string }> = {
   BASIC: { label: "Basic", className: "bg-gray-100 text-gray-700" },
@@ -114,6 +120,7 @@ const THUMB_PLACEHOLDER = "https://placehold.co/300x200?text=Preview";
 
 export default async function ProductPage({ params }: { params: { id: string } }) {
   const sessionPromise = getSession();
+  const now = new Date();
 
   const product = await prisma.product.findUnique({
     where: { id: params.id },
@@ -122,6 +129,10 @@ export default async function ProductPage({ params }: { params: { id: string } }
       warehouse: true,
       _count: { select: { orderItems: true } },
       images: { orderBy: { sortOrder: "asc" }, select: { id: true } },
+      flashSales: {
+        where: { endAt: { gte: now } },
+        orderBy: { startAt: "asc" },
+      },
     },
   });
 
@@ -228,11 +239,24 @@ export default async function ProductPage({ params }: { params: { id: string } }
 
   const category = getCategoryInfo(product.category);
   const originalPrice = typeof product.originalPrice === "number" ? product.originalPrice : null;
-  const showOriginal = originalPrice !== null && originalPrice > product.price;
+  const activeFlashSale = getActiveFlashSale(product.flashSales ?? [], now);
+  const nextFlashSale = getNextFlashSale(product.flashSales ?? [], now);
+  const basePrice = product.price;
+  const salePrice = activeFlashSale
+    ? calculateFlashSalePrice(basePrice, activeFlashSale)
+    : basePrice;
+  const referenceOriginal = activeFlashSale
+    ? originalPrice && originalPrice > basePrice
+      ? originalPrice
+      : basePrice
+    : originalPrice;
+  const showOriginal = referenceOriginal !== null && referenceOriginal > salePrice;
   const categoryLabel = category?.name ?? product.category.replace(/-/g, " ");
   const categoryEmoji = category?.emoji ?? "🏷️";
-  const discountPercent = showOriginal
-    ? Math.max(1, Math.round(((originalPrice - product.price) / originalPrice) * 100))
+  const discountPercent = activeFlashSale
+    ? activeFlashSale.discountPercent
+    : showOriginal && referenceOriginal
+    ? Math.max(1, Math.round(((referenceOriginal - salePrice) / referenceOriginal) * 100))
     : null;
 
   const variantGroups = ensureVariantGroups(product.variantOptions ?? undefined);
@@ -257,7 +281,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
 
   const soldCount = product._count?.orderItems ?? 0;
   const totalSellerProducts = siblingProducts.length + 1;
-  const favoriteEstimate = Math.max(18, Math.round(product.price / 50000));
+  const favoriteEstimate = Math.max(18, Math.round(salePrice / 50000));
   const specifications: { label: string; value: string }[] = [
     { label: "Kategori", value: `${categoryEmoji} ${categoryLabel}` },
     { label: "Stok", value: `${product.stock} unit` },
@@ -267,8 +291,11 @@ export default async function ProductPage({ params }: { params: { id: string } }
         ? `${product.warehouse.name}${product.warehouse.city ? `, ${product.warehouse.city}` : ""}`
         : "-",
     },
-    { label: "Harga", value: `Rp ${formatIDR(product.price)}` },
-    { label: "Harga Coret", value: showOriginal ? `Rp ${formatIDR(originalPrice)}` : "-" },
+    { label: "Harga", value: `Rp ${formatIDR(salePrice)}` },
+    {
+      label: "Harga Coret",
+      value: showOriginal && referenceOriginal ? `Rp ${formatIDR(referenceOriginal)}` : "-",
+    },
     {
       label: "Diposting",
       value: product.createdAt.toLocaleDateString("id-ID", {
@@ -371,12 +398,12 @@ export default async function ProductPage({ params }: { params: { id: string } }
               </div>
             </div>
 
-            <div className="rounded-xl bg-orange-50 p-5">
+            <div className="space-y-3 rounded-xl bg-orange-50 p-5">
               <div className="flex flex-wrap items-end gap-4">
-                <div className="text-3xl font-semibold text-orange-600">Rp {formatIDR(product.price)}</div>
-                {showOriginal && (
+                <div className="text-3xl font-semibold text-orange-600">Rp {formatIDR(salePrice)}</div>
+                {showOriginal && referenceOriginal && (
                   <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <span className="line-through">Rp {formatIDR(originalPrice!)}</span>
+                    <span className="line-through">Rp {formatIDR(referenceOriginal)}</span>
                     {discountPercent && (
                       <span className="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-semibold text-orange-600">
                         -{discountPercent}%
@@ -385,6 +412,22 @@ export default async function ProductPage({ params }: { params: { id: string } }
                   </div>
                 )}
               </div>
+
+              {activeFlashSale ? (
+                <div className="inline-flex flex-wrap items-center gap-2 rounded-lg bg-white px-3 py-2 text-xs font-medium text-orange-600">
+                  <span className="rounded bg-orange-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide">
+                    Flash Sale
+                  </span>
+                  <span>Berakhir {activeFlashSale.endAt.toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" })}</span>
+                </div>
+              ) : nextFlashSale ? (
+                <div className="inline-flex flex-wrap items-center gap-2 rounded-lg bg-white px-3 py-2 text-xs font-medium text-orange-500">
+                  <span className="rounded bg-orange-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide">
+                    Flash Sale
+                  </span>
+                  <span>Jadwal berikutnya: {formatFlashSaleWindow(nextFlashSale)}</span>
+                </div>
+              ) : null}
             </div>
 
             <div className="space-y-6">

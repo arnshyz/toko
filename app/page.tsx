@@ -6,6 +6,7 @@ import { PromoSlider, PromoSlide } from "@/components/PromoSlider";
 import { ActiveVoucherPopup } from "@/components/ActiveVoucherPopup";
 import { getCategoryInfo, productCategories } from "@/lib/categories";
 import { getPrimaryProductImageSrc } from "@/lib/productImages";
+import { calculateFlashSalePrice, getActiveFlashSale } from "@/lib/flash-sale";
 import { SalesProofTicker } from "@/components/SalesProofTicker";
 
 const fallbackSlides: PromoSlide[] = [
@@ -46,6 +47,10 @@ export default async function HomePage() {
     include: {
       seller: true,
       images: { select: { id: true }, orderBy: { sortOrder: 'asc' } },
+      flashSales: {
+        where: { endAt: { gte: now } },
+        orderBy: { startAt: 'asc' },
+      },
     }
   });
   const promoBanners = await prisma.promoBanner.findMany({
@@ -131,7 +136,16 @@ export default async function HomePage() {
           {products.map(p => {
             const category = getCategoryInfo(p.category);
             const originalPrice = typeof p.originalPrice === 'number' ? p.originalPrice : null;
-            const showOriginal = originalPrice !== null && originalPrice > p.price;
+            const activeFlashSale = getActiveFlashSale(p.flashSales ?? [], now);
+            const salePrice = activeFlashSale
+              ? calculateFlashSalePrice(p.price, activeFlashSale)
+              : p.price;
+            const referenceOriginal = activeFlashSale
+              ? originalPrice && originalPrice > p.price
+                ? originalPrice
+                : p.price
+              : originalPrice;
+            const showOriginal = referenceOriginal !== null && referenceOriginal > salePrice;
             const categoryLabel = category?.name ?? p.category.replace(/-/g, ' ');
             const categoryEmoji = category?.emoji ?? '🏷️';
             return (
@@ -160,10 +174,15 @@ export default async function HomePage() {
                       {p.seller.name}
                     </Link>
                   </div>
-                  {showOriginal && (
-                    <div className="text-xs text-gray-400 line-through">Rp {formatIDR(originalPrice)}</div>
+                  {activeFlashSale && (
+                    <div className="mb-1 inline-flex items-center rounded-full bg-orange-100 px-2 py-0.5 text-[11px] font-semibold text-orange-700">
+                      Flash Sale • {activeFlashSale.discountPercent}%
+                    </div>
                   )}
-                  <div className="mt-1 text-lg font-semibold text-indigo-600">Rp {formatIDR(p.price)}</div>
+                  {showOriginal && (
+                    <div className="text-xs text-gray-400 line-through">Rp {formatIDR(referenceOriginal!)}</div>
+                  )}
+                  <div className="mt-1 text-lg font-semibold text-indigo-600">Rp {formatIDR(salePrice)}</div>
                 </div>
               </div>
             );

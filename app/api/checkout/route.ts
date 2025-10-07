@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { COURIERS } from "@/lib/shipping";
 import { getSession } from "@/lib/session";
+import { calculateFlashSalePrice } from "@/lib/flash-sale";
 
 export const runtime = "nodejs";
 
@@ -22,13 +23,35 @@ export async function POST(req: NextRequest) {
   const products = await prisma.product.findMany({ where: { id: { in: items.map(i => i.productId) } } });
   if (products.length !== items.length) return NextResponse.json({ error: 'Produk tidak valid' }, { status: 400 });
 
+  const now = new Date();
+  const flashSales = await prisma.flashSale.findMany({
+    where: {
+      productId: { in: products.map((product) => product.id) },
+      startAt: { lte: now },
+      endAt: { gte: now },
+    },
+    select: { productId: true, discountPercent: true },
+  });
+
+  const flashSaleMap = new Map<string, number>();
+  for (const sale of flashSales) {
+    const current = flashSaleMap.get(sale.productId) ?? 0;
+    if (sale.discountPercent > current) {
+      flashSaleMap.set(sale.productId, sale.discountPercent);
+    }
+  }
+
   let itemsTotal = 0;
   const createdItems: any[] = [];
   const usedWarehouses = new Set<string | 'default'>();
   for (const it of items) {
     const p = products.find(pp => pp.id === it.productId)!;
-    itemsTotal += p.price * it.qty;
-    createdItems.push({ productId: p.id, sellerId: p.sellerId, qty: it.qty, price: p.price });
+    const discountPercent = flashSaleMap.get(p.id);
+    const unitPrice = discountPercent
+      ? calculateFlashSalePrice(p.price, { discountPercent, startAt: now, endAt: now })
+      : p.price;
+    itemsTotal += unitPrice * it.qty;
+    createdItems.push({ productId: p.id, sellerId: p.sellerId, qty: it.qty, price: unitPrice });
     // @ts-ignore
     usedWarehouses.add(p.warehouseId || 'default');
   }

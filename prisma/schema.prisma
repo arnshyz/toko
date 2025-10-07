@@ -30,6 +30,7 @@ model User {
   orderReviews OrderReview[]
   reviewHelpfulVotes OrderReviewHelpful[]
   warehouses   Warehouse[]
+  flashSales   FlashSale[]
   passwordResetTokens PasswordResetToken[]
 }
 
@@ -63,6 +64,23 @@ model Product {
 
   orderItems   OrderItem[]
   images       ProductImage[]
+  flashSales   FlashSale[]
+}
+
+model FlashSale {
+  id              String   @id @default(cuid())
+  sellerId        String
+  seller          User     @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  productId       String
+  product         Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  discountPercent Int
+  startAt         DateTime
+  endAt           DateTime
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([sellerId])
+  @@index([productId])
 }
 
 model ProductImage {

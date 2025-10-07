@@ -83,6 +83,7 @@ export default async function Dashboard() {
         <a className="btn-outline" href="/seller/orders">Pesanan Saya</a>
         <a className="btn-outline" href="/seller/warehouses">Gudang</a>
         <a className="btn-outline" href="/seller/returns">Retur</a>
+        <a className="btn-outline" href="/seller/flash-sales">Flash Sale</a>
         <a className="btn-outline" href={`/s/${storeSlug}`} target="_blank">Lihat Toko</a>
         <a className="btn-outline" href="/seller/settings">Pengaturan Toko</a>
       </div>

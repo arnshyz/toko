@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
 import { productCategories, getCategoryInfo } from "@/lib/categories";
+import { formatFlashSaleWindow, isFlashSaleActive } from "@/lib/flash-sale";
 
 export const dynamic = 'force-dynamic';
 
@@ -31,8 +32,20 @@ export default async function SellerProducts() {
     );
   }
 
+  const now = new Date();
+
   const [products, warehouses] = await Promise.all([
-    prisma.product.findMany({ where: { sellerId: user.id }, orderBy: { createdAt: 'desc' }, include: { warehouse: true } }),
+    prisma.product.findMany({
+      where: { sellerId: user.id },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        warehouse: true,
+        flashSales: {
+          where: { endAt: { gte: now } },
+          orderBy: { startAt: 'asc' },
+        },
+      },
+    }),
     prisma.warehouse.findMany({ where: { ownerId: user.id }, orderBy: { createdAt: 'desc' } })
   ]);
 
@@ -105,6 +118,7 @@ export default async function SellerProducts() {
               <th>Harga Coret</th>
               <th>Stok</th>
               <th>Status</th>
+              <th>Flash Sale</th>
               <th>Aksi</th>
             </tr>
           </thead>
@@ -117,6 +131,35 @@ export default async function SellerProducts() {
                 <td>{p.originalPrice ? `Rp ${new Intl.NumberFormat('id-ID').format(p.originalPrice)}` : '-'}</td>
                 <td>{p.stock}</td>
                 <td><span className={`badge ${p.isActive ? 'badge-paid':'badge-pending'}`}>{p.isActive ? 'Aktif':'Nonaktif'}</span></td>
+                <td>
+                  {(() => {
+                    if (!p.flashSales || p.flashSales.length === 0) {
+                      return <span className="text-xs text-gray-400">Tidak ada</span>;
+                    }
+
+                    const active = p.flashSales.find((sale) => isFlashSaleActive(sale, now));
+                    if (active) {
+                      return (
+                        <div className="space-y-1 text-xs">
+                          <span className="inline-flex items-center rounded bg-emerald-100 px-2 py-0.5 font-semibold text-emerald-700">
+                            Aktif • {active.discountPercent}%
+                          </span>
+                          <div className="text-gray-500">{formatFlashSaleWindow(active)}</div>
+                        </div>
+                      );
+                    }
+
+                    const upcoming = p.flashSales[0];
+                    return (
+                      <div className="space-y-1 text-xs">
+                        <span className="inline-flex items-center rounded bg-orange-100 px-2 py-0.5 font-semibold text-orange-700">
+                          Akan Datang • {upcoming.discountPercent}%
+                        </span>
+                        <div className="text-gray-500">{formatFlashSaleWindow(upcoming)}</div>
+                      </div>
+                    );
+                  })()}
+                </td>
                 <td className="space-x-2">
                   <form method="POST" action={`/api/seller/products/update/${p.id}`} className="inline">
                     <input type="hidden" name="toggle" value="1"/>

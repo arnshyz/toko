@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getCategoryInfo } from "@/lib/categories";
 import { formatIDR } from "@/lib/utils";
+import { calculateFlashSalePrice, getActiveFlashSale } from "@/lib/flash-sale";
 import { getPrimaryProductImageSrc } from "@/lib/productImages";
 
 const BADGE_STYLES: Record<string, { label: string; className: string }> = {
@@ -32,10 +33,17 @@ export default async function Storefront({ params }: { params: { slug: string } 
   const seller = await prisma.user.findUnique({ where: { slug: params.slug } });
   if (!seller) return <div>Toko tidak ditemukan</div>;
 
+  const now = new Date();
   const products = await prisma.product.findMany({
     where: { sellerId: seller.id, isActive: true },
     orderBy: { createdAt: "desc" },
-    include: { images: { select: { id: true }, orderBy: { sortOrder: "asc" } } },
+    include: {
+      images: { select: { id: true }, orderBy: { sortOrder: "asc" } },
+      flashSales: {
+        where: { endAt: { gte: now } },
+        orderBy: { startAt: "asc" },
+      },
+    },
   });
 
   const badgeKey = seller.storeBadge ?? "BASIC";
@@ -151,7 +159,16 @@ export default async function Storefront({ params }: { params: { slug: string } 
               const categoryLabel = category?.name ?? p.category.replace(/-/g, " ");
               const categoryEmoji = category?.emoji ?? "🏷️";
               const originalPrice = typeof p.originalPrice === "number" ? p.originalPrice : null;
-              const showOriginal = originalPrice !== null && originalPrice > p.price;
+              const activeFlashSale = getActiveFlashSale(p.flashSales ?? [], now);
+              const salePrice = activeFlashSale
+                ? calculateFlashSalePrice(p.price, activeFlashSale)
+                : p.price;
+              const referenceOriginal = activeFlashSale
+                ? originalPrice && originalPrice > p.price
+                  ? originalPrice
+                  : p.price
+                : originalPrice;
+              const showOriginal = referenceOriginal !== null && referenceOriginal > salePrice;
 
               return (
                 <a
@@ -170,10 +187,15 @@ export default async function Storefront({ params }: { params: { slug: string } 
                       <span className="capitalize">{categoryLabel}</span>
                     </div>
                     <div className="line-clamp-2 text-sm font-semibold text-gray-800">{p.title}</div>
-                    {showOriginal && (
-                      <div className="text-xs text-gray-400 line-through">Rp {formatIDR(originalPrice)}</div>
+                    {activeFlashSale && (
+                      <div className="inline-flex items-center rounded-full bg-orange-100 px-2 py-0.5 text-[11px] font-semibold text-orange-700">
+                        Flash Sale • {activeFlashSale.discountPercent}%
+                      </div>
                     )}
-                    <div className="text-lg font-semibold text-orange-500">Rp {formatIDR(p.price)}</div>
+                    {showOriginal && (
+                      <div className="text-xs text-gray-400 line-through">Rp {formatIDR(referenceOriginal!)}</div>
+                    )}
+                    <div className="text-lg font-semibold text-orange-500">Rp {formatIDR(salePrice)}</div>
                   </div>
                 </a>
               );
