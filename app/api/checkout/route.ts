@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { COURIERS } from "@/lib/shipping";
 import { getSession } from "@/lib/session";
 import { calculateFlashSalePrice } from "@/lib/flash-sale";
+import { sendOrderCreatedEmail } from "@/lib/email";
 
 export const runtime = "nodejs";
 
@@ -87,7 +88,7 @@ export async function POST(req: NextRequest) {
   const order = await prisma.order.create({
     data: {
       orderCode,
-      buyerName, buyerPhone, buyerAddress,
+      buyerName, buyerPhone, buyerAddress, buyerEmail,
       buyerId,
       courier: courier.label,
       shippingCost,
