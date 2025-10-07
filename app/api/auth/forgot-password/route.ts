@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import bcrypt from "bcryptjs";
-import { randomUUID } from "crypto";
-import { sendPasswordResetOtpEmail } from "@/lib/email";
-
-const OTP_EXPIRATION_MINUTES = 15;
+import { sendPasswordResetLinkEmail } from "@/lib/email";
+import {
+  generatePasswordResetToken,
+  PASSWORD_RESET_TOKEN_EXPIRATION_MINUTES,
+} from "@/lib/password-reset";
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,30 +19,34 @@ export async function POST(req: NextRequest) {
 
     if (!user) {
       // Samarkan status agar tidak dapat digunakan untuk enumerasi akun.
-      return NextResponse.json({ message: "Jika email terdaftar, kami telah mengirim OTP reset password." });
+      return NextResponse.json({ message: "Jika email terdaftar, kami telah mengirim tautan reset password." });
     }
 
-    // Bersihkan token lama (termasuk yang masih aktif) agar tidak menabrak indeks unik
-    // dan supaya setiap permintaan hanya memiliki satu OTP yang berlaku.
+    // Bersihkan token lama agar permintaan terbaru memiliki tautan tunggal yang berlaku.
     await prisma.passwordResetToken.deleteMany({
       where: { userId: user.id },
     });
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpHash = await bcrypt.hash(otp, 10);
-    const expiresAt = new Date(Date.now() + OTP_EXPIRATION_MINUTES * 60 * 1000);
+    const { token, tokenHash, expiresAt } = generatePasswordResetToken();
 
     await prisma.passwordResetToken.create({
       data: {
-        id: randomUUID(),
         userId: user.id,
-        otpHash,
+        tokenHash,
         expiresAt,
       },
     });
 
     try {
-      await sendPasswordResetOtpEmail({ email: user.email, name: user.name, otp });
+      const resetUrl = new URL("/seller/reset-password", req.nextUrl.origin);
+      resetUrl.searchParams.set("token", token);
+
+      await sendPasswordResetLinkEmail({
+        email: user.email,
+        name: user.name,
+        resetUrl: resetUrl.toString(),
+        expiresInMinutes: PASSWORD_RESET_TOKEN_EXPIRATION_MINUTES,
+      });
     } catch (emailError) {
       console.error("Gagal mengirim email reset password", emailError);
       return NextResponse.json(
@@ -51,7 +55,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    return NextResponse.json({ message: "Jika email terdaftar, kami telah mengirim OTP reset password." });
+    return NextResponse.json({ message: "Jika email terdaftar, kami telah mengirim tautan reset password." });
   } catch (error) {
     console.error("Gagal memproses permintaan lupa password", error);
     return NextResponse.json(
