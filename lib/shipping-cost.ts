@@ -20,6 +20,10 @@ type CalculateShippingCostParams = {
   courier: CourierConfig;
   destinationCity: string | null | undefined;
   destinationProvince?: string | null | undefined;
+  fallbackOrigin?: {
+    cityId?: string | null;
+    cityName?: string | null;
+  };
 };
 
 export async function calculateShippingCost({
@@ -27,6 +31,7 @@ export async function calculateShippingCost({
   courier,
   destinationCity,
   destinationProvince,
+  fallbackOrigin,
 }: CalculateShippingCostParams): Promise<ShippingCostResult> {
   const shipmentCount = Math.max(1, shipments.length || 0);
   const fallbackCost = courier.fallbackCost * shipmentCount;
@@ -54,13 +59,32 @@ export async function calculateShippingCost({
     };
   }
 
+  const fallbackOriginCityName = fallbackOrigin?.cityName?.trim() || null;
+  let fallbackOriginCityId = fallbackOrigin?.cityId?.trim() || null;
+  let hasLookedUpFallbackOrigin = Boolean(fallbackOriginCityId);
+
   let totalCost = 0;
 
   for (const shipment of shipments) {
-    let originCityId = shipment.originCityId;
+    let originCityId = shipment.originCityId?.trim() || null;
+    const originCityName = shipment.originCityName?.trim() || null;
 
-    if (!originCityId && shipment.originCityName) {
-      originCityId = await findCityIdByName({ cityName: shipment.originCityName });
+    if (!originCityId && originCityName) {
+      originCityId = await findCityIdByName({ cityName: originCityName });
+    }
+
+    if (!originCityId && fallbackOriginCityId) {
+      originCityId = fallbackOriginCityId;
+    } else if (!originCityId && fallbackOriginCityName) {
+      if (!hasLookedUpFallbackOrigin) {
+        hasLookedUpFallbackOrigin = true;
+        fallbackOriginCityId =
+          (await findCityIdByName({ cityName: fallbackOriginCityName })) ?? null;
+      }
+
+      if (fallbackOriginCityId) {
+        originCityId = fallbackOriginCityId;
+      }
     }
 
     if (!originCityId) {
@@ -68,7 +92,7 @@ export async function calculateShippingCost({
         cost: fallbackCost,
         usedFallback: true,
         failureReason:
-          "Gudang produk belum memiliki kota asal yang valid untuk perhitungan RajaOngkir.",
+          "Gudang produk belum memiliki kota asal yang valid dan kota asal default tidak tersedia.",
         destinationCityId,
       };
     }

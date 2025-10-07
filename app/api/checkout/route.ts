@@ -183,6 +183,10 @@ export async function POST(req: NextRequest) {
     courier,
     destinationCity: shippingDestinationCity,
     destinationProvince: shippingDestinationProvince,
+    fallbackOrigin: {
+      cityId: defaultOriginCityId,
+      cityName: defaultOriginCityName,
+    },
   });
 
   if (shippingCalculation.usedFallback) {

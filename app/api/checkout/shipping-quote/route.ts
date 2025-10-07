@@ -165,6 +165,10 @@ export async function POST(req: NextRequest) {
     courier,
     destinationCity: defaultAddress.city,
     destinationProvince: defaultAddress.province,
+    fallbackOrigin: {
+      cityId: defaultOriginCityId,
+      cityName: defaultOriginCityName,
+    },
   });
 
   if (calculation.usedFallback && calculation.debugError) {
