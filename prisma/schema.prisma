@@ -120,6 +120,7 @@ model Order {
   buyerName        String
   buyerPhone       String
   buyerAddress     String
+  buyerEmail       String?
   buyerId          String?
   buyer            User?         @relation("BuyerOrders", fields: [buyerId], references: [id])
   courier          String
