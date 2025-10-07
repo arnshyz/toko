@@ -1,5 +1,7 @@
 import nodemailer, { Transporter } from "nodemailer";
 
+import { PASSWORD_RESET_TOKEN_EXPIRATION_MINUTES } from "@/lib/password-reset";
+
 let cachedTransport: Transporter | null | undefined;
 
 function resolveTransport(): Transporter | null {
@@ -50,26 +52,52 @@ export async function sendMail(options: SendMailOptions): Promise<void> {
   });
 }
 
-export async function sendPasswordResetOtpEmail(params: {
+export async function sendPasswordResetLinkEmail(params: {
   email: string;
   name?: string | null;
-  otp: string;
+  resetUrl: string;
+  expiresInMinutes?: number;
 }): Promise<void> {
-  const { email, name, otp } = params;
-  const subject = "Kode OTP Reset Password";
+  const { email, name, resetUrl, expiresInMinutes = PASSWORD_RESET_TOKEN_EXPIRATION_MINUTES } = params;
+  const subject = "Link Reset Password";
   const greeting = name ? `Halo ${name},` : "Halo,";
   const text = `${greeting}
 
-Gunakan kode OTP berikut untuk mereset password akun Anda: ${otp}.
-Kode ini berlaku selama 15 menit.
+Kami menerima permintaan untuk mereset password akun Anda.
+Klik tautan berikut untuk membuat password baru (berlaku ${expiresInMinutes} menit):
+${resetUrl}
 
 Jika Anda tidak meminta reset password, abaikan email ini.`;
   const html = `
     <p>${greeting}</p>
-    <p>Gunakan kode OTP berikut untuk mereset password akun Anda:</p>
-    <p style="font-size:24px;font-weight:bold;letter-spacing:4px;">${otp}</p>
-    <p>Kode ini berlaku selama 15 menit.</p>
+    <p>Kami menerima permintaan untuk mereset password akun Anda.</p>
+    <p>
+      <a href="${resetUrl}" style="display:inline-block;padding:12px 20px;background:#4f46e5;color:#ffffff;text-decoration:none;border-radius:6px;">
+        Reset Password
+      </a>
+    </p>
+    <p>Tautan ini berlaku selama ${expiresInMinutes} menit.</p>
     <p>Jika Anda tidak meminta reset password, abaikan email ini.</p>
+  `;
+
+  await sendMail({ to: email, subject, text, html });
+}
+
+export async function sendPasswordResetSuccessEmail(params: {
+  email: string;
+  name?: string | null;
+}): Promise<void> {
+  const { email, name } = params;
+  const subject = "Password Berhasil Direset";
+  const greeting = name ? `Halo ${name},` : "Halo,";
+  const text = `${greeting}
+
+Password akun Toko Nusantara Anda telah berhasil diperbarui.
+Jika perubahan ini bukan Anda, segera hubungi tim dukungan kami.`;
+  const html = `
+    <p>${greeting}</p>
+    <p>Password akun Toko Nusantara Anda telah berhasil diperbarui.</p>
+    <p>Jika perubahan ini bukan Anda, segera hubungi tim dukungan kami.</p>
   `;
 
   await sendMail({ to: email, subject, text, html });

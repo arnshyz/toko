@@ -27,6 +27,12 @@ model User {
   storeFollowing Int      @default(0)
   storeRating    Float?
   storeRatingCount Int    @default(0)
+  storeAddressLine String?
+  storeProvince    String?
+  storeCity        String?
+  storeDistrict    String?
+  storePostalCode  String?
+  storeOriginCityId String?
 
   products     Product[]
   orderItems   OrderItem[] @relation("SellerItems")
@@ -251,7 +257,7 @@ model PasswordResetToken {
   id        String   @id @default(cuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id])
-  otpHash   String
+  tokenHash String   @unique
   expiresAt DateTime
   usedAt    DateTime?
   createdAt DateTime @default(now())

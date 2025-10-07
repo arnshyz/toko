@@ -82,6 +82,13 @@ export async function POST(req: NextRequest) {
           city: true,
         },
       },
+      seller: {
+        select: {
+          id: true,
+          storeCity: true,
+          storeOriginCityId: true,
+        },
+      },
     },
   });
 
@@ -103,7 +110,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Beberapa produk tidak tersedia lagi." }, { status: 400 });
     }
 
-    const shipmentKey = product.warehouseId ?? "default";
+    const shipmentKey = product.warehouseId ?? `seller:${product.sellerId}`;
     const existing =
       shipmentsMap.get(shipmentKey) ?? {
         originCityName: null as string | null,
@@ -113,15 +120,23 @@ export async function POST(req: NextRequest) {
 
     if (!existing.originCityName) {
       const warehouseCity = product.warehouse?.city?.trim();
+      const sellerCity = product.seller?.storeCity?.trim();
       if (warehouseCity) {
         existing.originCityName = warehouseCity;
+      } else if (sellerCity) {
+        existing.originCityName = sellerCity;
       } else if (defaultOriginCityName) {
         existing.originCityName = defaultOriginCityName;
       }
     }
 
-    if (!existing.originCityId && !product.warehouse?.city && defaultOriginCityId) {
-      existing.originCityId = defaultOriginCityId;
+    if (!existing.originCityId) {
+      const sellerOriginCityId = product.seller?.storeOriginCityId?.trim();
+      if (!product.warehouse?.city && sellerOriginCityId) {
+        existing.originCityId = sellerOriginCityId;
+      } else if (!product.warehouse?.city && defaultOriginCityId) {
+        existing.originCityId = defaultOriginCityId;
+      }
     }
 
     const quantity = Math.max(1, Number.isFinite(item.qty) ? item.qty : 1);
