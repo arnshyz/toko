@@ -1,9 +1,8 @@
-import Link from "next/link";
-
 import { prisma } from "@/lib/prisma";
-import { formatIDR } from "@/lib/utils";
 import { getPrimaryProductImageSrc } from "@/lib/productImages";
 import { calculateFlashSalePrice, getActiveFlashSale } from "@/lib/flash-sale";
+import { ProductCard } from "@/components/ProductCard";
+import { getProductRatingSummary } from "@/lib/product-ratings";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -34,17 +33,19 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           ],
         },
         include: {
-          seller: { select: { name: true, slug: true } },
+          seller: { select: { name: true, slug: true, storeBadge: true } },
           images: { select: { id: true }, orderBy: { sortOrder: "asc" } },
           flashSales: {
             where: { endAt: { gte: now } },
             orderBy: { startAt: "asc" },
           },
+          _count: { select: { orderItems: true } },
         },
         orderBy: [{ createdAt: "desc" }],
         take: 48,
       })
     : [];
+  const ratingSummary = await getProductRatingSummary(products.map((product) => product.id));
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
@@ -94,48 +95,25 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               const activeFlashSale = getActiveFlashSale(product.flashSales ?? [], now);
               const salePrice = activeFlashSale
                 ? calculateFlashSalePrice(product.price, activeFlashSale)
-                : null;
-              const displayPrice = salePrice ?? product.price;
-              let comparePrice: number | null = null;
-              if (salePrice) {
-                comparePrice = product.price;
-              } else if (product.originalPrice && product.originalPrice > product.price) {
-                comparePrice = product.originalPrice;
-              }
+                : product.price;
+              const rating = ratingSummary.get(product.id);
+              const soldCount = product._count?.orderItems ?? 0;
 
               return (
-                <Link
+                <ProductCard
                   key={product.id}
                   href={`/product/${product.id}`}
-                  className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
-                >
-                  <div className="relative aspect-[4/3] w-full overflow-hidden bg-gray-100">
-                    {imageUrl ? (
-                      <img
-                        src={imageUrl}
-                        alt={product.title}
-                        className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-4xl">🛍️</div>
-                    )}
-                    {activeFlashSale ? (
-                      <span className="absolute left-3 top-3 rounded-full bg-red-500 px-3 py-1 text-xs font-semibold text-white shadow">
-                        Flash Sale {activeFlashSale.discountPercent}%
-                      </span>
-                    ) : null}
-                  </div>
-                  <div className="flex flex-1 flex-col gap-2 px-4 py-4">
-                    <h2 className="line-clamp-2 text-sm font-semibold text-gray-900">{product.title}</h2>
-                    <p className="text-xs text-gray-500">{product.seller.name}</p>
-                    <div className="mt-auto space-y-1">
-                      <p className="text-lg font-bold text-[#f53d2d]">Rp {formatIDR(displayPrice)}</p>
-                      {comparePrice ? (
-                        <p className="text-xs text-gray-400 line-through">Rp {formatIDR(comparePrice)}</p>
-                      ) : null}
-                    </div>
-                  </div>
-                </Link>
+                  title={product.title}
+                  imageUrl={imageUrl}
+                  salePrice={salePrice}
+                  basePrice={product.price}
+                  originalPrice={product.originalPrice}
+                  ratingAverage={rating?.average ?? 0}
+                  ratingCount={rating?.count ?? 0}
+                  soldCount={soldCount}
+                  storeBadge={product.seller.storeBadge}
+                  discountPercent={activeFlashSale?.discountPercent ?? null}
+                />
               );
             })}
           </div>

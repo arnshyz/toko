@@ -3,23 +3,7 @@ import { getCategoryInfo } from "@/lib/categories";
 import { formatIDR } from "@/lib/utils";
 import { calculateFlashSalePrice, getActiveFlashSale } from "@/lib/flash-sale";
 import { getPrimaryProductImageSrc } from "@/lib/productImages";
-
-const BADGE_STYLES: Record<
-  string,
-  { label: string; className: string; imageSrc?: string; imageClassName?: string }
-> = {
-  BASIC: { label: "Basic", className: "bg-gray-100 text-gray-700" },
-  STAR: { label: "Star", className: "bg-amber-100 text-amber-700" },
-  STAR_PLUS: { label: "Star+", className: "bg-orange-100 text-orange-700" },
-  MALL: {
-    label: "MALL",
-    className: "bg-transparent p-0",
-    imageSrc:
-      "https://deo.shopeemobile.com/shopee/shopee-pcmall-live-sg/productdetailspage/b1a5d6e20b0093b1b8f0.svg",
-    imageClassName: "h-4 w-auto",
-  },
-  PREMIUM: { label: "Premium", className: "bg-indigo-100 text-indigo-600" },
-};
+import { resolveStoreBadgeStyle } from "@/lib/store-badges";
 
 function formatCompactNumber(value: number) {
   return new Intl.NumberFormat("id-ID", { notation: "compact", maximumFractionDigits: 1 }).format(value);
@@ -55,8 +39,7 @@ export default async function Storefront({ params }: { params: { slug: string } 
     },
   });
 
-  const badgeKey = seller.storeBadge ?? "BASIC";
-  const badge = BADGE_STYLES[badgeKey] ?? BADGE_STYLES.BASIC;
+  const badge = resolveStoreBadgeStyle(seller.storeBadge);
   const isOnline = seller.storeIsOnline ?? false;
   const followers = seller.storeFollowers ?? 0;
   const following = seller.storeFollowing ?? 0;

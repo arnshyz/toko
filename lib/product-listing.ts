@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { calculateFlashSalePrice, getActiveFlashSale } from "@/lib/flash-sale";
 import { getPrimaryProductImageSrc } from "@/lib/productImages";
 import { getCategoryInfo, getCategoryWithChildrenSlugs } from "@/lib/categories";
+import { getProductRatingSummary } from "@/lib/product-ratings";
 
 export type ProductListingFilters = {
   categorySlug?: string | null;
@@ -24,6 +25,7 @@ export type ProductListingItem = {
   categoryEmoji: string;
   sellerName: string;
   sellerSlug: string;
+  storeBadge: string | null;
   imageUrl: string;
   ratingAverage: number;
   ratingCount: number;
@@ -73,7 +75,7 @@ export async function fetchProductListing(filters: ProductListingFilters) {
     where,
     orderBy,
     include: {
-      seller: { select: { name: true, slug: true } },
+      seller: { select: { name: true, slug: true, storeBadge: true } },
       images: { orderBy: { sortOrder: "asc" }, select: { id: true } },
       flashSales: true,
       _count: { select: { orderItems: true } },
@@ -84,40 +86,8 @@ export async function fetchProductListing(filters: ProductListingFilters) {
     return [] as ProductListingItem[];
   }
 
-  const productIds = products.map((product) => product.id);
-  const productIdSet = new Set(productIds);
-  const reviews = await prisma.orderReview.findMany({
-    where: {
-      order: {
-        items: {
-          some: { productId: { in: productIds } },
-        },
-      },
-    },
-    select: {
-      rating: true,
-      order: {
-        select: {
-          items: {
-            select: { productId: true },
-          },
-        },
-      },
-    },
-  });
-
-  const ratingSum = new Map<string, number>();
-  const ratingCount = new Map<string, number>();
-
-  for (const review of reviews) {
-    for (const item of review.order.items) {
-      if (!productIdSet.has(item.productId)) continue;
-      ratingSum.set(item.productId, (ratingSum.get(item.productId) ?? 0) + review.rating);
-      ratingCount.set(item.productId, (ratingCount.get(item.productId) ?? 0) + 1);
-    }
-  }
-
   const now = new Date();
+  const ratingSummary = await getProductRatingSummary(products.map((product) => product.id));
 
   const items: ProductListingItem[] = products.map((product) => {
     const category = getCategoryInfo(product.category);
@@ -129,9 +99,9 @@ export async function fetchProductListing(filters: ProductListingFilters) {
       ? product.originalPrice
       : product.price;
     const originalPrice = activeFlashSale && originalReference > salePrice ? originalReference : product.originalPrice ?? null;
-    const sum = ratingSum.get(product.id) ?? 0;
-    const count = ratingCount.get(product.id) ?? 0;
-    const average = count > 0 ? Number((sum / count).toFixed(2)) : 0;
+    const rating = ratingSummary.get(product.id);
+    const average = rating?.average ?? 0;
+    const count = rating?.count ?? 0;
 
     return {
       id: product.id,
@@ -144,6 +114,7 @@ export async function fetchProductListing(filters: ProductListingFilters) {
       categoryEmoji: category?.emoji ?? "🏷️",
       sellerName: product.seller.name,
       sellerSlug: product.seller.slug,
+      storeBadge: product.seller.storeBadge ?? null,
       imageUrl: getPrimaryProductImageSrc(product),
       ratingAverage: average,
       ratingCount: count,

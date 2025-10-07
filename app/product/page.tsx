@@ -1,8 +1,8 @@
 import Link from "next/link";
 
 import { fetchProductListing } from "@/lib/product-listing";
-import { formatIDR } from "@/lib/utils";
 import { getCategoryInfo, productCategoryOptions } from "@/lib/categories";
+import { ProductCard } from "@/components/ProductCard";
 
 export const dynamic = "force-dynamic";
 
@@ -223,45 +223,19 @@ export default async function ProductListingPage({
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {products.map((product) => (
-              <article
+              <ProductCard
                 key={product.id}
-                className="flex h-full flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
-              >
-                <Link href={`/product/${product.id}`} className="block">
-                  <img
-                    src={product.imageUrl}
-                    alt={product.title}
-                    className="h-48 w-full object-cover"
-                  />
-                </Link>
-                <div className="flex flex-1 flex-col gap-3 p-4">
-                  <div className="flex items-center justify-between text-xs text-gray-500">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-orange-50 px-2 py-0.5 font-semibold text-orange-600">
-                      {product.categoryEmoji} {product.categoryLabel}
-                    </span>
-                    <span>Terjual {product.soldCount}</span>
-                  </div>
-                  <Link href={`/product/${product.id}`} className="text-sm font-semibold text-gray-900 line-clamp-2 hover:text-orange-600">
-                    {product.title}
-                  </Link>
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
-                    <span>⭐ {product.ratingAverage.toFixed(1)}</span>
-                    <span>({product.ratingCount})</span>
-                  </div>
-                  <div className="mt-auto space-y-1">
-                    {product.originalPrice && product.originalPrice > product.salePrice ? (
-                      <div className="text-xs text-gray-400 line-through">Rp {formatIDR(product.originalPrice)}</div>
-                    ) : null}
-                    <div className="text-lg font-semibold text-orange-600">Rp {formatIDR(product.salePrice)}</div>
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    Penjual: {" "}
-                    <Link href={`/s/${product.sellerSlug}`} className="font-semibold text-indigo-600 hover:text-indigo-500">
-                      {product.sellerName}
-                    </Link>
-                  </div>
-                </div>
-              </article>
+                href={`/product/${product.id}`}
+                title={product.title}
+                imageUrl={product.imageUrl}
+                salePrice={product.salePrice}
+                basePrice={product.basePrice}
+                originalPrice={product.originalPrice}
+                ratingAverage={product.ratingAverage}
+                ratingCount={product.ratingCount}
+                soldCount={product.soldCount}
+                storeBadge={product.storeBadge}
+              />
             ))}
           </div>
         )}
