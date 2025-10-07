@@ -1,39 +1,10 @@
 import { Buffer } from "buffer";
 
 import { NextRequest, NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getIronSession } from "iron-session";
 import { sessionOptions, SessionUser } from "@/lib/session";
-import { productCategories } from "@/lib/categories";
-import { VariantGroup } from "@/types/product";
-
-function parseVariantInput(raw: string): VariantGroup[] {
-  if (!raw.trim()) return [];
-
-  return raw
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map((line) => {
-      const [namePart, optionsPart = ""] = line.split(":");
-      const name = namePart.trim();
-      const options = optionsPart
-        .split(",")
-        .map((option) => option.trim())
-        .filter(Boolean);
-
-      if (!name) {
-        return null;
-      }
-
-      return {
-        name,
-        options: options.length > 0 ? options : ["Default"],
-      } satisfies VariantGroup;
-    })
-    .filter((group): group is VariantGroup => Boolean(group));
-}
+import { buildVariantPayload, parseVariantInput, resolveCategorySlug } from "@/lib/product-form";
 
 export async function POST(req: NextRequest) {
   const form = await req.formData();
@@ -47,18 +18,10 @@ export async function POST(req: NextRequest) {
   const warehouseId = String(form.get('warehouseId') || '');
   const categoryValue = String(form.get('category') || '').trim();
   const variantsRaw = String(form.get('variants') || '').trim();
-  const fallbackCategory = productCategories[0]?.slug || 'umum';
-  const category = categoryValue && productCategories.some((item) => item.slug === categoryValue)
-    ? categoryValue
-    : fallbackCategory;
+  const category = resolveCategorySlug(categoryValue);
 
   const variantGroups = parseVariantInput(variantsRaw);
-  const variantPayload: Prisma.InputJsonValue | undefined = variantGroups.length > 0
-    ? (variantGroups.map((group) => ({
-        name: group.name,
-        options: [...group.options],
-      })) as Prisma.InputJsonValue)
-    : undefined;
+  const variantPayload = buildVariantPayload(variantGroups);
 
 
   const res = new NextResponse(null);
@@ -103,7 +66,7 @@ export async function POST(req: NextRequest) {
       warehouseId: warehouseId || null,
       category,
       originalPrice: finalOriginalPrice,
-      variantOptions: variantPayload,
+      variantOptions: variantPayload ?? undefined,
     }
   });
   if (validatedFiles.length > 0) {
