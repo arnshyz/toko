@@ -478,6 +478,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
                 sellerId={product.sellerId}
                 stock={product.stock}
                 imageUrl={primaryImage}
+                isLoggedIn={Boolean(currentUserId)}
               />
             </div>
           </div>

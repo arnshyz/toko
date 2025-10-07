@@ -16,6 +16,11 @@ export function BackButton() {
   const [canGoBack, setCanGoBack] = useState(false);
 
   useEffect(() => {
+    if (pathname === "/") {
+      setCanGoBack(false);
+      return;
+    }
+
     setCanGoBack(canUseHistory());
   }, [pathname]);
 
@@ -28,6 +33,10 @@ export function BackButton() {
   }, [canGoBack, router]);
 
   const label = useMemo(() => (canGoBack ? "Kembali" : "Beranda"), [canGoBack]);
+
+  if (pathname === "/") {
+    return null;
+  }
 
   return (
     <button
