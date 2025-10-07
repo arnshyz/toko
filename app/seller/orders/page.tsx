@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
 import { JAKARTA_TIME_ZONE } from "@/lib/time";
@@ -120,9 +122,9 @@ export default async function SellerOrders() {
                   <span className="font-semibold text-gray-900">
                     Subtotal Anda: Rp {new Intl.NumberFormat("id-ID").format(subtotal)}
                   </span>
-                  <a className="text-[#f53d2d] underline" href={`/order/${order.orderCode}`} target="_blank" rel="noreferrer">
+                  <Link className="text-[#f53d2d] underline" href={`/order/${order.orderCode}`}>
                     Lihat detail
-                  </a>
+                  </Link>
                 </footer>
               </article>
             );
@@ -190,9 +192,9 @@ export default async function SellerOrders() {
                       </div>
                     </td>
                     <td className="py-2 align-top">
-                      <a className="link" href={`/order/${o.orderCode}`} target="_blank" rel="noreferrer">
+                      <Link className="link" href={`/order/${o.orderCode}`}>
                         Detail
-                      </a>
+                      </Link>
                     </td>
                   </tr>
                 );
