@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { formatIDR } from "@/lib/utils";
 import { PromoSlider, PromoSlide } from "@/components/PromoSlider";
 import { ActiveVoucherPopup } from "@/components/ActiveVoucherPopup";
+import { ClaimVoucherButton } from "@/components/ClaimVoucherButton";
 import { getCategoryInfo } from "@/lib/categories";
 import { getPrimaryProductImageSrc } from "@/lib/productImages";
 import { calculateFlashSalePrice, getActiveFlashSale } from "@/lib/flash-sale";
@@ -135,7 +136,7 @@ export default async function HomePage() {
       <PromoSlider slides={slides.length > 0 ? slides : fallbackSlides} />
 
       <div className="space-y-4 md:hidden">
-        <div className="rounded-3xl bg-gradient-to-br from-white/95 via-white/90 to-white/70 px-5 py-4 text-gray-900 shadow-xl shadow-[#f53d2d]/10 ring-1 ring-white/70">
+        <div className="rounded-3xl bg-gradient-to-br from-white/95 via-white/90 to-white/70 px-4 py-4 text-gray-900 shadow-xl shadow-[#f53d2d]/10 ring-1 ring-white/70">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs uppercase tracking-wide text-gray-500">Voucher Pilihan</p>
@@ -148,12 +149,24 @@ export default async function HomePage() {
                   : "Nikmati penawaran terbaik setiap hari"}
               </p>
             </div>
-            <Link
-              href={highlightedVoucher ? `/voucher/${highlightedVoucher.code}` : "/promo"}
-              className="rounded-full bg-[#f53d2d] px-4 py-2 text-xs font-semibold text-white shadow"
-            >
-              Klaim
-            </Link>
+            {highlightedVoucher ? (
+              <ClaimVoucherButton
+                voucherId={highlightedVoucher.id}
+                voucherCode={highlightedVoucher.code}
+                size="sm"
+                color="salmon"
+                className="shadow"
+              >
+                Klaim
+              </ClaimVoucherButton>
+            ) : (
+              <Link
+                href="/promo"
+                className="rounded-full bg-[#f53d2d] px-4 py-2 text-xs font-semibold text-white shadow"
+              >
+                Jelajahi
+              </Link>
+            )}
           </div>
         </div>
         <div className="grid grid-cols-4 gap-3 text-center text-xs font-medium text-gray-700">

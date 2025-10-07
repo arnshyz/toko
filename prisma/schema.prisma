@@ -43,6 +43,7 @@ model User {
   flashSales   FlashSale[]
   passwordResetTokens PasswordResetToken[]
   addresses    UserAddress[]
+  claimedVouchers UserVoucher[]
 }
 
 enum SellerOnboardingStatus {
@@ -230,6 +231,23 @@ model Voucher {
   active    Boolean   @default(true)
   expiresAt DateTime?
   createdAt DateTime  @default(now())
+
+  claimers  UserVoucher[]
+}
+
+model UserVoucher {
+  id        String   @id @default(cuid())
+  userId    String
+  voucherId String
+  claimedAt DateTime @default(now())
+  usedAt    DateTime?
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  voucher Voucher @relation(fields: [voucherId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, voucherId])
+  @@index([userId])
+  @@index([voucherId])
 }
 
 model ReturnRequest {

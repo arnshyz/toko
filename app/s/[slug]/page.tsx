@@ -60,8 +60,8 @@ export default async function Storefront({ params }: { params: { slug: string } 
 
   return (
     <div className="space-y-8">
-      <section className="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
-        <div className="flex flex-col gap-6 p-6 md:flex-row md:items-start md:justify-between">
+      <section className="overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm">
+        <div className="flex flex-col gap-6 p-5 md:flex-row md:items-start md:justify-between md:p-6">
           <div className="flex flex-1 flex-col gap-6 md:flex-row md:items-center">
             <div className="flex flex-col items-center gap-3 text-center md:items-start md:text-left">
               <div className="relative h-20 w-20 overflow-hidden rounded-xl bg-gradient-to-br from-gray-100 to-gray-200">
@@ -98,17 +98,17 @@ export default async function Storefront({ params }: { params: { slug: string } 
                   <div className="text-sm text-gray-500">@{seller.slug}</div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <button className="rounded-full bg-orange-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-orange-600">
+                <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+                  <button className="inline-flex w-full items-center justify-center rounded-full bg-orange-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-orange-600 sm:w-auto">
                     Ikuti
                   </button>
-                  <button className="rounded-full border border-gray-200 px-5 py-2 text-sm font-medium text-gray-700 transition hover:border-gray-300 hover:text-gray-900">
+                  <button className="inline-flex w-full items-center justify-center rounded-full border border-gray-200 px-5 py-2 text-sm font-medium text-gray-700 transition hover:border-gray-300 hover:text-gray-900 sm:w-auto">
                     Chat
                   </button>
                 </div>
               </div>
 
-              <dl className="grid gap-4 text-sm text-gray-600 sm:grid-cols-3 lg:grid-cols-5">
+              <dl className="grid grid-cols-2 gap-4 text-xs text-gray-600 sm:grid-cols-3 sm:text-sm lg:grid-cols-5">
                 <div>
                   <dt className="font-medium text-gray-500">Produk</dt>
                   <dd className="text-base font-semibold text-gray-900">{products.length}</dd>
@@ -174,28 +174,28 @@ export default async function Storefront({ params }: { params: { slug: string } 
                 <a
                   key={p.id}
                   href={`/product/${p.id}`}
-                  className="overflow-hidden rounded-xl border border-gray-100 bg-white transition hover:-translate-y-1 hover:shadow-lg"
+                  className="flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white transition hover:-translate-y-1 hover:shadow-lg"
                 >
                   <img
                     src={getPrimaryProductImageSrc(p)}
                     alt={p.title}
                     className="h-44 w-full object-cover"
                   />
-                  <div className="space-y-2 p-4">
-                    <div className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-600">
+                  <div className="flex flex-1 flex-col gap-2 p-4">
+                    <div className="inline-flex w-fit items-center gap-1 rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-600">
                       <span>{categoryEmoji}</span>
                       <span className="capitalize">{categoryLabel}</span>
                     </div>
                     <div className="line-clamp-2 text-sm font-semibold text-gray-800">{p.title}</div>
                     {activeFlashSale && (
-                      <div className="inline-flex items-center rounded-full bg-orange-100 px-2 py-0.5 text-[11px] font-semibold text-orange-700">
+                      <div className="inline-flex w-fit items-center rounded-full bg-orange-100 px-2 py-0.5 text-[11px] font-semibold text-orange-700">
                         Flash Sale • {activeFlashSale.discountPercent}%
                       </div>
                     )}
                     {showOriginal && (
                       <div className="text-xs text-gray-400 line-through">Rp {formatIDR(referenceOriginal!)}</div>
                     )}
-                    <div className="text-lg font-semibold text-orange-500">Rp {formatIDR(salePrice)}</div>
+                    <div className="mt-auto text-lg font-semibold text-orange-500">Rp {formatIDR(salePrice)}</div>
                   </div>
                 </a>
               );

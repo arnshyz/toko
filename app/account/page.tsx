@@ -87,7 +87,15 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
   return (
     <div className="mx-auto max-w-5xl space-y-8 px-4 py-8">
       <div className="space-y-4 md:hidden">
-        <div className="rounded-3xl bg-gradient-to-br from-[#f53d2d] via-[#ff6f3c] to-[#ff9364] px-6 py-6 text-white shadow-lg">
+        <div className="relative rounded-3xl bg-gradient-to-br from-[#f53d2d] via-[#ff6f3c] to-[#ff9364] px-6 py-6 text-white shadow-lg">
+          <form method="POST" action="/api/auth/logout" className="absolute right-4 top-4">
+            <button
+              type="submit"
+              className="rounded-full bg-white/20 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white transition hover:bg-white/30"
+            >
+              Keluar
+            </button>
+          </form>
           <div className="flex items-center gap-4">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/20 text-2xl font-semibold">
               {account.name.charAt(0).toUpperCase()}
