@@ -28,6 +28,13 @@ type CheckoutResponse = {
   error?: string;
 };
 
+type ShippingQuoteResponse = {
+  cost?: number;
+  usedFallback?: boolean;
+  reason?: string | null;
+  error?: string;
+};
+
 function formatAddress(address: NonNullable<CheckoutAccountData["defaultAddress"]>) {
   return [
     address.addressLine,
@@ -49,6 +56,12 @@ export default function CheckoutPage() {
   const [accountLoading, setAccountLoading] = useState(true);
   const [accountError, setAccountError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [shippingQuote, setShippingQuote] = useState<number | null>(null);
+  const [shippingQuoteLoading, setShippingQuoteLoading] = useState(false);
+  const [shippingQuoteError, setShippingQuoteError] = useState<string | null>(null);
+  const [shippingQuoteUsedFallback, setShippingQuoteUsedFallback] = useState(false);
+  const [shippingQuoteReason, setShippingQuoteReason] = useState<string | null>(null);
+  const hasPrefilledAddress = Boolean(accountData?.defaultAddress);
 
   useEffect(() => {
     const raw = localStorage.getItem('cart');
@@ -95,6 +108,71 @@ export default function CheckoutPage() {
     };
   }, []);
 
+  useEffect(() => {
+    if (accountLoading || !items.length || !hasPrefilledAddress) {
+      setShippingQuote(null);
+      setShippingQuoteUsedFallback(false);
+      setShippingQuoteError(null);
+      setShippingQuoteReason(null);
+      setShippingQuoteLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    async function loadShippingQuote() {
+      setShippingQuoteLoading(true);
+      setShippingQuoteError(null);
+      setShippingQuoteReason(null);
+
+      try {
+        const response = await fetch('/api/checkout/shipping-quote', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            courier,
+            items: items.map((item) => ({ productId: item.productId, qty: item.qty })),
+          }),
+        });
+
+        const payload = (await response.json().catch(() => null)) as ShippingQuoteResponse | null;
+
+        if (cancelled) {
+          return;
+        }
+
+        if (!response.ok || !payload || typeof payload.cost !== 'number') {
+          const message = payload?.error || 'Gagal menghitung ongkos kirim otomatis.';
+          throw new Error(message);
+        }
+
+        setShippingQuote(payload.cost);
+        setShippingQuoteUsedFallback(Boolean(payload.usedFallback));
+        setShippingQuoteReason(payload.reason ?? null);
+      } catch (error) {
+        if (cancelled) {
+          return;
+        }
+
+        const message = error instanceof Error ? error.message : 'Gagal menghitung ongkos kirim otomatis.';
+        setShippingQuote(null);
+        setShippingQuoteUsedFallback(false);
+        setShippingQuoteReason(null);
+        setShippingQuoteError(message);
+      } finally {
+        if (!cancelled) {
+          setShippingQuoteLoading(false);
+        }
+      }
+    }
+
+    loadShippingQuote();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [accountLoading, courier, hasPrefilledAddress, items]);
+
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!items.length) {
@@ -123,7 +201,6 @@ export default function CheckoutPage() {
     }
   }
 
-  const hasPrefilledAddress = Boolean(accountData?.defaultAddress);
   const loggedInWithoutAddress = Boolean(accountData && accountData.addressesCount === 0 && !accountData.defaultAddress);
   const defaultAddress = accountData?.defaultAddress ?? null;
   const defaultName = hasPrefilledAddress
@@ -233,14 +310,40 @@ export default function CheckoutPage() {
 
           <div>
             <label className="block text-sm mb-1">Kurir</label>
-            <select value={courier} onChange={(e)=>setCourier(e.target.value as keyof typeof COURIERS)} className="border rounded w-full px-3 py-2">
-              {Object.entries(COURIERS).map(([k,v]) => (
+            <select
+              value={courier}
+              onChange={(e) => setCourier(e.target.value as keyof typeof COURIERS)}
+              className="border rounded w-full px-3 py-2"
+            >
+              {Object.entries(COURIERS).map(([k, v]) => (
                 <option key={k} value={k}>
-                  {v.label} (Rp {new Intl.NumberFormat('id-ID').format(v.cost)})
+                  {v.label} (estimasi Rp {new Intl.NumberFormat('id-ID').format(v.fallbackCost)})
                 </option>
               ))}
             </select>
-            <p className="text-xs text-gray-500 mt-1">Ongkir dihitung per gudang (per-shipment) di server.</p>
+            {shippingQuoteLoading ? (
+              <p className="text-xs text-gray-500 mt-1">Menghitung ongkir otomatis…</p>
+            ) : shippingQuoteError ? (
+              <p className="text-xs text-red-600 mt-1">{shippingQuoteError}</p>
+            ) : shippingQuote !== null ? (
+              <div className="mt-1 text-xs text-gray-600">
+                <p>
+                  Ongkir {shippingQuoteUsedFallback ? 'estimasi' : 'otomatis'}:
+                  <span className="ml-1 font-semibold text-gray-900">
+                    Rp {new Intl.NumberFormat('id-ID').format(shippingQuote)}
+                  </span>
+                  {shippingQuoteUsedFallback ? ' (menggunakan tarif cadangan).' : ' (dihitung via RajaOngkir).'}
+                </p>
+                {shippingQuoteUsedFallback && shippingQuoteReason ? (
+                  <p className="mt-1 text-amber-700">{shippingQuoteReason}</p>
+                ) : null}
+              </div>
+            ) : (
+              <p className="text-xs text-gray-500 mt-1">
+                Ongkir final dihitung otomatis via RajaOngkir saat pesanan dibuat (per gudang). Estimasi di atas
+                digunakan jika RajaOngkir tidak tersedia.
+              </p>
+            )}
           </div>
 
           <div>

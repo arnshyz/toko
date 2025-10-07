@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { COURIERS } from "@/lib/shipping";
+import { COURIERS, DEFAULT_ITEM_WEIGHT_GRAMS } from "@/lib/shipping";
 import { getSession } from "@/lib/session";
 import { calculateFlashSalePrice } from "@/lib/flash-sale";
 import { sendOrderCreatedEmail } from "@/lib/email";
+import { calculateShippingCost } from "@/lib/shipping-cost";
 
 export const runtime = "nodejs";
 
@@ -22,11 +23,30 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Keranjang kosong' }, { status: 400 });
   }
   const courier = COURIERS[courierKey];
-  const products = await prisma.product.findMany({ where: { id: { in: items.map(i => i.productId) } } });
+  if (!courier) {
+    return NextResponse.json({ error: 'Kurir tidak didukung' }, { status: 400 });
+  }
+
+  const products = await prisma.product.findMany({
+    where: { id: { in: items.map(i => i.productId) } },
+    include: {
+      warehouse: {
+        select: {
+          id: true,
+          city: true,
+        },
+      },
+    },
+  });
   if (products.length !== items.length) return NextResponse.json({ error: 'Produk tidak valid' }, { status: 400 });
 
   const session = await getSession();
   const buyerId = session.user?.id ?? null;
+
+  const defaultOriginCityName = process.env.RAJAONGKIR_DEFAULT_ORIGIN_CITY?.trim() || null;
+  const defaultOriginCityId = process.env.RAJAONGKIR_DEFAULT_ORIGIN_CITY_ID?.trim() || null;
+  let shippingDestinationCity: string | null = null;
+  let shippingDestinationProvince: string | null = null;
   if (buyerId) {
     const account = await prisma.user.findUnique({
       where: { id: buyerId },
@@ -63,6 +83,9 @@ export async function POST(req: NextRequest) {
 
     const defaultAddress =
       account.addresses.find((address) => address.isDefault) ?? account.addresses[0];
+
+    shippingDestinationCity = defaultAddress.city;
+    shippingDestinationProvince = defaultAddress.province;
 
     if (!buyerName) {
       buyerName = defaultAddress.fullName || account.name;
@@ -115,21 +138,67 @@ export async function POST(req: NextRequest) {
 
   let itemsTotal = 0;
   const createdItems: any[] = [];
-  const usedWarehouses = new Set<string | 'default'>();
+  const shipmentsMap = new Map<
+    string,
+    { originCityName: string | null; originCityId: string | null; weight: number }
+  >();
+
   for (const it of items) {
-    const p = products.find(pp => pp.id === it.productId)!;
+    const p = products.find((pp) => pp.id === it.productId)!;
     const discountPercent = flashSaleMap.get(p.id);
     const unitPrice = discountPercent
       ? calculateFlashSalePrice(p.price, { discountPercent, startAt: now, endAt: now })
       : p.price;
     itemsTotal += unitPrice * it.qty;
     createdItems.push({ productId: p.id, sellerId: p.sellerId, qty: it.qty, price: unitPrice });
-    // @ts-ignore
-    usedWarehouses.add(p.warehouseId || 'default');
+
+    const shipmentKey = p.warehouseId ?? 'default';
+    const existing =
+      shipmentsMap.get(shipmentKey) ?? {
+        originCityName: null as string | null,
+        originCityId: null as string | null,
+        weight: 0,
+      };
+
+    if (!existing.originCityName) {
+      const warehouseCity = p.warehouse?.city?.trim();
+      if (warehouseCity) {
+        existing.originCityName = warehouseCity;
+      } else if (defaultOriginCityName) {
+        existing.originCityName = defaultOriginCityName;
+      }
+    }
+
+    if (!existing.originCityId && !p.warehouse?.city && defaultOriginCityId) {
+      existing.originCityId = defaultOriginCityId;
+    }
+
+    const quantity = Math.max(1, Number.isFinite(it.qty) ? it.qty : 1);
+    existing.weight += quantity * DEFAULT_ITEM_WEIGHT_GRAMS;
+    shipmentsMap.set(shipmentKey, existing);
   }
 
-  const shipments = Math.max(1, usedWarehouses.size);
-  const shippingCost = courier.cost * shipments;
+  const shippingCalculation = await calculateShippingCost({
+    shipments: Array.from(shipmentsMap.values()),
+    courier,
+    destinationCity: shippingDestinationCity,
+    destinationProvince: shippingDestinationProvince,
+    fallbackOrigin: {
+      cityId: defaultOriginCityId,
+      cityName: defaultOriginCityName,
+    },
+  });
+
+  if (shippingCalculation.usedFallback) {
+    if (shippingCalculation.failureReason) {
+      console.warn('RajaOngkir shipping fallback in checkout:', shippingCalculation.failureReason);
+    }
+    if (shippingCalculation.debugError) {
+      console.error('Failed to calculate RajaOngkir shipping cost', shippingCalculation.debugError);
+    }
+  }
+
+  const shippingCost = shippingCalculation.cost;
 
   // Voucher
   let voucherDiscount = 0; let voucherUsed: string | null = null;
