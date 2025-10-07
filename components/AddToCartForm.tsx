@@ -9,6 +9,7 @@ export type AddToCartFormProps = {
   sellerId: string;
   stock: number;
   imageUrl?: string | null;
+  isLoggedIn?: boolean;
 };
 
 type CartItem = {
@@ -40,13 +41,26 @@ function writeCart(items: CartItem[]) {
   window.dispatchEvent(new CustomEvent("cart:updated", { detail: { totalQty, items } }));
 }
 
-export function AddToCartForm({ productId, title, price, sellerId, stock, imageUrl }: AddToCartFormProps) {
+export function AddToCartForm({
+  productId,
+  title,
+  price,
+  sellerId,
+  stock,
+  imageUrl,
+  isLoggedIn = false,
+}: AddToCartFormProps) {
   const [quantity, setQuantity] = useState(1);
-  const [status, setStatus] = useState<"idle" | "success">("idle");
+  const [status, setStatus] = useState<"idle" | "success" | "unauthenticated">("idle");
 
   const handleSubmit = useCallback(
     (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
+      if (!isLoggedIn) {
+        setStatus("unauthenticated");
+        return;
+      }
+
       const safeQty = Math.max(1, Math.min(quantity, stock || quantity));
 
       const cart = readCart();
@@ -59,7 +73,7 @@ export function AddToCartForm({ productId, title, price, sellerId, stock, imageU
       writeCart(cart);
       setStatus("success");
     },
-    [imageUrl, price, productId, quantity, sellerId, stock, title],
+    [imageUrl, isLoggedIn, price, productId, quantity, sellerId, stock, title],
   );
 
   const handleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
@@ -106,6 +120,11 @@ export function AddToCartForm({ productId, title, price, sellerId, stock, imageU
       {status === "success" ? (
         <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
           Produk berhasil ditambahkan ke keranjang. Lanjutkan belanja atau <a className="font-semibold underline" href="/cart">lihat keranjang</a>.
+        </div>
+      ) : null}
+      {status === "unauthenticated" ? (
+        <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
+          Silahkan login jika ingin memasukan ke keranjang.
         </div>
       ) : null}
     </form>

@@ -19,11 +19,20 @@ import {
 } from "@/lib/flash-sale";
 import { formatJakartaDate } from "@/lib/time";
 
-const BADGE_STYLES: Record<string, { label: string; className: string }> = {
+const BADGE_STYLES: Record<
+  string,
+  { label: string; className: string; imageSrc?: string; imageClassName?: string }
+> = {
   BASIC: { label: "Basic", className: "bg-gray-100 text-gray-700" },
   STAR: { label: "Star", className: "bg-amber-100 text-amber-700" },
   STAR_PLUS: { label: "Star+", className: "bg-orange-100 text-orange-700" },
-  MALL: { label: "MALL", className: "bg-red-100 text-red-600" },
+  MALL: {
+    label: "MALL",
+    className: "bg-transparent p-0",
+    imageSrc:
+      "https://deo.shopeemobile.com/shopee/shopee-pcmall-live-sg/productdetailspage/b1a5d6e20b0093b1b8f0.svg",
+    imageClassName: "h-4 w-auto",
+  },
   PREMIUM: { label: "Premium", className: "bg-indigo-100 text-indigo-600" },
 };
 
@@ -478,6 +487,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
                 sellerId={product.sellerId}
                 stock={product.stock}
                 imageUrl={primaryImage}
+                isLoggedIn={Boolean(currentUserId)}
               />
             </div>
           </div>
@@ -502,8 +512,21 @@ export default async function ProductPage({ params }: { params: { id: string } }
                 <div className="space-y-1">
                   <div className="flex flex-wrap items-center gap-2 text-lg font-semibold text-gray-900">
                     {seller.name}
-                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ${badge.className}`}>
-                      {badge.label}
+                    <span
+                      className={`inline-flex items-center rounded-full text-[11px] font-semibold ${
+                        badge.imageSrc ? "" : "px-2 py-0.5"
+                      } ${badge.className}`}
+                    >
+                      {badge.imageSrc ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={badge.imageSrc}
+                          alt={badge.label}
+                          className={badge.imageClassName ?? "h-4 w-auto"}
+                        />
+                      ) : (
+                        badge.label
+                      )}
                     </span>
                     <span
                       className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${
