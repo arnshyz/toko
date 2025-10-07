@@ -61,6 +61,42 @@ function renderStars(value: number) {
   ));
 }
 
+function formatRelativeTime(value: Date) {
+  const now = new Date();
+  const diff = now.getTime() - value.getTime();
+  const minute = 1000 * 60;
+  const hour = minute * 60;
+  const day = hour * 24;
+  const week = day * 7;
+  const month = day * 30;
+  const year = day * 365;
+
+  if (diff < minute) return "Baru saja";
+  if (diff < hour) {
+    const minutes = Math.floor(diff / minute);
+    return `${minutes} menit lalu`;
+  }
+  if (diff < day) {
+    const hours = Math.floor(diff / hour);
+    return `${hours} jam lalu`;
+  }
+  if (diff < week) {
+    const days = Math.floor(diff / day);
+    return `${days} hari lalu`;
+  }
+  if (diff < month) {
+    const weeks = Math.floor(diff / week);
+    return `${weeks} minggu lalu`;
+  }
+  if (diff < year) {
+    const months = Math.floor(diff / month);
+    return `${months} bulan lalu`;
+  }
+
+  const years = Math.floor(diff / year);
+  return `${years} tahun lalu`;
+}
+
 const HERO_PLACEHOLDER = "https://placehold.co/900x600?text=Produk";
 const THUMB_PLACEHOLDER = "https://placehold.co/300x200?text=Preview";
 
@@ -83,7 +119,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
     );
   }
 
-  const [siblingProducts, recommendedProducts] = await Promise.all([
+  const [siblingProducts, recommendedProducts, reviewAggregate, productReviews] = await Promise.all([
     prisma.product.findMany({
       where: {
         sellerId: product.sellerId,
@@ -103,6 +139,47 @@ export default async function ProductPage({ params }: { params: { id: string } }
       take: 8,
       orderBy: { createdAt: "desc" },
       include: { images: { orderBy: { sortOrder: "asc" }, select: { id: true } } },
+    }),
+    prisma.orderReview.aggregate({
+      where: {
+        order: {
+          items: {
+            some: {
+              productId: product.id,
+            },
+          },
+        },
+      },
+      _avg: { rating: true },
+      _count: { rating: true },
+    }),
+    prisma.orderReview.findMany({
+      where: {
+        order: {
+          items: {
+            some: {
+              productId: product.id,
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+      include: {
+        buyer: { select: { name: true, avatarUrl: true } },
+        order: {
+          select: {
+            orderCode: true,
+            createdAt: true,
+            items: {
+              where: { productId: product.id },
+              select: {
+                id: true,
+                qty: true,
+              },
+            },
+          },
+        },
+      },
     }),
   ]);
 
@@ -126,11 +203,14 @@ export default async function ProductPage({ params }: { params: { id: string } }
   const isOnline = seller.storeIsOnline ?? false;
   const followers = seller.storeFollowers ?? 0;
   const following = seller.storeFollowing ?? 0;
-  const ratingValue = seller.storeRating ?? 0;
-  const ratingCount = seller.storeRatingCount ?? 0;
-  const ratingLabel = ratingCount > 0
-    ? `${ratingValue.toFixed(1)} dari ${ratingCount} penilaian`
+  const storeRatingValue = seller.storeRating ?? 0;
+  const storeRatingCount = seller.storeRatingCount ?? 0;
+  const storeRatingLabel = storeRatingCount > 0
+    ? `${storeRatingValue.toFixed(1)} dari ${storeRatingCount} penilaian`
     : "Belum ada penilaian";
+
+  const ratingValue = reviewAggregate._avg.rating ?? 0;
+  const ratingCount = reviewAggregate._count.rating ?? 0;
 
   const soldCount = product._count?.orderItems ?? 0;
   const totalSellerProducts = siblingProducts.length + 1;
@@ -172,27 +252,6 @@ export default async function ProductPage({ params }: { params: { id: string } }
       description: isOnline
         ? "Toko sedang online dan siap merespons pesanan Anda."
         : "Toko akan memproses pesanan segera setelah kembali online.",
-    },
-  ];
-
-  const reviewSamples = [
-    {
-      id: "1",
-      author: "Andi Saputra",
-      rating: 5,
-      variant: variantGroups[0]?.options[0] ?? "Standar",
-      createdAt: "2 minggu lalu",
-      content:
-        "Produk original, pengiriman cepat dan dikemas dengan rapi. Sangat puas berbelanja di toko ini.",
-    },
-    {
-      id: "2",
-      author: "Rina Oktavia",
-      rating: 4,
-      variant: variantGroups[0]?.options[1] ?? variantGroups[0]?.options[0] ?? "Standar",
-      createdAt: "3 minggu lalu",
-      content:
-        "Sudah beberapa kali repeat order, kualitas konsisten dan penjual responsif ketika ditanya stok.",
     },
   ];
 
@@ -389,7 +448,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
                     <span>Produk: {formatCompactNumber(totalSellerProducts)}</span>
                     <span>Pengikut: {formatCompactNumber(followers)}</span>
                     <span>Mengikuti: {formatCompactNumber(following)}</span>
-                    <span>Penilaian: {ratingLabel}</span>
+                    <span>Penilaian: {storeRatingLabel}</span>
                     <span>Bergabung: {formatJoinedSince(seller.createdAt)}</span>
                   </div>
                 </div>
@@ -469,31 +528,41 @@ export default async function ProductPage({ params }: { params: { id: string } }
             <div className="mt-1 text-xs text-gray-600">{ratingCount} penilaian</div>
           </div>
           <div className="space-y-6">
-            {ratingCount > 0 ? (
-              <p className="text-sm text-gray-500">
-                Penjual memperoleh rating yang baik dari para pembeli. Detail ulasan lengkap akan segera tersedia.
-              </p>
+            {productReviews.length > 0 ? (
+              <div className="space-y-4">
+                {productReviews.map((review) => {
+                  const buyerName = review.buyer.name.trim() || "Pembeli";
+                  const firstItem = review.order.items[0];
+                  const purchaseInfo = firstItem
+                    ? `${firstItem.qty} barang dibeli`
+                    : "Pesanan diverifikasi";
+
+                  return (
+                    <article key={review.id} className="space-y-3 rounded-xl border border-gray-100 p-4">
+                      <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-gray-500">
+                        <div className="flex items-center gap-2 font-semibold text-gray-700">
+                          <span>{buyerName}</span>
+                          <span className="flex gap-0.5 text-orange-500">{renderStars(review.rating)}</span>
+                        </div>
+                        <span>{formatRelativeTime(review.createdAt)}</span>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-3 text-xs font-medium text-orange-600">
+                        <span>Kode Pesanan: {review.order.orderCode}</span>
+                        <span className="text-gray-400">•</span>
+                        <span className="text-orange-500">{purchaseInfo}</span>
+                      </div>
+                      <p className="text-sm text-gray-700">
+                        {review.comment?.trim() || "Pembeli tidak meninggalkan komentar."}
+                      </p>
+                    </article>
+                  );
+                })}
+              </div>
             ) : (
               <p className="text-sm text-gray-500">
                 Belum ada penilaian untuk produk ini. Jadilah pembeli pertama yang memberikan ulasan!
               </p>
             )}
-
-            <div className="space-y-4">
-              {reviewSamples.map((review) => (
-                <div key={review.id} className="space-y-3 rounded-xl border border-gray-100 p-4">
-                  <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-gray-500">
-                    <div className="flex items-center gap-2 font-semibold text-gray-700">
-                      <span>{review.author}</span>
-                      <span className="flex gap-0.5 text-orange-500">{renderStars(review.rating)}</span>
-                    </div>
-                    <span>{review.createdAt}</span>
-                  </div>
-                  <div className="text-xs font-medium text-orange-600">Varian: {review.variant}</div>
-                  <p className="text-sm text-gray-700">{review.content}</p>
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       </section>
