@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatIDR } from "@/lib/utils";
-import { OrderHistoryRecorder } from "@/components/OrderHistoryRecorder";
 
 export const dynamic = "force-dynamic";
 
@@ -45,6 +44,7 @@ export default async function OrderDetailPage({ params }: { params: { code: stri
           },
         },
       },
+      review: true,
     },
   });
 
@@ -63,11 +63,10 @@ export default async function OrderDetailPage({ params }: { params: { code: stri
   const paymentLabel = PAYMENT_LABELS[order.paymentMethod] ?? order.paymentMethod;
   const voucherActive = order.voucherDiscount > 0;
   const uniqueCodeActive = order.paymentMethod === "TRANSFER" && order.uniqueCode > 0;
+  const review = order.review;
 
   return (
     <div className="mx-auto max-w-4xl space-y-6 py-8">
-      <OrderHistoryRecorder orderCode={order.orderCode} />
-
       <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -175,6 +174,43 @@ export default async function OrderDetailPage({ params }: { params: { code: stri
             );
           })}
         </div>
+      </section>
+
+      <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-gray-900">Penilaian Pesanan</h2>
+        {review ? (
+          <div className="mt-3 space-y-3">
+            <div className="flex items-center gap-1 text-amber-500">
+              {Array.from({ length: 5 }, (_, index) => (
+                <span key={index} aria-hidden>
+                  {index < review.rating ? "★" : "☆"}
+                </span>
+              ))}
+              <span className="ml-2 text-sm font-medium text-gray-700">
+                {review.rating} dari 5
+              </span>
+            </div>
+            {review.comment ? (
+              <p className="text-sm text-gray-700">“{review.comment}”</p>
+            ) : (
+              <p className="text-sm text-gray-500">Anda menilai pesanan ini tanpa memberikan komentar.</p>
+            )}
+            <p className="text-xs text-gray-500">
+              Terakhir diperbarui {formatDateTime(review.updatedAt)}
+            </p>
+          </div>
+        ) : (
+          <div className="mt-3 space-y-3 text-sm text-gray-600">
+            <p>Belum ada penilaian untuk pesanan ini.</p>
+            <p>
+              Berikan ulasan bintang dan komentar melalui halaman
+              <Link href="/orders" className="ml-1 font-semibold text-orange-600 hover:underline">
+                Pesanan Saya
+              </Link>
+              .
+            </p>
+          </div>
+        )}
       </section>
 
       <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">

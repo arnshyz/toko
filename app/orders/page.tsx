@@ -1,10 +1,18 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { formatIDR } from "@/lib/utils";
 
+type BuyerOrderReview = {
+  rating: number;
+  comment: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 type BuyerOrder = {
+  id: string;
   orderCode: string;
   status: "PENDING" | "PAID" | "CANCELLED";
   paymentMethod: "TRANSFER" | "COD";
@@ -36,6 +44,7 @@ type BuyerOrder = {
       } | null;
     };
   }[];
+  review: BuyerOrderReview | null;
 };
 
 const STATUS_STYLES: Record<BuyerOrder["status"], { label: string; className: string }> = {
@@ -60,6 +69,8 @@ const STAGE_STYLES: Record<Exclude<OrderTab, "ALL">, { label: string; className:
   SHIPPING: { label: "Sedang Dikirim", className: "bg-indigo-100 text-indigo-700" },
   COMPLETED: { label: "Selesai", className: "bg-emerald-100 text-emerald-700" },
 };
+
+const RATING_VALUES = [1, 2, 3, 4, 5] as const;
 
 function determineOrderStage(order: BuyerOrder): Exclude<OrderTab, "ALL"> | "OTHER" {
   if (order.status === "PENDING") return "UNPAID";
@@ -102,136 +113,74 @@ function formatDateTime(value: string) {
   }).format(date);
 }
 
-function sanitizeHistoryList(value: unknown): string[] {
-  if (!Array.isArray(value)) return [];
-  return value
-    .map((item) => (typeof item === "string" ? item.trim().toUpperCase() : ""))
-    .filter((code): code is string => Boolean(code));
-}
+type ReviewDraft = { rating: number; comment: string };
+type ReviewMessage = { type: "success" | "error"; text: string };
 
 export default function BuyerOrdersPage() {
-  const [codes, setCodes] = useState<string[]>([]);
   const [orders, setOrders] = useState<BuyerOrder[]>([]);
-  const [missingCodes, setMissingCodes] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [lookupCode, setLookupCode] = useState("");
-  const [lookupError, setLookupError] = useState<string | null>(null);
-  const [lookupLoading, setLookupLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<OrderTab>("ALL");
-
-  const readHistory = useCallback(() => {
-    try {
-      const raw = localStorage.getItem("orderHistory");
-      if (!raw) return [] as string[];
-      const parsed = JSON.parse(raw);
-      return sanitizeHistoryList(parsed).slice(0, 20);
-    } catch (error) {
-      console.error("Failed to read order history", error);
-      return [] as string[];
-    }
-  }, []);
-
-  const persistHistory = useCallback(
-    (list: string[]) => {
-      try {
-        const unique = list.reduce<string[]>((acc, code) => {
-          if (!acc.includes(code)) acc.push(code);
-          return acc;
-        }, []);
-        const trimmed = unique.slice(0, 20);
-        localStorage.setItem("orderHistory", JSON.stringify(trimmed));
-        setCodes(trimmed);
-      } catch (error) {
-        console.error("Failed to persist order history", error);
-      }
-    },
-    [],
-  );
+  const [reviewDrafts, setReviewDrafts] = useState<Record<string, ReviewDraft>>({});
+  const [reviewMessages, setReviewMessages] = useState<Record<string, ReviewMessage>>({});
+  const [submittingReview, setSubmittingReview] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    setCodes(readHistory());
-  }, [readHistory]);
-
-  useEffect(() => {
-    if (!codes.length) {
-      setOrders([]);
-      setMissingCodes([]);
-      return;
-    }
     let cancelled = false;
-    setLoading(true);
-    Promise.all(
-      codes.map(async (code) => {
-        try {
-          const res = await fetch(`/api/orders/${code}`);
-          if (!res.ok) return { code, order: null as BuyerOrder | null };
-          const data = (await res.json()) as BuyerOrder;
-          return { code, order: data };
-        } catch (error) {
-          console.error("Failed to fetch order", error);
-          return { code, order: null as BuyerOrder | null };
+
+    async function loadOrders() {
+      setLoading(true);
+      try {
+        const res = await fetch("/api/orders");
+        if (!res.ok) {
+          const data = (await res.json().catch(() => ({}))) as { error?: string };
+          if (res.status === 401) {
+            setError(data?.error ?? "Silakan masuk terlebih dahulu untuk melihat pesanan Anda.");
+            setOrders([]);
+          } else {
+            setError(data?.error ?? "Gagal memuat pesanan. Coba lagi nanti.");
+          }
+          return;
         }
-      }),
-    ).then((results) => {
-      if (cancelled) return;
-      const found = results.filter((entry) => entry.order !== null) as { code: string; order: BuyerOrder }[];
-      const missing = results.filter((entry) => entry.order === null).map((entry) => entry.code);
-      setOrders(found.map((entry) => entry.order));
-      setMissingCodes(missing);
-      setLoading(false);
-    });
+        const data = (await res.json()) as BuyerOrder[];
+        if (!cancelled) {
+          setOrders(data);
+          setError(null);
+        }
+      } catch (err) {
+        console.error("Failed to load orders", err);
+        if (!cancelled) {
+          setError("Gagal memuat pesanan. Coba lagi nanti.");
+          setOrders([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadOrders();
 
     return () => {
       cancelled = true;
     };
-  }, [codes]);
+  }, []);
 
-  const handleLookup = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const code = lookupCode.trim().toUpperCase();
-    if (!code) return;
-    setLookupError(null);
-    setLookupLoading(true);
-    try {
-      const res = await fetch(`/api/orders/${code}`);
-      if (!res.ok) {
-        setLookupError("Pesanan tidak ditemukan. Periksa kembali kode pesanan Anda.");
-        return;
+  useEffect(() => {
+    setReviewDrafts((prev) => {
+      const next = { ...prev };
+      for (const order of orders) {
+        if (!next[order.orderCode]) {
+          next[order.orderCode] = {
+            rating: order.review?.rating ?? 0,
+            comment: order.review?.comment ?? "",
+          };
+        }
       }
-      const order = (await res.json()) as BuyerOrder;
-      persistHistory([code, ...codes.filter((existing) => existing !== code)]);
-      setOrders((prev) => {
-        const without = prev.filter((item) => item.orderCode !== order.orderCode);
-        return [order, ...without];
-      });
-      setMissingCodes((prev) => prev.filter((missingCode) => missingCode !== code));
-      setLookupCode("");
-    } catch (error) {
-      console.error("Failed to lookup order", error);
-      setLookupError("Terjadi kesalahan saat mengambil pesanan. Coba lagi nanti.");
-    } finally {
-      setLookupLoading(false);
-    }
-  };
-
-  const handleRemove = (code: string) => {
-    persistHistory(codes.filter((item) => item !== code));
-    setOrders((prev) => prev.filter((item) => item.orderCode !== code));
-    setMissingCodes((prev) => prev.filter((item) => item !== code));
-  };
-
-  const handleClearHistory = () => {
-    try {
-      localStorage.removeItem("orderHistory");
-    } catch (error) {
-      console.error("Failed to clear order history", error);
-    }
-    setCodes([]);
-    setOrders([]);
-    setMissingCodes([]);
-  };
-
-  const hasHistory = codes.length > 0;
+      return next;
+    });
+  }, [orders]);
 
   const filteredOrders = useMemo(() => {
     if (activeTab === "ALL") return orders;
@@ -239,13 +188,111 @@ export default function BuyerOrdersPage() {
     return orders.filter((order) => determineOrderStage(order) === stageKey);
   }, [activeTab, orders]);
 
+  const handleRatingChange = (orderCode: string, rating: number) => {
+    setReviewDrafts((prev) => ({
+      ...prev,
+      [orderCode]: {
+        rating,
+        comment: prev[orderCode]?.comment ?? "",
+      },
+    }));
+  };
+
+  const handleCommentChange = (orderCode: string, comment: string) => {
+    setReviewDrafts((prev) => ({
+      ...prev,
+      [orderCode]: {
+        rating: prev[orderCode]?.rating ?? 0,
+        comment,
+      },
+    }));
+  };
+
+  const handleReviewSubmit = async (
+    event: React.FormEvent<HTMLFormElement>,
+    orderCode: string,
+  ) => {
+    event.preventDefault();
+    const draft = reviewDrafts[orderCode] ?? { rating: 0, comment: "" };
+
+    if (draft.rating < 1) {
+      setReviewMessages((prev) => ({
+        ...prev,
+        [orderCode]: {
+          type: "error",
+          text: "Pilih jumlah bintang terlebih dahulu.",
+        },
+      }));
+      return;
+    }
+
+    setSubmittingReview((prev) => ({ ...prev, [orderCode]: true }));
+    setReviewMessages((prev) => {
+      const { [orderCode]: _removed, ...rest } = prev;
+      return rest;
+    });
+
+    try {
+      const res = await fetch(`/api/orders/${orderCode}/review`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rating: draft.rating, comment: draft.comment }),
+      });
+
+      if (!res.ok) {
+        const data = (await res.json().catch(() => ({}))) as { error?: string };
+        setReviewMessages((prev) => ({
+          ...prev,
+          [orderCode]: {
+            type: "error",
+            text: data?.error ?? "Gagal menyimpan ulasan. Coba lagi nanti.",
+          },
+        }));
+        return;
+      }
+
+      const savedReview = (await res.json()) as BuyerOrderReview;
+      setOrders((prev) =>
+        prev.map((order) =>
+          order.orderCode === orderCode ? { ...order, review: savedReview } : order,
+        ),
+      );
+      setReviewDrafts((prev) => ({
+        ...prev,
+        [orderCode]: {
+          rating: savedReview.rating,
+          comment: savedReview.comment ?? "",
+        },
+      }));
+      setReviewMessages((prev) => ({
+        ...prev,
+        [orderCode]: {
+          type: "success",
+          text: "Terima kasih! Penilaian Anda tersimpan.",
+        },
+      }));
+    } catch (err) {
+      console.error("Failed to submit review", err);
+      setReviewMessages((prev) => ({
+        ...prev,
+        [orderCode]: {
+          type: "error",
+          text: "Terjadi kesalahan saat menyimpan ulasan. Coba lagi nanti.",
+        },
+      }));
+    } finally {
+      setSubmittingReview((prev) => ({ ...prev, [orderCode]: false }));
+    }
+  };
+
   return (
     <div className="mx-auto max-w-5xl space-y-8 py-8">
       <header className="space-y-2">
         <h1 className="text-2xl font-semibold text-gray-900">Pesanan Saya</h1>
         <p className="max-w-3xl text-sm text-gray-600">
-          Lihat riwayat pesanan Anda, cek status pembayaran, dan temukan detail produk serta toko tempat Anda berbelanja.
-          Simpan kode pesanan untuk memantau perkembangannya di sini.
+          Semua pesanan yang Anda buat dengan akun ini akan muncul otomatis tanpa perlu menyimpan kode
+          secara manual. Setelah pesanan selesai diterima, berikan penilaian dan ulasan untuk membantu
+          pembeli lain.
         </p>
       </header>
 
@@ -267,53 +314,56 @@ export default function BuyerOrdersPage() {
         })}
       </nav>
 
-      <section className="rounded-lg border border-dashed border-orange-200 bg-orange-50 p-4">
-        <form onSubmit={handleLookup} className="flex flex-col gap-3 md:flex-row md:items-center">
-          <div className="flex-1">
-            <label htmlFor="order-code" className="mb-1 block text-xs font-semibold uppercase tracking-wide text-orange-700">
-              Tambahkan pesanan dengan kode
-            </label>
-            <input
-              id="order-code"
-              name="code"
-              value={lookupCode}
-              onChange={(event) => setLookupCode(event.target.value)}
-              placeholder="Contoh: AKAY-1A2B3C4D"
-              className="w-full rounded-md border border-orange-200 bg-white px-3 py-2 text-sm focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-200"
-            />
+      {error ? (
+        <div className="rounded-lg border border-rose-200 bg-rose-50 p-6 text-sm text-rose-700">
+          {error}
+          <div className="mt-3 text-xs">
+            <Link href="/seller/login" className="font-semibold text-rose-800 hover:underline">
+              Masuk ke akun Anda
+            </Link>
+            <span className="mx-1">atau</span>
+            <Link href="/seller/register" className="font-semibold text-rose-800 hover:underline">
+              daftar sekarang
+            </Link>
+            untuk mulai berbelanja dan memantau pesanan.
           </div>
-          <button
-            type="submit"
-            className="inline-flex items-center justify-center rounded-md bg-orange-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-70"
-            disabled={lookupLoading}
-          >
-            {lookupLoading ? "Mencari..." : "Simpan Kode"}
-          </button>
-        </form>
-        {lookupError && <p className="mt-2 text-sm text-rose-600">{lookupError}</p>}
-      </section>
+        </div>
+      ) : null}
 
-      {hasHistory ? (
+      {loading && orders.length === 0 ? (
+        <div className="rounded-lg border border-gray-200 bg-white p-6 text-sm text-gray-600">
+          Memuat pesanan terbaru Anda...
+        </div>
+      ) : null}
+
+      {!loading && !error && orders.length === 0 ? (
+        <div className="rounded-lg border border-gray-200 bg-white p-8 text-center text-sm text-gray-600">
+          <h2 className="text-lg font-semibold text-gray-900">Belum ada pesanan tercatat</h2>
+          <p className="mt-2">
+            Setelah checkout menggunakan akun ini, pesanan akan otomatis tersimpan dan tampil di halaman ini.
+          </p>
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+            <Link href="/" className="rounded-md bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600">
+              Belanja produk
+            </Link>
+            <Link
+              href="/cart"
+              className="rounded-md border border-orange-200 px-4 py-2 text-sm font-semibold text-orange-600 hover:bg-orange-50"
+            >
+              Lihat keranjang
+            </Link>
+          </div>
+        </div>
+      ) : null}
+
+      {filteredOrders.length > 0 ? (
         <div className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-lg font-semibold text-gray-900">Riwayat Pesanan</h2>
-            <div className="flex flex-wrap items-center gap-2 text-sm">
-              <span className="rounded-full bg-gray-100 px-3 py-1 text-gray-600">{codes.length} kode tersimpan</span>
-              <button
-                type="button"
-                onClick={handleClearHistory}
-                className="text-sm font-medium text-rose-600 hover:text-rose-700"
-              >
-                Hapus riwayat
-              </button>
-            </div>
+            <h2 className="text-lg font-semibold text-gray-900">Ringkasan Pesanan</h2>
+            <span className="rounded-full bg-gray-100 px-3 py-1 text-sm text-gray-600">
+              {filteredOrders.length} pesanan
+            </span>
           </div>
-
-          {loading && orders.length === 0 ? (
-            <div className="rounded-lg border border-gray-200 bg-white p-6 text-sm text-gray-600">
-              Memuat pesanan terbaru Anda...
-            </div>
-          ) : null}
 
           {filteredOrders.map((order) => {
             const statusInfo = STATUS_STYLES[order.status];
@@ -322,6 +372,11 @@ export default function BuyerOrdersPage() {
             const firstSeller = order.items.find((item) => item.product?.seller)?.product?.seller ?? null;
             const firstProductImage = order.items.find((item) => item.product?.imageUrl)?.product?.imageUrl ?? null;
             const totalItems = order.items.reduce((sum, item) => sum + item.qty, 0);
+            const draft = reviewDrafts[order.orderCode] ?? { rating: order.review?.rating ?? 0, comment: order.review?.comment ?? "" };
+            const reviewMessage = reviewMessages[order.orderCode];
+            const submitting = submittingReview[order.orderCode] ?? false;
+            const canReview = stage === "COMPLETED" && order.status === "PAID";
+            const review = order.review;
 
             return (
               <article key={order.orderCode} className="space-y-4 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
@@ -440,17 +495,9 @@ export default function BuyerOrdersPage() {
                 </div>
 
                 <div className="flex flex-wrap items-center justify-between gap-3 border-t border-dashed border-gray-200 pt-4">
-                  <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
-                    <button
-                      type="button"
-                      onClick={() => handleRemove(order.orderCode)}
-                      className="font-medium text-rose-600 hover:text-rose-700"
-                    >
-                      Hapus dari daftar
-                    </button>
-                    <span className="hidden text-gray-300 md:inline">•</span>
-                    <span>Simpan kode ini untuk memantau perkembangan pesanan Anda.</span>
-                  </div>
+                  <p className="text-xs text-gray-500">
+                    Pesanan ini akan tetap tersimpan di akun Anda. Jika membutuhkan bantuan lebih lanjut, hubungi layanan pelanggan kami.
+                  </p>
                   <Link
                     href={`/order/${order.orderCode}`}
                     className="inline-flex items-center justify-center rounded-md bg-orange-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-600"
@@ -458,44 +505,73 @@ export default function BuyerOrdersPage() {
                     Lihat Detail
                   </Link>
                 </div>
+
+                <div className="space-y-3 rounded-lg border border-dashed border-orange-200 bg-orange-50 p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h4 className="text-sm font-semibold text-orange-700">Penilaian Pesanan</h4>
+                    {review ? (
+                      <span className="text-xs text-orange-600">
+                        Terakhir diperbarui {formatDateTime(review.updatedAt)}
+                      </span>
+                    ) : null}
+                  </div>
+                  <form
+                    onSubmit={(event) => handleReviewSubmit(event, order.orderCode)}
+                    className="space-y-3"
+                  >
+                    <div className="flex items-center gap-1">
+                      {RATING_VALUES.map((value) => {
+                        const isActive = draft.rating >= value;
+                        return (
+                          <button
+                            key={value}
+                            type="button"
+                            onClick={() => handleRatingChange(order.orderCode, value)}
+                            className={`text-xl transition ${isActive ? "text-amber-500" : "text-gray-300 hover:text-amber-400"}`}
+                            aria-label={`${value} bintang`}
+                          >
+                            {isActive ? "★" : "☆"}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <textarea
+                      value={draft.comment}
+                      onChange={(event) => handleCommentChange(order.orderCode, event.target.value)}
+                      placeholder="Bagikan pengalaman Anda dengan pesanan ini"
+                      rows={3}
+                      className="w-full rounded-md border border-orange-200 bg-white px-3 py-2 text-sm text-gray-700 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-200"
+                    />
+                    <div className="flex flex-wrap items-center gap-3">
+                      <button
+                        type="submit"
+                        className="inline-flex items-center justify-center rounded-md bg-orange-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-70"
+                        disabled={submitting || !canReview}
+                      >
+                        {submitting ? "Menyimpan..." : review ? "Perbarui Penilaian" : "Kirim Penilaian"}
+                      </button>
+                      {!canReview ? (
+                        <span className="text-xs text-orange-600">
+                          Penilaian bisa diberikan setelah pesanan selesai diterima.
+                        </span>
+                      ) : null}
+                      {reviewMessage ? (
+                        <span
+                          className={`text-xs font-medium ${
+                            reviewMessage.type === "success" ? "text-emerald-600" : "text-rose-600"
+                          }`}
+                        >
+                          {reviewMessage.text}
+                        </span>
+                      ) : null}
+                    </div>
+                  </form>
+                </div>
               </article>
             );
           })}
-
-          {filteredOrders.length === 0 && !loading ? (
-            <div className="rounded-lg border border-gray-200 bg-white p-6 text-sm text-gray-600">
-              Belum ada pesanan pada kategori ini. Coba lihat tab lainnya atau tambahkan kode pesanan baru.
-            </div>
-          ) : null}
-
-          {orders.length === 0 && !loading ? (
-            <div className="rounded-lg border border-gray-200 bg-white p-6 text-sm text-gray-600">
-              Kami tidak menemukan detail untuk kode yang tersimpan. Tambahkan kode pesanan baru untuk mulai melacak belanja Anda.
-            </div>
-          ) : null}
-
-          {missingCodes.length > 0 ? (
-            <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
-              Beberapa kode tidak ditemukan atau pesanan sudah dihapus: {missingCodes.join(", ")}. Anda dapat menghapusnya dari daftar riwayat.
-            </div>
-          ) : null}
         </div>
-      ) : (
-        <div className="rounded-lg border border-gray-200 bg-white p-8 text-center text-sm text-gray-600">
-          <h2 className="text-lg font-semibold text-gray-900">Belum ada pesanan tersimpan</h2>
-          <p className="mt-2">
-            Setelah checkout, kode pesanan Anda akan otomatis tersimpan di sini. Anda juga bisa menambahkan kode secara manual menggunakan formulir di atas.
-          </p>
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-            <Link href="/" className="rounded-md bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600">
-              Belanja produk
-            </Link>
-            <Link href="/cart" className="rounded-md border border-orange-200 px-4 py-2 text-sm font-semibold text-orange-600 hover:bg-orange-50">
-              Lihat keranjang
-            </Link>
-          </div>
-        </div>
-      )}
+      ) : null}
     </div>
   );
 }

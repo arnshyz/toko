@@ -26,6 +26,8 @@ model User {
 
   products     Product[]
   orderItems   OrderItem[] @relation("SellerItems")
+  orders       Order[]     @relation("BuyerOrders")
+  orderReviews OrderReview[]
   warehouses   Warehouse[]
   passwordResetTokens PasswordResetToken[]
 }
@@ -92,6 +94,8 @@ model Order {
   buyerName        String
   buyerPhone       String
   buyerAddress     String
+  buyerId          String?
+  buyer            User?         @relation("BuyerOrders", fields: [buyerId], references: [id])
   courier          String
   shippingCost     Int
   status           OrderStatus   @default(PENDING)
@@ -113,6 +117,19 @@ model Order {
   items            OrderItem[]
   logs             VerificationLog[]
   returns          ReturnRequest[]
+  review           OrderReview?
+}
+
+model OrderReview {
+  id        String   @id @default(cuid())
+  orderId   String   @unique
+  order     Order    @relation(fields: [orderId], references: [id])
+  buyerId   String
+  buyer     User     @relation(fields: [buyerId], references: [id])
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model OrderItem {

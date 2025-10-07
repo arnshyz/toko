@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { COURIERS } from "@/lib/shipping";
+import { getSession } from "@/lib/session";
+
+export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
   const form = await req.formData();
@@ -48,10 +51,14 @@ export async function POST(req: NextRequest) {
   const totalWithUnique = Math.max(0, itemsTotal - voucherDiscount) + shippingCost + uniqueCode;
   const orderCode = 'AKAY-' + Math.random().toString(36).slice(2,10).toUpperCase();
 
+  const session = await getSession();
+  const buyerId = session.user?.id ?? null;
+
   const order = await prisma.order.create({
     data: {
       orderCode,
       buyerName, buyerPhone, buyerAddress,
+      buyerId,
       courier: courier.label,
       shippingCost,
       uniqueCode,

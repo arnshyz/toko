@@ -4,13 +4,17 @@ import { getSession } from "@/lib/session";
 
 export const runtime = "nodejs";
 
-export async function GET(_req: NextRequest, { params }: { params: { code: string } }) {
+export async function GET(_req: NextRequest) {
   const session = await getSession();
   const userId = session.user?.id;
-  const isAdmin = session.user?.isAdmin ?? false;
 
-  const o = await prisma.order.findUnique({
-    where: { orderCode: params.code },
+  if (!userId) {
+    return NextResponse.json({ error: "Silakan masuk untuk melihat pesanan Anda." }, { status: 401 });
+  }
+
+  const orders = await prisma.order.findMany({
+    where: { buyerId: userId },
+    orderBy: { createdAt: "desc" },
     include: {
       items: {
         include: {
@@ -24,16 +28,9 @@ export async function GET(_req: NextRequest, { params }: { params: { code: strin
           },
         },
       },
-      logs: true,
-      returns: true,
       review: true,
     },
   });
-  if (!o) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  if (o.buyerId && o.buyerId !== userId && !isAdmin) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
-
-  return NextResponse.json(o);
+  return NextResponse.json(orders);
 }

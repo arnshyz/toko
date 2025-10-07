@@ -23,16 +23,6 @@ export default function CheckoutPage() {
     if (!res.ok) { alert('Gagal membuat pesanan'); return; }
     const data = await res.json();
     const orderCode = typeof data?.orderCode === 'string' ? data.orderCode : '';
-    if (orderCode) {
-      try {
-        const existingRaw = localStorage.getItem('orderHistory');
-        const existing: string[] = existingRaw ? JSON.parse(existingRaw) : [];
-        const nextHistory = [orderCode, ...existing.filter((code: string) => code !== orderCode)].slice(0, 20);
-        localStorage.setItem('orderHistory', JSON.stringify(nextHistory));
-      } catch (error) {
-        console.error('Failed to update order history', error);
-      }
-    }
     localStorage.removeItem('cart');
     window.location.href = `/order/${orderCode || data.orderCode}`;
   }
