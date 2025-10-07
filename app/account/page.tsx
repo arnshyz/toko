@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { ProvinceSelect } from "@/components/ProvinceSelect";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
 import type { Gender } from "@prisma/client";
@@ -299,10 +300,9 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
             <label htmlFor="province" className="text-sm font-medium text-gray-700">
               Provinsi
             </label>
-            <input
+            <ProvinceSelect
               id="province"
               name="province"
-              type="text"
               required
               className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/30"
             />
