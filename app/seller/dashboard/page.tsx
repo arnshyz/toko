@@ -1,5 +1,90 @@
+import { Prisma } from "@prisma/client";
+
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
+
+const SELLER_SELECTION = Prisma.validator<Prisma.UserSelect>()({
+  isBanned: true,
+  storeIsOnline: true,
+  name: true,
+  slug: true,
+  sellerOnboardingStatus: true,
+});
+
+type SellerAccount = Prisma.UserGetPayload<{ select: typeof SELLER_SELECTION }> & {
+  storeCity: string | null;
+  storeProvince: string | null;
+  storeAddressLine: string | null;
+};
+
+async function getPrimaryWarehouseCity(userId: string): Promise<string | null> {
+  const warehouse = await prisma.warehouse.findFirst({
+    where: { ownerId: userId },
+    orderBy: { createdAt: "asc" },
+    select: { city: true },
+  });
+
+  return warehouse?.city?.trim() || null;
+}
+
+async function getSellerDashboardAccount(userId: string): Promise<SellerAccount | null> {
+  try {
+    const account = await prisma.user.findUnique({
+      where: { id: userId },
+      select: SELLER_SELECTION,
+    });
+
+    if (!account) {
+      return null;
+    }
+
+    const warehouseCity = await getPrimaryWarehouseCity(userId);
+
+    return {
+      ...account,
+      storeCity: warehouseCity,
+      storeProvince: null,
+      storeAddressLine: null,
+    } satisfies SellerAccount;
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2022" &&
+      typeof error.meta?.column === "string" &&
+      error.meta.column.startsWith("User.store")
+    ) {
+      const fallbackAccount = await prisma.$queryRaw<
+        Array<{
+          isBanned: boolean;
+          storeIsOnline: boolean | null;
+          name: string;
+          slug: string;
+          sellerOnboardingStatus: string;
+        }>
+      >`SELECT "isBanned", "storeIsOnline", "name", "slug", "sellerOnboardingStatus" FROM "User" WHERE "id" = ${userId} LIMIT 1`;
+
+      const row = fallbackAccount[0];
+      if (!row) {
+        return null;
+      }
+
+      const warehouseCity = await getPrimaryWarehouseCity(userId);
+
+      return {
+        isBanned: row.isBanned,
+        storeIsOnline: row.storeIsOnline ?? false,
+        name: row.name,
+        slug: row.slug,
+        sellerOnboardingStatus: row.sellerOnboardingStatus as SellerAccount['sellerOnboardingStatus'],
+        storeCity: warehouseCity,
+        storeProvince: null,
+        storeAddressLine: null,
+      } satisfies SellerAccount;
+    }
+
+    throw error;
+  }
+}
 
 export const dynamic = "force-dynamic";
 
@@ -8,10 +93,7 @@ export default async function Dashboard() {
   const user = session.user;
   if (!user) return <div>Harap login sebagai seller.</div>;
 
-  const account = await prisma.user.findUnique({
-    where: { id: user.id },
-    select: { isBanned: true, storeIsOnline: true, name: true, slug: true, sellerOnboardingStatus: true },
-  });
+  const account = await getSellerDashboardAccount(user.id);
 
   if (!account || account.isBanned) {
     return (
@@ -48,6 +130,10 @@ export default async function Dashboard() {
   const storeIsOnline = account.storeIsOnline ?? false;
   const storeName = account.name;
   const storeSlug = account.slug;
+  const storeCity = account.storeCity?.trim() ?? "";
+  const storeProvince = account.storeProvince?.trim() ?? "";
+  const storeAddressLine = account.storeAddressLine?.trim() ?? "";
+  const hasStoreOrigin = Boolean(storeCity);
 
   const [pcount, orders, revenue] = await Promise.all([
     prisma.product.count({ where: { sellerId: user.id } }),
@@ -64,6 +150,17 @@ export default async function Dashboard() {
           <div className="text-sm text-gray-600">
             <div className="font-medium text-gray-900">{storeName}</div>
             <div className="text-xs text-gray-500">Alamat etalase: https://akay.id/s/{storeSlug}</div>
+            {hasStoreOrigin ? (
+              <div className="mt-1 text-xs text-gray-500">
+                Gudang: {storeAddressLine ? `${storeAddressLine}, ` : ""}
+                {storeCity}
+                {storeProvince ? `, ${storeProvince}` : ""}
+              </div>
+            ) : (
+              <div className="mt-1 text-xs text-amber-600">
+                Tambahkan alamat gudang di pengaturan toko agar ongkos kirim dapat dihitung otomatis.
+              </div>
+            )}
           </div>
           <a className="text-sm font-semibold text-[#f53d2d] hover:text-[#d63b22]" href="/seller/settings">
             Atur nama &amp; alamat toko →
