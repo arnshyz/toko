@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { AddressRegionFields } from "@/components/AddressRegionFields";
@@ -57,6 +58,21 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
     redirect("/seller/login");
   }
 
+  const [pendingOrders, cancelledOrders, packedItems, shippedItems, deliveredItems] = await Promise.all([
+    prisma.order.count({ where: { buyerId: viewer.id, status: "PENDING" } }),
+    prisma.order.count({ where: { buyerId: viewer.id, status: "CANCELLED" } }),
+    prisma.orderItem.count({ where: { order: { buyerId: viewer.id }, status: "PACKED" } }),
+    prisma.orderItem.count({ where: { order: { buyerId: viewer.id }, status: "SHIPPED" } }),
+    prisma.orderItem.count({ where: { order: { buyerId: viewer.id }, status: "DELIVERED" } }),
+  ]);
+
+  const orderSummary = [
+    { label: "Belum Bayar", value: pendingOrders, icon: "💳", href: "/orders?status=PENDING" },
+    { label: "Dikemas", value: packedItems, icon: "📦", href: "/orders?status=PACKED" },
+    { label: "Dikirim", value: shippedItems, icon: "🚚", href: "/orders?status=SHIPPED" },
+    { label: "Selesai", value: deliveredItems, icon: "✅", href: "/orders?status=DELIVERED" },
+  ];
+
   const profileError = typeof searchParams?.profileError === "string" ? searchParams.profileError : null;
   const profileUpdated = searchParams?.profileUpdated === "1";
   const addressError = typeof searchParams?.addressError === "string" ? searchParams.addressError : null;
@@ -70,7 +86,97 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
 
   return (
     <div className="mx-auto max-w-5xl space-y-8 px-4 py-8">
-      <header className="space-y-1">
+      <div className="space-y-4 md:hidden">
+        <div className="rounded-3xl bg-gradient-to-br from-[#f53d2d] via-[#ff6f3c] to-[#ff9364] px-6 py-6 text-white shadow-lg">
+          <div className="flex items-center gap-4">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/20 text-2xl font-semibold">
+              {account.name.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-wider text-white/70">Akun Saya</p>
+              <p className="text-lg font-semibold">{account.name}</p>
+              <p className="text-xs text-white/80">{account.email}</p>
+            </div>
+          </div>
+          <div className="mt-5 flex items-center justify-between text-xs font-medium text-white/90">
+            <div>
+              <p className="text-white/70">Alamat Utama</p>
+              <p className="max-w-[220px] text-white">
+                {account.addresses[0]
+                  ? `${account.addresses[0].addressLine}, ${account.addresses[0].city}`
+                  : "Belum ada alamat tersimpan"}
+              </p>
+            </div>
+            <Link href="/orders" className="rounded-full bg-white/20 px-4 py-2 text-xs font-semibold text-white">
+              Pesanan Saya
+            </Link>
+          </div>
+        </div>
+        <div className="rounded-3xl bg-white p-5 shadow-md">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">Pesanan Saya</h2>
+              <p className="text-xs text-gray-500">Lacak status terbaru transaksi Anda.</p>
+            </div>
+            <Link href="/orders" className="text-xs font-semibold text-[#f53d2d]">
+              Lihat riwayat
+            </Link>
+          </div>
+          <div className="mt-4 grid grid-cols-4 gap-3 text-center text-[11px] font-medium text-gray-700">
+            {orderSummary.map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                className="flex flex-col items-center gap-1 rounded-2xl border border-gray-100 bg-gray-50 px-2 py-3 shadow-sm"
+              >
+                <span className="text-xl">{item.icon}</span>
+                <span className="text-xs text-gray-900">{item.label}</span>
+                <span className="text-[11px] font-semibold text-[#f53d2d]">{item.value}</span>
+              </Link>
+            ))}
+            <Link
+              href="/orders?status=CANCELLED"
+              className="flex flex-col items-center gap-1 rounded-2xl border border-gray-100 bg-gray-50 px-2 py-3 shadow-sm"
+            >
+              <span className="text-xl">🚫</span>
+              <span className="text-xs text-gray-900">Dibatalkan</span>
+              <span className="text-[11px] font-semibold text-[#f53d2d]">{cancelledOrders}</span>
+            </Link>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3 text-xs font-semibold text-gray-700">
+          <Link
+            href="/seller/dashboard"
+            className="col-span-2 flex items-center justify-between rounded-2xl bg-gradient-to-r from-[#f53d2d] via-[#ff6f3c] to-[#ff9364] px-5 py-4 text-white shadow-md"
+          >
+            <div className="flex items-center gap-3 text-left">
+              <span className="text-xl">🛍️</span>
+              <div>
+                <p className="text-sm font-semibold">Dashboard Seller</p>
+                <p className="text-xs font-normal text-white/80">Kelola toko dan pesanan penjualan Anda</p>
+              </div>
+            </div>
+            <span className="rounded-full bg-white/20 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide">
+              Masuk
+            </span>
+          </Link>
+          <Link href="/voucher" className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3 shadow-sm">
+            <span className="text-lg">🎁</span>
+            <div>
+              <p className="text-sm text-gray-900">Voucher Saya</p>
+              <p className="text-xs font-normal text-gray-500">Cek promo dan cashback terbaru</p>
+            </div>
+          </Link>
+          <Link href="/support" className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3 shadow-sm">
+            <span className="text-lg">🛟</span>
+            <div>
+              <p className="text-sm text-gray-900">Bantuan</p>
+              <p className="text-xs font-normal text-gray-500">Pusat bantuan dan layanan pelanggan</p>
+            </div>
+          </Link>
+        </div>
+      </div>
+      <header className="hidden space-y-1 md:block">
         <h1 className="text-3xl font-semibold text-gray-900">Akun Saya</h1>
         <p className="text-sm text-gray-600">Kelola informasi profil dan alamat pengiriman Anda.</p>
       </header>
