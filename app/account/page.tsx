@@ -145,6 +145,21 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3 text-xs font-semibold text-gray-700">
+          <Link
+            href="/seller/dashboard"
+            className="col-span-2 flex items-center justify-between rounded-2xl bg-gradient-to-r from-[#f53d2d] via-[#ff6f3c] to-[#ff9364] px-5 py-4 text-white shadow-md"
+          >
+            <div className="flex items-center gap-3 text-left">
+              <span className="text-xl">🛍️</span>
+              <div>
+                <p className="text-sm font-semibold">Dashboard Seller</p>
+                <p className="text-xs font-normal text-white/80">Kelola toko dan pesanan penjualan Anda</p>
+              </div>
+            </div>
+            <span className="rounded-full bg-white/20 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide">
+              Masuk
+            </span>
+          </Link>
           <Link href="/voucher" className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3 shadow-sm">
             <span className="text-lg">🎁</span>
             <div>
