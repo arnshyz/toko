@@ -1,5 +1,14 @@
 import { spawnSync } from 'node:child_process';
 
+const databaseUrl = process.env.DATABASE_URL;
+
+if (!databaseUrl) {
+  console.warn(
+    '\nSkipping prisma migrate deploy because DATABASE_URL is not set.',
+  );
+  process.exit(0);
+}
+
 const result = spawnSync('npx', ['prisma', 'migrate', 'deploy'], {
   encoding: 'utf-8',
   env: process.env,
@@ -13,6 +22,13 @@ if (result.stderr) {
 }
 
 const output = `${result.stdout ?? ''}${result.stderr ?? ''}`;
+
+if (result.error) {
+  console.warn(
+    `\nSkipping prisma migrate deploy because the command failed to start: ${result.error.message}`,
+  );
+  process.exit(0);
+}
 
 if (result.status !== 0) {
   if (/P1001/.test(output)) {
