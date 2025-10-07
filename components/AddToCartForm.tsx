@@ -10,6 +10,7 @@ export type AddToCartFormProps = {
   stock: number;
   imageUrl?: string | null;
   isLoggedIn?: boolean;
+  variant?: "default" | "mobile";
 };
 
 type CartItem = {
@@ -49,6 +50,7 @@ export function AddToCartForm({
   stock,
   imageUrl,
   isLoggedIn = false,
+  variant = "default",
 }: AddToCartFormProps) {
   const [quantity, setQuantity] = useState(1);
   const [status, setStatus] = useState<"idle" | "success" | "unauthenticated">("idle");
@@ -84,6 +86,66 @@ export function AddToCartForm({
     }
     setQuantity(Math.max(1, Math.floor(value)));
   }, []);
+
+  if (variant === "mobile") {
+    return (
+      <form className="space-y-4 lg:hidden" onSubmit={handleSubmit}>
+        <input type="hidden" name="productId" value={productId} />
+        <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
+          <label className="mb-3 block text-sm font-semibold text-gray-700" htmlFor="quantity-input-mobile">
+            Jumlah
+          </label>
+          <div className="flex flex-wrap items-center gap-3">
+            <input
+              id="quantity-input-mobile"
+              type="number"
+              name="qty"
+              value={quantity}
+              min={1}
+              onChange={handleChange}
+              className="h-11 w-24 rounded-lg border border-gray-300 px-3 text-center text-sm focus:border-orange-500 focus:outline-none"
+            />
+            <span className="text-xs text-gray-500">Stok tersedia: {stock}</span>
+          </div>
+        </div>
+        <div className="pointer-events-none fixed inset-x-0 bottom-0 z-50 px-4 pb-4">
+          <div className="pointer-events-auto space-y-3 rounded-3xl border border-orange-100 bg-white p-4 shadow-xl shadow-black/5">
+            {status === "success" ? (
+              <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
+                Produk berhasil ditambahkan ke keranjang. <a className="font-semibold underline" href="/cart">Lihat keranjang</a>.
+              </div>
+            ) : null}
+            {status === "unauthenticated" ? (
+              <div className="rounded-xl border border-red-100 bg-red-50 px-3 py-2 text-xs text-red-600">
+                Silahkan login jika ingin memasukan ke keranjang.
+              </div>
+            ) : null}
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                className="flex h-12 w-12 items-center justify-center rounded-full border border-gray-200 text-lg text-gray-600 transition hover:border-orange-200 hover:text-orange-500"
+                aria-label="Tambahkan ke favorit"
+              >
+                ❤
+              </button>
+              <button
+                type="submit"
+                className="flex-1 rounded-full bg-orange-100 px-4 py-3 text-sm font-semibold text-orange-600 transition hover:bg-orange-200"
+              >
+                Masukkan Keranjang
+              </button>
+              <a
+                href="/checkout"
+                className="flex-[1.3] rounded-full bg-orange-500 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-orange-600"
+              >
+                Beli Sekarang
+              </a>
+            </div>
+          </div>
+        </div>
+      </form>
+    );
+  }
 
   return (
     <form className="space-y-4 rounded-xl border border-gray-200 bg-white p-4" onSubmit={handleSubmit}>
