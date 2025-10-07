@@ -18,6 +18,9 @@ model User {
   sellerOnboardingStatus SellerOnboardingStatus @default(ACTIVE)
   createdAt    DateTime @default(now())
   avatarUrl    String?
+  username     String?  @unique
+  phoneNumber  String?
+  gender       Gender?
   storeBadge   StoreBadge @default(BASIC)
   storeIsOnline Boolean   @default(true)
   storeFollowers Int      @default(0)
@@ -33,6 +36,7 @@ model User {
   warehouses   Warehouse[]
   flashSales   FlashSale[]
   passwordResetTokens PasswordResetToken[]
+  addresses    UserAddress[]
 }
 
 enum SellerOnboardingStatus {
@@ -72,6 +76,12 @@ model Product {
   orderItems   OrderItem[]
   images       ProductImage[]
   flashSales   FlashSale[]
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
 }
 
 model FlashSale {
@@ -120,6 +130,7 @@ model Order {
   buyerName        String
   buyerPhone       String
   buyerAddress     String
+  buyerEmail       String?
   buyerId          String?
   buyer            User?         @relation("BuyerOrders", fields: [buyerId], references: [id])
   courier          String
@@ -144,6 +155,28 @@ model Order {
   logs             VerificationLog[]
   returns          ReturnRequest[]
   review           OrderReview?
+}
+
+model UserAddress {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName      String
+  phoneNumber   String
+  province      String
+  provinceId    String?
+  city          String
+  cityId        String?
+  district      String
+  districtId    String?
+  postalCode    String?
+  addressLine   String
+  additionalInfo String?
+  isDefault     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId])
 }
 
 model OrderReview {

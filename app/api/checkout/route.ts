@@ -3,22 +3,24 @@ import { prisma } from "@/lib/prisma";
 import { COURIERS } from "@/lib/shipping";
 import { getSession } from "@/lib/session";
 import { calculateFlashSalePrice } from "@/lib/flash-sale";
+import { sendOrderCreatedEmail } from "@/lib/email";
+import { fetchCityPostalCode } from "@/lib/raja-ongkir";
 
 export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
   const form = await req.formData();
-  const buyerName = String(form.get('buyerName') || '');
-  const buyerPhone = String(form.get('buyerPhone') || '');
-  const buyerEmail = String(form.get('buyerEmail') || '').toLowerCase();
-  const buyerAddress = String(form.get('buyerAddress') || '');
+  let buyerName = String(form.get('buyerName') || '');
+  let buyerPhone = String(form.get('buyerPhone') || '');
+  let buyerEmail = String(form.get('buyerEmail') || '').toLowerCase();
+  let buyerAddress = String(form.get('buyerAddress') || '');
   const courierKey = String(form.get('courier') || 'JNE_REG') as keyof typeof COURIERS;
   const items = JSON.parse(String(form.get('items') || '[]')) as { productId: string; qty: number }[];
   const paymentMethod = String(form.get('paymentMethod') || 'TRANSFER') as 'TRANSFER'|'COD';
   const voucherCode = String(form.get('voucher') || '').trim().toUpperCase();
 
-  if (!buyerName || !buyerPhone || !buyerAddress || !buyerEmail || !items.length) {
-    return NextResponse.json({ error: 'Invalid' }, { status: 400 });
+  if (!items.length) {
+    return NextResponse.json({ error: 'Keranjang kosong' }, { status: 400 });
   }
   const courier = COURIERS[courierKey];
   const products = await prisma.product.findMany({ where: { id: { in: items.map(i => i.productId) } } });
@@ -27,10 +29,92 @@ export async function POST(req: NextRequest) {
   const session = await getSession();
   const buyerId = session.user?.id ?? null;
   if (buyerId) {
+    const account = await prisma.user.findUnique({
+      where: { id: buyerId },
+      select: {
+        name: true,
+        email: true,
+        phoneNumber: true,
+        addresses: {
+          orderBy: [
+            { isDefault: 'desc' },
+            { createdAt: 'desc' },
+          ],
+        select: {
+          id: true,
+          fullName: true,
+          phoneNumber: true,
+          province: true,
+          provinceId: true,
+          city: true,
+          cityId: true,
+          district: true,
+          districtId: true,
+          postalCode: true,
+          addressLine: true,
+          additionalInfo: true,
+          isDefault: true,
+        },
+        },
+      },
+    });
+
+    if (!account || account.addresses.length === 0) {
+      return NextResponse.json(
+        { error: 'Silakan tambahkan alamat pengiriman di Akun Saya sebelum melanjutkan checkout.' },
+        { status: 400 },
+      );
+    }
+
+    const defaultAddress =
+      account.addresses.find((address) => address.isDefault) ?? account.addresses[0];
+
+    if (!buyerName) {
+      buyerName = defaultAddress.fullName || account.name;
+    }
+    if (!buyerPhone) {
+      buyerPhone = defaultAddress.phoneNumber || account.phoneNumber || '';
+    }
+    if (!buyerEmail) {
+      buyerEmail = account.email;
+    }
+    let resolvedPostalCode = defaultAddress.postalCode || "";
+
+    if (!resolvedPostalCode && defaultAddress.cityId) {
+      const fetchedPostalCode = await fetchCityPostalCode(defaultAddress.cityId);
+      if (fetchedPostalCode) {
+        resolvedPostalCode = fetchedPostalCode;
+        try {
+          await prisma.userAddress.update({
+            where: { id: defaultAddress.id },
+            data: { postalCode: fetchedPostalCode },
+          });
+        } catch (error) {
+          console.warn("Failed to persist fetched postal code", error);
+        }
+      }
+    }
+
+    if (!buyerAddress) {
+      const addressParts = [
+        defaultAddress.addressLine,
+        defaultAddress.district,
+        defaultAddress.city,
+        defaultAddress.province,
+        resolvedPostalCode ? `Kode Pos ${resolvedPostalCode}` : '',
+        defaultAddress.additionalInfo || '',
+      ];
+      buyerAddress = addressParts.filter(Boolean).join(', ');
+    }
+
     const ownsProduct = products.some((product) => product.sellerId === buyerId);
     if (ownsProduct) {
       return NextResponse.json({ error: 'Penjual tidak dapat membeli produknya sendiri' }, { status: 400 });
     }
+  }
+
+  if (!buyerName || !buyerPhone || !buyerAddress || !buyerEmail) {
+    return NextResponse.json({ error: 'Data pembeli tidak lengkap' }, { status: 400 });
   }
 
   const now = new Date();
@@ -87,7 +171,7 @@ export async function POST(req: NextRequest) {
   const order = await prisma.order.create({
     data: {
       orderCode,
-      buyerName, buyerPhone, buyerAddress,
+      buyerName, buyerPhone, buyerAddress, buyerEmail,
       buyerId,
       courier: courier.label,
       shippingCost,
