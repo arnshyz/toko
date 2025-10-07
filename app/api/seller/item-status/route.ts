@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.redirect(new URL('/seller/onboarding', req.url));
   }
 
-  const item = await prisma.orderItem.findUnique({ where: { id: orderItemId }, include: { order: true } });
+  const item = await prisma.orderItem.findUnique({ where: { id: orderItemId }, include: { order: { include: { items: true } } } });
   if (!item || item.sellerId !== user.id || item.order.orderCode !== orderCode) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
   if (item.status === status) {
