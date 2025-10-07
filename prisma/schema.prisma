@@ -14,6 +14,8 @@ model User {
   passwordHash String
   slug         String   @unique
   isAdmin      Boolean  @default(false)
+  isBanned     Boolean  @default(false)
+  sellerOnboardingStatus SellerOnboardingStatus @default(ACTIVE)
   createdAt    DateTime @default(now())
   avatarUrl    String?
   storeBadge   StoreBadge @default(BASIC)
@@ -25,8 +27,18 @@ model User {
 
   products     Product[]
   orderItems   OrderItem[] @relation("SellerItems")
+  orders       Order[]     @relation("BuyerOrders")
+  orderReviews OrderReview[]
+  reviewHelpfulVotes OrderReviewHelpful[]
   warehouses   Warehouse[]
+  flashSales   FlashSale[]
   passwordResetTokens PasswordResetToken[]
+}
+
+enum SellerOnboardingStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  ACTIVE
 }
 
 model Warehouse {
@@ -59,6 +71,23 @@ model Product {
 
   orderItems   OrderItem[]
   images       ProductImage[]
+  flashSales   FlashSale[]
+}
+
+model FlashSale {
+  id              String   @id @default(cuid())
+  sellerId        String
+  seller          User     @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  productId       String
+  product         Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  discountPercent Int
+  startAt         DateTime
+  endAt           DateTime
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([sellerId])
+  @@index([productId])
 }
 
 model ProductImage {
@@ -91,7 +120,8 @@ model Order {
   buyerName        String
   buyerPhone       String
   buyerAddress     String
-  buyerEmail       String?
+  buyerId          String?
+  buyer            User?         @relation("BuyerOrders", fields: [buyerId], references: [id])
   courier          String
   shippingCost     Int
   status           OrderStatus   @default(PENDING)
@@ -103,11 +133,41 @@ model Order {
   voucherDiscount  Int           @default(0)
   proofImage       Bytes?
   proofMimeType    String?
+  midtransTransactionId String?
+  midtransOrderId       String?
+  midtransStatus        String?
+  midtransPaymentType   String?
+  midtransFraudStatus   String?
   createdAt        DateTime      @default(now())
 
   items            OrderItem[]
   logs             VerificationLog[]
   returns          ReturnRequest[]
+  review           OrderReview?
+}
+
+model OrderReview {
+  id        String   @id @default(cuid())
+  orderId   String   @unique
+  order     Order    @relation(fields: [orderId], references: [id])
+  buyerId   String
+  buyer     User     @relation(fields: [buyerId], references: [id])
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  helpfulVotes OrderReviewHelpful[]
+}
+
+model OrderReviewHelpful {
+  id        String   @id @default(cuid())
+  reviewId  String
+  review    OrderReview @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([reviewId, userId])
 }
 
 model OrderItem {
