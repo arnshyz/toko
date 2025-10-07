@@ -233,14 +233,21 @@ export default function CheckoutPage() {
 
           <div>
             <label className="block text-sm mb-1">Kurir</label>
-            <select value={courier} onChange={(e)=>setCourier(e.target.value as keyof typeof COURIERS)} className="border rounded w-full px-3 py-2">
-              {Object.entries(COURIERS).map(([k,v]) => (
+            <select
+              value={courier}
+              onChange={(e) => setCourier(e.target.value as keyof typeof COURIERS)}
+              className="border rounded w-full px-3 py-2"
+            >
+              {Object.entries(COURIERS).map(([k, v]) => (
                 <option key={k} value={k}>
-                  {v.label} (Rp {new Intl.NumberFormat('id-ID').format(v.cost)})
+                  {v.label} (estimasi Rp {new Intl.NumberFormat('id-ID').format(v.fallbackCost)})
                 </option>
               ))}
             </select>
-            <p className="text-xs text-gray-500 mt-1">Ongkir dihitung per gudang (per-shipment) di server.</p>
+            <p className="text-xs text-gray-500 mt-1">
+              Ongkir final dihitung otomatis via RajaOngkir saat pesanan dibuat (per gudang). Estimasi di atas
+              digunakan jika RajaOngkir tidak tersedia.
+            </p>
           </div>
 
           <div>
