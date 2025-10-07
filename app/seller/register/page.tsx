@@ -11,12 +11,12 @@ export default function SellerRegister({
 
   return (
     <div className="mx-auto w-full max-w-5xl">
-      <div className="relative overflow-hidden rounded-[36px] bg-gradient-to-br from-[#f53d2d] via-[#ff7243] to-[#ff9061] p-1 shadow-2xl">
+      <div className="relative overflow-hidden rounded-[36px] bg-gradient-to-br from-primary via-primary-bright to-primary-soft p-1 shadow-2xl">
         <div className="relative flex flex-col gap-10 rounded-[34px] bg-white/90 p-6 lg:flex-row lg:p-10">
-          <div className="relative hidden min-h-[420px] flex-1 flex-col justify-between overflow-hidden rounded-[28px] bg-gradient-to-br from-[#f53d2d] to-[#ff6636] p-10 text-white lg:flex">
+          <div className="relative hidden min-h-[420px] flex-1 flex-col justify-between overflow-hidden rounded-[28px] bg-gradient-to-br from-primary to-primary-bright p-10 text-white lg:flex">
             <div className="space-y-6">
               <div className="flex items-center gap-4">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-3xl font-bold text-[#f53d2d]">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-3xl font-bold text-primary">
                   A
                 </div>
                 <div>
@@ -51,7 +51,7 @@ export default function SellerRegister({
               <span>Daftar</span>
               <a
                 href="mailto:support@akay.id"
-                className="font-medium text-[#f53d2d] hover:text-[#d63b22]"
+                className="font-medium text-primary hover:text-primary-strong"
               >
                 Butuh bantuan?
               </a>
@@ -100,7 +100,7 @@ export default function SellerRegister({
                       name="name"
                       required
                       placeholder="Masukkan nama Anda"
-                      className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm transition focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/40"
+                      className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
                     />
                   </div>
                   <div className="space-y-1">
@@ -113,7 +113,7 @@ export default function SellerRegister({
                       name="email"
                       required
                       placeholder="contoh@email.com atau 0812xxxx"
-                      className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm transition focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/40"
+                      className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
                     />
                   </div>
                   <div className="space-y-1">
@@ -126,7 +126,7 @@ export default function SellerRegister({
                       name="password"
                       required
                       placeholder="Minimal 8 karakter"
-                      className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm transition focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/40"
+                      className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
                     />
                   </div>
                   <div className="space-y-1">
@@ -139,11 +139,11 @@ export default function SellerRegister({
                       name="confirmPassword"
                       required
                       placeholder="Ulangi password"
-                      className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm transition focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/40"
+                      className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm transition focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/40"
                     />
                   </div>
                   <button
-                    className="w-full rounded-xl bg-[#f53d2d] px-4 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg shadow-[#f53d2d]/30 transition hover:bg-[#e13a24] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/50"
+                    className="w-full rounded-xl bg-primary px-4 py-3 text-sm font-semibold uppercase tracking-wide text-primary-foreground shadow-lg shadow-[0_12px_30px_rgba(75,83,32,0.3)] transition hover:bg-primary-strong focus:outline-none focus:ring-2 focus:ring-primary/50"
                   >
                     Daftar sekarang
                   </button>
@@ -158,13 +158,13 @@ export default function SellerRegister({
                 <div className="grid gap-3 text-sm">
                   <button
                     type="button"
-                    className="flex items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 font-medium text-gray-700 transition hover:border-[#f53d2d]/40 hover:text-[#f53d2d]"
+                    className="flex items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 font-medium text-gray-700 transition hover:border-primary/40 hover:text-primary"
                   >
                     Daftar dengan Facebook
                   </button>
                   <a
                     href="/api/auth/google"
-                    className="flex items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 text-center font-medium text-gray-700 transition hover:border-[#f53d2d]/40 hover:text-[#f53d2d]"
+                    className="flex items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 text-center font-medium text-gray-700 transition hover:border-primary/40 hover:text-primary"
                   >
                     Daftar dengan Google
                   </a>
@@ -172,7 +172,7 @@ export default function SellerRegister({
 
                 <div className="mt-6 text-center text-sm text-gray-500">
                   Sudah punya akun?{" "}
-                  <Link href="/seller/login" className="font-semibold text-[#f53d2d] hover:text-[#d63b22]">
+                  <Link href="/seller/login" className="font-semibold text-primary hover:text-primary-strong">
                     Log in sekarang
                   </Link>
                 </div>

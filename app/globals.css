@@ -2,14 +2,73 @@
 @tailwind components;
 @tailwind utilities;
 
-.badge{ @apply inline-block text-xs px-2 py-0.5 rounded-full; }
-.badge-pending{ @apply bg-amber-100 text-amber-700; }
-.badge-paid{ @apply bg-emerald-100 text-emerald-700; }
-.badge-danger{ @apply bg-red-100 text-red-700; }
-.badge-packed{ @apply bg-blue-100 text-blue-700; }
-.badge-shipped{ @apply bg-purple-100 text-purple-700; }
-.badge-delivered{ @apply bg-green-100 text-green-700; }
+@layer base {
+  :root {
+    color-scheme: light;
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    --muted: 60 4% 95%;
+    --muted-foreground: 222 20% 40%;
+    --border: 210 24% 88%;
+    --accent: 83 47% 88%;
+    --accent-foreground: 80 33% 20%;
+    --primary: 69 44% 23%;
+    --primary-foreground: 0 0% 100%;
+    --primary-soft: 69 45% 92%;
+    --primary-bright: 72 52% 34%;
+    --primary-strong: 69 44% 16%;
+    --primary-ring: 69 44% 35%;
+  }
 
-.btn-primary { @apply bg-army text-white rounded px-4 py-2 hover:opacity-90; }
-.btn-outline { @apply border border-army text-army rounded px-4 py-2 hover:bg-army hover:text-white; }
-.link { @apply text-army hover:opacity-80 underline; }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --background: 222 47% 11%;
+      --foreground: 210 40% 96%;
+      --muted: 215 28% 20%;
+      --muted-foreground: 217 15% 70%;
+      --border: 215 27% 26%;
+      --accent: 82 34% 25%;
+      --accent-foreground: 82 63% 80%;
+      --primary: 69 44% 26%;
+      --primary-foreground: 0 0% 100%;
+      --primary-soft: 74 36% 20%;
+      --primary-bright: 82 47% 45%;
+      --primary-strong: 69 46% 18%;
+      --primary-ring: 77 43% 65%;
+    }
+  }
+
+  .dark {
+    color-scheme: dark;
+    --background: 222 47% 11%;
+    --foreground: 210 40% 96%;
+    --muted: 215 28% 20%;
+    --muted-foreground: 217 15% 70%;
+    --border: 215 27% 26%;
+    --accent: 82 34% 25%;
+    --accent-foreground: 82 63% 80%;
+    --primary: 69 44% 26%;
+    --primary-foreground: 0 0% 100%;
+    --primary-soft: 74 36% 20%;
+    --primary-bright: 82 47% 45%;
+    --primary-strong: 69 46% 18%;
+    --primary-ring: 77 43% 65%;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased transition-colors duration-300;
+  }
+}
+
+.badge { @apply inline-block rounded-full px-2 py-0.5 text-xs; }
+.badge-pending { @apply bg-amber-100 text-amber-700; }
+.badge-paid { @apply bg-emerald-100 text-emerald-700; }
+.badge-danger { @apply bg-red-100 text-red-700; }
+.badge-packed { @apply bg-blue-100 text-blue-700; }
+.badge-shipped { @apply bg-purple-100 text-purple-700; }
+.badge-delivered { @apply bg-green-100 text-green-700; }
+
+.btn-primary { @apply rounded bg-primary px-4 py-2 font-semibold text-primary-foreground transition hover:bg-primary-strong; }
+.btn-outline { @apply rounded border border-primary text-primary transition hover:bg-primary hover:text-primary-foreground; }
+.link { @apply underline decoration-primary/40 text-primary transition hover:text-primary-strong; }

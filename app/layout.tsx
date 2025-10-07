@@ -19,8 +19,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const user = await getSessionUser();
 
   return (
-    <html lang="id">
-      <body className="bg-gray-50 text-gray-900">
+    <html lang="id" className="h-full">
+      <body className="min-h-screen bg-background text-foreground transition-colors">
         <SiteHeader user={user} />
         <main className="mx-auto max-w-6xl px-4 pb-28 pt-6 md:pb-12">
           <div className="mb-6 flex justify-between">

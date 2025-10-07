@@ -163,7 +163,7 @@ export default async function SellerProducts({
           <p className="text-xs text-gray-500 md:col-span-2">
             Tambahkan setiap kelompok varian di baris baru dengan format <span className="font-medium">Nama: opsi1, opsi2</span>.
           </p>
-          <button className="rounded-full bg-[#f53d2d] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#d73224] md:col-span-2">
+          <button className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary-strong md:col-span-2">
             Simpan Produk
           </button>
         </form>
@@ -236,7 +236,7 @@ export default async function SellerProducts({
                   </Link>
                   <form method="POST" action={`/api/seller/products/update/${product.id}`}>
                     <input type="hidden" name="toggle" value="1" />
-                    <button className="w-full rounded-full bg-[#f53d2d] px-4 py-2 text-sm font-semibold text-white shadow-sm">
+                    <button className="w-full rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm">
                       {product.isActive ? "Nonaktifkan" : "Aktifkan"}
                     </button>
                   </form>

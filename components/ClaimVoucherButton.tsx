@@ -14,7 +14,7 @@ type ClaimVoucherButtonProps = {
   className?: string;
   size?: "sm" | "md";
   variant?: "solid" | "outline";
-  color?: "indigo" | "salmon";
+  color?: "indigo" | "primary";
 };
 
 export function ClaimVoucherButton({
@@ -24,7 +24,7 @@ export function ClaimVoucherButton({
   className,
   size = "md",
   variant = "solid",
-  color = "indigo",
+  color = "primary",
 }: ClaimVoucherButtonProps) {
   const router = useRouter();
   const [status, setStatus] = useState<"idle" | "loading" | "claimed" | "error">("idle");
@@ -36,14 +36,14 @@ export function ClaimVoucherButton({
   const sizeClass = size === "sm" ? "px-3 py-2 text-xs" : "px-4 py-2.5 text-sm";
   const baseClass = (() => {
     if (variant === "outline") {
-      if (color === "salmon") {
-        return "border border-[#fcd3c7] text-[#f53d2d] hover:border-[#f8b5a3] hover:text-[#d73224]";
+      if (color === "primary") {
+        return "border border-primary/30 text-primary hover:border-primary/50 hover:text-primary-strong";
       }
       return "border border-indigo-200 text-indigo-600 hover:border-indigo-300 hover:text-indigo-500";
     }
 
-    if (color === "salmon") {
-      return "bg-[#f53d2d] text-white hover:bg-[#d73224]";
+    if (color === "primary") {
+      return "bg-primary text-primary-foreground hover:bg-primary-strong";
     }
 
     return "bg-indigo-600 text-white hover:bg-indigo-500";
@@ -100,7 +100,8 @@ export function ClaimVoucherButton({
         disabled={isLoading || isClaimed}
         onClick={handleClaim}
         className={mergeClassNames(
-          "inline-flex items-center justify-center rounded-full font-semibold transition focus:outline-none focus:ring-2 focus:ring-indigo-500/40",
+          "inline-flex items-center justify-center rounded-full font-semibold transition focus:outline-none focus:ring-2",
+          color === "primary" ? "focus:ring-primary/40" : "focus:ring-indigo-500/40",
           sizeClass,
           baseClass,
           disabledClass,

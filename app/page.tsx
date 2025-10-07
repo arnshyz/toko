@@ -139,11 +139,11 @@ export default async function HomePage() {
       <PromoSlider slides={slides.length > 0 ? slides : fallbackSlides} />
 
       <div className="space-y-4 md:hidden">
-        <div className="rounded-3xl bg-gradient-to-br from-white/95 via-white/90 to-white/70 px-4 py-4 text-gray-900 shadow-xl shadow-[#f53d2d]/10 ring-1 ring-white/70">
+        <div className="rounded-3xl bg-gradient-to-br from-white/95 via-white/90 to-white/70 px-4 py-4 text-gray-900 shadow-xl shadow-[0_20px_50px_rgba(75,83,32,0.1)] ring-1 ring-white/70">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs uppercase tracking-wide text-gray-500">Voucher Pilihan</p>
-              <p className="text-lg font-semibold text-[#f53d2d]">
+              <p className="text-lg font-semibold text-primary">
                 {highlightedVoucher ? highlightedVoucher.code : "Diskon Spesial"}
               </p>
               <p className="text-xs text-gray-500">
@@ -157,7 +157,7 @@ export default async function HomePage() {
                 voucherId={highlightedVoucher.id}
                 voucherCode={highlightedVoucher.code}
                 size="sm"
-                color="salmon"
+                color="primary"
                 className="shadow"
               >
                 Klaim
@@ -165,7 +165,7 @@ export default async function HomePage() {
             ) : (
               <Link
                 href="/promo"
-                className="rounded-full bg-[#f53d2d] px-4 py-2 text-xs font-semibold text-white shadow"
+                className="rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow"
               >
                 Jelajahi
               </Link>

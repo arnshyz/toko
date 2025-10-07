@@ -87,7 +87,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
   return (
     <div className="mx-auto max-w-5xl space-y-8 px-4 py-8">
       <div className="space-y-4 md:hidden">
-        <div className="relative rounded-3xl bg-gradient-to-br from-[#f53d2d] via-[#ff6f3c] to-[#ff9364] px-6 py-6 text-white shadow-lg">
+        <div className="relative rounded-3xl bg-gradient-to-br from-primary via-primary-bright to-primary-soft px-6 py-6 text-white shadow-lg">
           <form method="POST" action="/api/auth/logout" className="absolute right-4 top-4">
             <button
               type="submit"
@@ -126,7 +126,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
               <h2 className="text-lg font-semibold text-gray-900">Pesanan Saya</h2>
               <p className="text-xs text-gray-500">Lacak status terbaru transaksi Anda.</p>
             </div>
-            <Link href="/orders" className="text-xs font-semibold text-[#f53d2d]">
+            <Link href="/orders" className="text-xs font-semibold text-primary">
               Lihat riwayat
             </Link>
           </div>
@@ -139,7 +139,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
               >
                 <span className="text-xl">{item.icon}</span>
                 <span className="text-xs text-gray-900">{item.label}</span>
-                <span className="text-[11px] font-semibold text-[#f53d2d]">{item.value}</span>
+                <span className="text-[11px] font-semibold text-primary">{item.value}</span>
               </Link>
             ))}
             <Link
@@ -148,14 +148,14 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
             >
               <span className="text-xl">🚫</span>
               <span className="text-xs text-gray-900">Dibatalkan</span>
-              <span className="text-[11px] font-semibold text-[#f53d2d]">{cancelledOrders}</span>
+              <span className="text-[11px] font-semibold text-primary">{cancelledOrders}</span>
             </Link>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3 text-xs font-semibold text-gray-700">
           <Link
             href="/seller/dashboard"
-            className="col-span-2 flex items-center justify-between rounded-2xl bg-gradient-to-r from-[#f53d2d] via-[#ff6f3c] to-[#ff9364] px-5 py-4 text-white shadow-md"
+            className="col-span-2 flex items-center justify-between rounded-2xl bg-gradient-to-r from-primary via-primary-bright to-primary-soft px-5 py-4 text-primary-foreground shadow-md"
           >
             <div className="flex items-center gap-3 text-left">
               <span className="text-xl">🛍️</span>
@@ -241,7 +241,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
               type="url"
               placeholder="https://contoh.com/foto.jpg"
               defaultValue={account.avatarUrl ?? ""}
-              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/30"
+              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
             <p className="text-xs text-gray-500">Gunakan tautan gambar langsung berformat http atau https.</p>
           </div>
@@ -257,7 +257,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
               placeholder="nama-pengguna"
               minLength={3}
               defaultValue={account.username ?? ""}
-              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/30"
+              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
             <p className="text-xs text-gray-500">Username digunakan untuk identitas publik di masa mendatang.</p>
           </div>
@@ -273,7 +273,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
               required
               minLength={3}
               defaultValue={account.name}
-              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/30"
+              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
           </div>
 
@@ -287,7 +287,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
               type="email"
               required
               defaultValue={account.email}
-              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/30"
+              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
           </div>
 
@@ -302,7 +302,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
               inputMode="tel"
               placeholder="08xxxxxxxxxx"
               defaultValue={account.phoneNumber ?? ""}
-              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/30"
+              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
             <p className="text-xs text-gray-500">Masukkan nomor aktif untuk memudahkan konfirmasi pesanan.</p>
           </div>
@@ -315,7 +315,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
               id="gender"
               name="gender"
               defaultValue={(account.gender as Gender | null) ?? ""}
-              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/30"
+              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
             >
               {GENDER_OPTIONS.map((option) => (
                 <option key={option.value || "empty"} value={option.value}>
@@ -376,7 +376,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
                 key={address.id}
                 className={`rounded-xl border p-5 shadow-sm transition ${
                   address.id === editingAddress?.id
-                    ? "border-[#f53d2d] ring-2 ring-[#f53d2d]/20"
+                    ? "border-primary ring-2 ring-primary/20"
                     : "border-gray-200"
                 }`}
               >
@@ -393,7 +393,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
                     </span>
                     <a
                       href={`/account?editAddress=${encodeURIComponent(address.id)}`}
-                      className="inline-flex items-center gap-1 rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-gray-600 transition hover:border-[#f53d2d] hover:text-[#f53d2d]"
+                      className="inline-flex items-center gap-1 rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-gray-600 transition hover:border-primary hover:text-primary"
                     >
                       Edit
                     </a>
@@ -436,7 +436,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
                 type="text"
                 required
                 defaultValue={editingAddress.fullName}
-                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/30"
+                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
               />
             </div>
 
@@ -451,7 +451,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
                 inputMode="tel"
                 required
                 defaultValue={editingAddress.phoneNumber}
-                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/30"
+                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
               />
             </div>
 
@@ -473,7 +473,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
                 required
                 pattern="\d{4,10}"
                 defaultValue={editingAddress.postalCode}
-                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/30"
+                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
               />
             </div>
 
@@ -487,7 +487,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
                 required
                 rows={3}
                 defaultValue={editingAddress.addressLine}
-                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/30"
+                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
               />
             </div>
 
@@ -501,7 +501,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
                 rows={2}
                 defaultValue={editingAddress.additionalInfo ?? ""}
                 placeholder="Contoh: Patokan rumah warna hijau, blok B nomor 3"
-                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/30"
+                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
               />
             </div>
 
@@ -533,7 +533,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
               name="fullName"
               type="text"
               required
-              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/30"
+              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
           </div>
 
@@ -547,7 +547,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
               type="tel"
               inputMode="tel"
               required
-              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/30"
+              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
           </div>
 
@@ -563,7 +563,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
               type="text"
               required
               pattern="\d{4,10}"
-              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/30"
+              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
           </div>
 
@@ -576,7 +576,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
               name="addressLine"
               required
               rows={3}
-              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/30"
+              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
           </div>
 
@@ -589,7 +589,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
               name="additionalInfo"
               rows={2}
               placeholder="Contoh: Patokan rumah warna hijau, blok B nomor 3"
-              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/30"
+              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
           </div>
 

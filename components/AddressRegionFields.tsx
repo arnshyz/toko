@@ -26,7 +26,7 @@ type AddressRegionFieldsProps = {
 };
 
 const FIELD_CLASSNAME =
-  "w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/30";
+  "w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30";
 
 function normalize(value: string) {
   return value

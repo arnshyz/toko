@@ -19,7 +19,7 @@ export function MobileTabBar() {
   }
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-gray-200 bg-white/95 shadow-[0_-2px_20px_rgba(15,23,42,0.08)] backdrop-blur md:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 shadow-[0_-2px_20px_rgba(15,23,42,0.08)] backdrop-blur md:hidden">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-2 py-2">
         {tabs.map((tab) => {
           const isActive = pathname === tab.href || (tab.href !== "/" && pathname.startsWith(tab.href));
@@ -28,7 +28,7 @@ export function MobileTabBar() {
               key={tab.href}
               href={tab.href}
               className={`flex flex-1 flex-col items-center gap-1 rounded-xl px-1 py-1 text-[11px] font-medium transition ${
-                isActive ? "text-[#f53d2d]" : "text-gray-500 hover:text-[#f53d2d]"
+                isActive ? "text-primary" : "text-gray-500 hover:text-primary"
               }`}
             >
               <span className="text-lg">{tab.icon}</span>
