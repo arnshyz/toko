@@ -38,8 +38,8 @@ export function SiteHeader({ user }: SiteHeaderProps) {
   }, [categoryOpen]);
 
   return (
-    <header className="bg-gradient-to-r from-[#f53d2d] via-[#f63] to-[#ff6f3c] text-white shadow"> 
-      <div className="border-b border-white/20">
+    <header className="bg-gradient-to-r from-[#f53d2d] via-[#f63] to-[#ff6f3c] text-white shadow">
+      <div className="hidden border-b border-white/20 md:block">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-2 text-xs">
           <div className="flex items-center gap-4">
             <Link href="/seller/login" className="hover:underline">
@@ -118,7 +118,7 @@ export function SiteHeader({ user }: SiteHeaderProps) {
           </div>
         </div>
       </div>
-      <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-3 md:flex-row md:items-center md:justify-between md:gap-4">
+      <div className="mx-auto hidden w-full max-w-6xl items-center justify-between gap-4 px-4 py-3 md:flex">
         <div className="flex items-center gap-2 md:gap-3">
           <Link href="/" className="text-2xl font-bold tracking-wide md:text-[26px]">
             🛍️ Akay Nusantara
@@ -168,6 +168,54 @@ export function SiteHeader({ user }: SiteHeaderProps) {
             <span aria-hidden>🛒</span>
             Keranjang
           </Link>
+        </div>
+      </div>
+      <div className="mx-auto w-full max-w-6xl px-4 py-3 md:hidden">
+        <div className="flex items-center justify-between">
+          <Link href="/" className="text-lg font-semibold tracking-wide">
+            🛍️ Akay Nusantara
+          </Link>
+          <div className="flex items-center gap-3 text-xl">
+            <Link href="/notifications" aria-label="Notifikasi" className="transition hover:scale-105">
+              🔔
+            </Link>
+            <Link href="/cart" aria-label="Keranjang" className="transition hover:scale-105">
+              🛒
+            </Link>
+            {user ? (
+              <Link href="/account" aria-label="Akun" className="transition hover:scale-105">
+                👤
+              </Link>
+            ) : (
+              <Link href="/seller/login" aria-label="Login" className="transition hover:scale-105">
+                🔑
+              </Link>
+            )}
+          </div>
+        </div>
+        <form className="mt-3 flex items-center gap-2 rounded-full bg-white/95 px-4 py-2 text-sm text-gray-700 shadow-inner" action="/search" method="GET">
+          <span aria-hidden className="text-lg text-[#f53d2d]">🔍</span>
+          <input
+            name="q"
+            type="search"
+            placeholder="Cari produk, toko, dan voucher"
+            className="flex-1 bg-transparent outline-none"
+          />
+          <button type="submit" className="rounded-full bg-[#f53d2d] px-3 py-1 text-xs font-semibold text-white">
+            Cari
+          </button>
+        </form>
+        <div className="mt-3 flex gap-2 overflow-x-auto pb-1 text-[13px] font-medium">
+          {productCategories.slice(0, 8).map((category) => (
+            <Link
+              key={category.slug}
+              href={`/#kategori-${category.slug}`}
+              className="inline-flex flex-shrink-0 items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-white/90 shadow-sm ring-1 ring-white/20"
+            >
+              <span aria-hidden>{category.emoji}</span>
+              <span>{category.name}</span>
+            </Link>
+          ))}
         </div>
       </div>
     </header>
