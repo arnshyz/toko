@@ -103,7 +103,7 @@ export default async function SellerLogin({
             Masuk dengan Facebook
           </button>
           <a
-            href="/api/auth/google"
+            href="/auth/google"
             className="flex w-full items-center justify-center gap-3 rounded-2xl bg-white/70 px-4 py-3 text-center font-medium text-sky-700 transition hover:bg-white/90"
           >
             Masuk dengan Google

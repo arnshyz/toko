@@ -7,7 +7,8 @@ import { prisma } from "@/lib/prisma";
 import { sessionOptions, type SessionUser } from "@/lib/session";
 import { slugify } from "@/lib/utils";
 
-const STATE_COOKIE = "google_oauth_state";
+import { STATE_COOKIE } from "../shared";
+
 const TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
 const USERINFO_ENDPOINT = "https://openidconnect.googleapis.com/v1/userinfo";
 
@@ -58,7 +59,7 @@ export async function handleGoogleCallback(req: NextRequest): Promise<NextRespon
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
   const redirectUri =
-    process.env.GOOGLE_REDIRECT_URI || `${url.origin}/api/auth/google/callback`;
+    process.env.GOOGLE_REDIRECT_URI?.trim() || `${url.origin}${url.pathname}`;
 
   if (!clientId || !clientSecret) {
     return clearStateCookie(
