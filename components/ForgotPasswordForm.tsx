@@ -33,26 +33,26 @@ export default function ForgotPasswordForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Email</label>
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-slate-700">Email</label>
         <input
           type="email"
           name="email"
           required
-          className="mt-1 w-full rounded border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
           placeholder="masukkan email terdaftar"
         />
       </div>
       <button
         type="submit"
-        className="w-full rounded bg-indigo-600 py-2 text-white hover:bg-indigo-700 disabled:opacity-50"
+        className="w-full rounded-2xl bg-gradient-to-r from-sky-500 to-sky-600 px-4 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg shadow-sky-400/40 transition hover:from-sky-600 hover:to-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-200 disabled:opacity-60"
         disabled={isPending}
       >
         {isPending ? 'Mengirim tautan...' : 'Kirim Link Reset Password'}
       </button>
-      {message && <p className="rounded bg-green-50 px-3 py-2 text-sm text-green-700">{message}</p>}
-      {error && <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-      <p className="text-sm text-gray-600">
+      {message && <p className="rounded-2xl border border-emerald-200 bg-emerald-50/80 px-4 py-3 text-sm text-emerald-700 shadow-inner">{message}</p>}
+      {error && <p className="rounded-2xl border border-rose-200 bg-rose-50/80 px-4 py-3 text-sm text-rose-700 shadow-inner">{error}</p>}
+      <p className="text-sm text-slate-600">
         Kami akan mengirim tautan reset password ke email Anda jika terdaftar. Gunakan tautan tersebut untuk membuat password baru.
       </p>
     </form>

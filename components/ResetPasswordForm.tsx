@@ -56,38 +56,38 @@ export default function ResetPasswordForm({ token, isTokenValid, invalidReason }
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <input type="hidden" name="token" value={token ?? ''} />
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Password Baru</label>
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-slate-700">Password Baru</label>
         <input
           type="password"
           name="password"
           required
           minLength={8}
-          className="mt-1 w-full rounded border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
           placeholder="minimal 8 karakter"
         />
       </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Konfirmasi Password</label>
+      <div className="space-y-2">
+        <label className="block text-sm font-medium text-slate-700">Konfirmasi Password</label>
         <input
           type="password"
           name="confirmPassword"
           required
           minLength={8}
-          className="mt-1 w-full rounded border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
           placeholder="ulangi password baru"
         />
       </div>
       <button
         type="submit"
-        className="w-full rounded bg-indigo-600 py-2 text-white hover:bg-indigo-700 disabled:opacity-50"
+        className="w-full rounded-2xl bg-gradient-to-r from-sky-500 to-sky-600 px-4 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg shadow-sky-400/40 transition hover:from-sky-600 hover:to-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-200 disabled:opacity-60"
         disabled={isPending || !token || !isTokenValid}
       >
         {isPending ? 'Memproses...' : 'Reset Password'}
       </button>
-      {message && <p className="rounded bg-green-50 px-3 py-2 text-sm text-green-700">{message}</p>}
-      {error && <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-      <p className="text-sm text-gray-600">
+      {message && <p className="rounded-2xl border border-emerald-200 bg-emerald-50/80 px-4 py-3 text-sm text-emerald-700 shadow-inner">{message}</p>}
+      {error && <p className="rounded-2xl border border-rose-200 bg-rose-50/80 px-4 py-3 text-sm text-rose-700 shadow-inner">{error}</p>}
+      <p className="text-sm text-slate-600">
         Pastikan Anda menggunakan password yang kuat dan tidak membagikan tautan reset kepada siapapun.
       </p>
     </form>

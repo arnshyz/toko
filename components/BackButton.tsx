@@ -45,7 +45,7 @@ export function BackButton() {
     <button
       type="button"
       onClick={handleClick}
-      className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm transition hover:border-orange-200 hover:text-orange-600 focus:outline-none focus-visible:ring"
+      className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm transition hover:border-sky-200 hover:text-sky-600 focus:outline-none focus-visible:ring"
       aria-label={`Tombol ${label}`}
     >
       <span aria-hidden className="text-lg">←</span>

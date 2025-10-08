@@ -412,7 +412,7 @@ export function AddressRegionFields({
             {subdistrictError ? (
               <p
                 className={`text-xs ${
-                  subdistrictStatus === "unsupported" ? "text-amber-600" : "text-red-600"
+                  subdistrictStatus === "unsupported" ? "text-sky-600" : "text-red-600"
                 }`}
               >
                 {subdistrictError}
