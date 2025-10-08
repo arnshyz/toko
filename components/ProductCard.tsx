@@ -89,15 +89,9 @@ export function ProductCard({
       </Link>
       <div className="flex flex-1 flex-col gap-2 px-4 py-4">
         <div className="flex items-start gap-2">
-          <Link
-            href={href}
-            className="flex-1 text-sm font-semibold text-gray-900 line-clamp-2 transition-colors duration-200 group-hover:text-[#f53d2d]"
-          >
-            {title}
-          </Link>
           {showBadge ? (
             <span
-              className={`inline-flex items-center rounded-sm text-[10px] font-semibold uppercase tracking-wide ${
+              className={`inline-flex shrink-0 items-center rounded-sm text-[10px] font-semibold uppercase tracking-wide ${
                 badge.imageSrc ? "" : "px-2 py-0.5"
               } ${badge.className}`}
             >
@@ -109,6 +103,12 @@ export function ProductCard({
               )}
             </span>
           ) : null}
+          <Link
+            href={href}
+            className="flex-1 text-sm font-semibold text-gray-900 line-clamp-2 transition-colors duration-200 group-hover:text-[#f53d2d]"
+          >
+            {title}
+          </Link>
         </div>
         <div className="mt-1 flex items-baseline justify-between">
           <div className="text-lg font-bold text-[#f53d2d]">Rp {formatIDR(salePrice)}</div>
