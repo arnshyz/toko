@@ -19,7 +19,6 @@ export async function POST(req: NextRequest) {
       isAdmin: true,
       isBanned: true,
       passwordHash: true,
-      sellerOnboardingStatus: true,
     },
   });
   if (!user) return NextResponse.json({ error: 'Invalid' }, { status: 400 });
@@ -30,10 +29,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.redirect(new URL('/seller/login?error=banned', req.url));
   }
 
-  const redirectTo =
-    user.sellerOnboardingStatus === 'ACTIVE'
-      ? new URL('/seller/dashboard', req.url)
-      : new URL(`/seller/onboarding?status=${user.sellerOnboardingStatus}`, req.url);
+  const redirectTo = new URL('/', req.url);
   const res = new NextResponse();
   const session = await getIronSession<{ user?: SessionUser }>(req, res, sessionOptions);
   session.user = { id: user.id, name: user.name, email: user.email, slug: user.slug, isAdmin: user.isAdmin };
