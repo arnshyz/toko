@@ -142,6 +142,14 @@ export default async function SellerProducts({
             placeholder="Stok"
             className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
           />
+          <input
+            name="weight"
+            type="number"
+            min={1}
+            placeholder="Berat (gram)"
+            className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+            required
+          />
           <label className="space-y-2 text-sm md:col-span-2">
             <span className="font-medium text-gray-700">Gambar Produk</span>
             <input

@@ -184,7 +184,8 @@ export async function POST(req: NextRequest) {
     }
 
     const quantity = Math.max(1, Number.isFinite(it.qty) ? it.qty : 1);
-    existing.weight += quantity * DEFAULT_ITEM_WEIGHT_GRAMS;
+    const baseWeight = p.weight && p.weight > 0 ? p.weight : DEFAULT_ITEM_WEIGHT_GRAMS;
+    existing.weight += quantity * baseWeight;
     shipmentsMap.set(shipmentKey, existing);
   }
 

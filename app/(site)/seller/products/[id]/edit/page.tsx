@@ -67,6 +67,7 @@ export default async function SellerEditProductPage({
         price: true,
         originalPrice: true,
         stock: true,
+        weight: true,
         category: true,
         variantOptions: true,
         warehouseId: true,
@@ -188,6 +189,18 @@ export default async function SellerEditProductPage({
             type="number"
             defaultValue={product.stock}
             className="border rounded px-3 py-2"
+          />
+          <label className="text-sm font-medium text-gray-700" htmlFor="weight">
+            Berat (gram)
+          </label>
+          <input
+            id="weight"
+            name="weight"
+            type="number"
+            min={1}
+            defaultValue={product.weight ?? 1000}
+            className="border rounded px-3 py-2"
+            required
           />
           <label className="text-sm font-medium text-gray-700 md:col-span-2" htmlFor="description">
             Deskripsi

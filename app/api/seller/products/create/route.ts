@@ -6,12 +6,14 @@ import { getIronSession } from "iron-session";
 import { sessionOptions, SessionUser } from "@/lib/session";
 import { buildVariantPayload, parseVariantInput, resolveCategorySlug } from "@/lib/product-form";
 import { slugify } from "@/lib/utils";
+import { DEFAULT_ITEM_WEIGHT_GRAMS } from "@/lib/shipping";
 
 export async function POST(req: NextRequest) {
   const form = await req.formData();
   const title = String(form.get('title') || '');
   const price = parseInt(String(form.get('price') || '0'))||0;
   const stock = parseInt(String(form.get('stock') || '0'))||0;
+  const weightValue = parseInt(String(form.get('weight') || '0'))||0;
   const originalPriceValue = String(form.get('originalPrice') || '').trim();
   const parsedOriginalPrice = originalPriceValue ? parseInt(originalPriceValue, 10) : NaN;
   const originalPrice = Number.isFinite(parsedOriginalPrice) && parsedOriginalPrice > 0 ? parsedOriginalPrice : null;
@@ -74,6 +76,7 @@ export async function POST(req: NextRequest) {
       slug: slugCandidate,
       price,
       stock,
+      weight: weightValue > 0 ? weightValue : DEFAULT_ITEM_WEIGHT_GRAMS,
       description,
       warehouseId: warehouseId || null,
       category,

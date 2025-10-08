@@ -72,6 +72,7 @@ model Product {
   description  String?
   price        Int
   originalPrice Int?
+  weight       Int      @default(1000)
   variantOptions Json?
   category     String     @default("umum")
   stock        Int        @default(0)
