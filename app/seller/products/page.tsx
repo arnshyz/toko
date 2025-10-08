@@ -42,7 +42,7 @@ export default async function SellerProducts({
     return (
       <div>
         <h1 className="text-2xl font-semibold mb-4">Produk Saya</h1>
-        <div className="rounded border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
+        <div className="rounded border border-sky-200 bg-sky-50 p-4 text-sm text-sky-700">
           Fitur manajemen produk tersedia setelah toko Anda diaktifkan. Selesaikan langkah onboarding pada halaman
           <a className="ml-1 font-semibold underline" href="/seller/onboarding">
             onboarding seller
@@ -221,7 +221,7 @@ export default async function SellerProducts({
                     Flash sale aktif • {activeFlash.discountPercent}% — {formatFlashSaleWindow(activeFlash)}
                   </div>
                 ) : upcomingFlash ? (
-                  <div className="rounded-2xl bg-orange-50 px-3 py-2 text-xs text-orange-700">
+                  <div className="rounded-2xl bg-sky-50 px-3 py-2 text-xs text-sky-700">
                     Flash sale berikutnya • {upcomingFlash.discountPercent}% — {formatFlashSaleWindow(upcomingFlash)}
                   </div>
                 ) : (
@@ -304,7 +304,7 @@ export default async function SellerProducts({
                       const upcoming = p.flashSales[0];
                       return (
                         <div className="space-y-1 text-xs">
-                          <span className="inline-flex items-center rounded bg-orange-100 px-2 py-0.5 font-semibold text-orange-700">
+                          <span className="inline-flex items-center rounded bg-sky-100 px-2 py-0.5 font-semibold text-sky-700">
                             Akan Datang • {upcoming.discountPercent}%
                           </span>
                           <div className="text-gray-500">{formatFlashSaleWindow(upcoming)}</div>

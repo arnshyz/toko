@@ -57,9 +57,9 @@ export function VariantSelector({ groups, namePrefix = "variant" }: VariantSelec
                         [group.name]: option,
                       }))
                     }
-                    className={`rounded-full border px-4 py-1.5 text-sm transition focus:outline-none focus:ring-2 focus:ring-orange-500 ${
+                    className={`rounded-full border px-4 py-1.5 text-sm transition focus:outline-none focus:ring-2 focus:ring-sky-500 ${
                       isActive
-                        ? "border-orange-500 bg-orange-50 text-orange-600"
+                        ? "border-sky-500 bg-sky-50 text-sky-600"
                         : "border-gray-300 text-gray-600 hover:border-gray-400 hover:text-gray-900"
                     }`}
                   >

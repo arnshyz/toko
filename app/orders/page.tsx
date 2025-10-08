@@ -50,7 +50,7 @@ type BuyerOrder = {
 };
 
 const STATUS_STYLES: Record<BuyerOrder["status"], { label: string; className: string }> = {
-  PENDING: { label: "Menunggu Pembayaran", className: "bg-amber-100 text-amber-700" },
+  PENDING: { label: "Menunggu Pembayaran", className: "bg-sky-100 text-sky-700" },
   PAID: { label: "Sudah Dibayar", className: "bg-emerald-100 text-emerald-700" },
   CANCELLED: { label: "Dibatalkan", className: "bg-rose-100 text-rose-700" },
 };
@@ -66,7 +66,7 @@ const ORDER_TABS = [
 type OrderTab = (typeof ORDER_TABS)[number]["id"];
 
 const STAGE_STYLES: Record<Exclude<OrderTab, "ALL">, { label: string; className: string }> = {
-  UNPAID: { label: "Belum Bayar", className: "bg-amber-100 text-amber-700" },
+  UNPAID: { label: "Belum Bayar", className: "bg-sky-100 text-sky-700" },
   PACKING: { label: "Sedang Dikemas", className: "bg-blue-100 text-blue-700" },
   SHIPPING: { label: "Sedang Dikirim", className: "bg-indigo-100 text-indigo-700" },
   COMPLETED: { label: "Selesai", className: "bg-emerald-100 text-emerald-700" },
@@ -308,7 +308,7 @@ export default function BuyerOrdersPage() {
               type="button"
               onClick={() => setActiveTab(tab.id)}
               className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition ${
-                isActive ? "bg-orange-500 text-white shadow" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                isActive ? "bg-sky-500 text-white shadow" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
             >
               {tab.label}
@@ -346,12 +346,12 @@ export default function BuyerOrdersPage() {
             Setelah checkout menggunakan akun ini, pesanan akan otomatis tersimpan dan tampil di halaman ini.
           </p>
           <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-            <Link href="/" className="rounded-md bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600">
+            <Link href="/" className="rounded-md bg-sky-500 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-600">
               Belanja produk
             </Link>
             <Link
               href="/cart"
-              className="rounded-md border border-orange-200 px-4 py-2 text-sm font-semibold text-orange-600 hover:bg-orange-50"
+              className="rounded-md border border-sky-200 px-4 py-2 text-sm font-semibold text-sky-600 hover:bg-sky-50"
             >
               Lihat keranjang
             </Link>
@@ -387,7 +387,7 @@ export default function BuyerOrdersPage() {
                   <div className="space-y-1">
                     <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500">
                       {firstSeller ? (
-                        <Link href={`/s/${firstSeller.slug}`} className="font-semibold text-gray-900 hover:text-orange-600">
+                        <Link href={`/s/${firstSeller.slug}`} className="font-semibold text-gray-900 hover:text-sky-600">
                           {firstSeller.name}
                         </Link>
                       ) : (
@@ -446,7 +446,7 @@ export default function BuyerOrdersPage() {
                           {seller ? (
                             <p className="text-xs text-gray-500">
                               Toko:
-                              <Link href={`/s/${seller.slug}`} className="ml-1 font-medium text-orange-600 hover:underline">
+                              <Link href={`/s/${seller.slug}`} className="ml-1 font-medium text-sky-600 hover:underline">
                                 {seller.name}
                               </Link>
                             </p>
@@ -503,17 +503,17 @@ export default function BuyerOrdersPage() {
                   </p>
                   <Link
                     href={`/order/${order.orderCode}`}
-                    className="inline-flex items-center justify-center rounded-md bg-orange-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-600"
+                    className="inline-flex items-center justify-center rounded-md bg-sky-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-600"
                   >
                     Lihat Detail
                   </Link>
                 </div>
 
-                <div className="space-y-3 rounded-lg border border-dashed border-orange-200 bg-orange-50 p-4">
+                <div className="space-y-3 rounded-lg border border-dashed border-sky-200 bg-sky-50 p-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <h4 className="text-sm font-semibold text-orange-700">Penilaian Pesanan</h4>
+                    <h4 className="text-sm font-semibold text-sky-700">Penilaian Pesanan</h4>
                     {review ? (
-                      <span className="text-xs text-orange-600">
+                      <span className="text-xs text-sky-600">
                         Terakhir diperbarui {formatDateTime(review.updatedAt)}
                       </span>
                     ) : null}
@@ -530,7 +530,7 @@ export default function BuyerOrdersPage() {
                             key={value}
                             type="button"
                             onClick={() => handleRatingChange(order.orderCode, value)}
-                            className={`text-xl transition ${isActive ? "text-amber-500" : "text-gray-300 hover:text-amber-400"}`}
+                            className={`text-xl transition ${isActive ? "text-sky-500" : "text-gray-300 hover:text-sky-400"}`}
                             aria-label={`${value} bintang`}
                           >
                             {isActive ? "★" : "☆"}
@@ -543,18 +543,18 @@ export default function BuyerOrdersPage() {
                       onChange={(event) => handleCommentChange(order.orderCode, event.target.value)}
                       placeholder="Bagikan pengalaman Anda dengan pesanan ini"
                       rows={3}
-                      className="w-full rounded-md border border-orange-200 bg-white px-3 py-2 text-sm text-gray-700 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-200"
+                      className="w-full rounded-md border border-sky-200 bg-white px-3 py-2 text-sm text-gray-700 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
                     />
                     <div className="flex flex-wrap items-center gap-3">
                       <button
                         type="submit"
-                        className="inline-flex items-center justify-center rounded-md bg-orange-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-70"
+                        className="inline-flex items-center justify-center rounded-md bg-sky-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-600 disabled:cursor-not-allowed disabled:opacity-70"
                         disabled={submitting || !canReview}
                       >
                         {submitting ? "Menyimpan..." : review ? "Perbarui Penilaian" : "Kirim Penilaian"}
                       </button>
                       {!canReview ? (
-                        <span className="text-xs text-orange-600">
+                        <span className="text-xs text-sky-600">
                           Penilaian bisa diberikan setelah pesanan selesai diterima.
                         </span>
                       ) : null}

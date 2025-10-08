@@ -360,7 +360,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
         ) : null}
 
         {isEditingInvalid ? (
-          <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+          <div className="mb-4 rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-700">
             Alamat yang ingin diedit tidak ditemukan.
           </div>
         ) : null}

@@ -104,7 +104,7 @@ export default async function Storefront({ params }: { params: { slug: string } 
                 </div>
 
                 <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-                  <button className="inline-flex w-full items-center justify-center rounded-full bg-orange-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-orange-600 sm:w-auto">
+                  <button className="inline-flex w-full items-center justify-center rounded-full bg-sky-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-sky-600 sm:w-auto">
                     Ikuti
                   </button>
                   <button className="inline-flex w-full items-center justify-center rounded-full border border-gray-200 px-5 py-2 text-sm font-medium text-gray-700 transition hover:border-gray-300 hover:text-gray-900 sm:w-auto">
@@ -140,13 +140,13 @@ export default async function Storefront({ params }: { params: { slug: string } 
         </div>
         <div className="border-t border-gray-100 bg-gray-50">
           <nav className="flex items-center gap-6 overflow-x-auto px-6 py-3 text-sm font-medium text-gray-600">
-            <a className="text-orange-500">Halaman Utama</a>
-            <a className="hover:text-orange-500">Produk</a>
-            <a className="hover:text-orange-500">Sandal Pria</a>
-            <a className="hover:text-orange-500">Sandal Jepit</a>
-            <a className="hover:text-orange-500">Sandal Wanita</a>
-            <a className="hover:text-orange-500">Sandal Unisex</a>
-            <a className="hover:text-orange-500">Lainnya</a>
+            <a className="text-sky-500">Halaman Utama</a>
+            <a className="hover:text-sky-500">Produk</a>
+            <a className="hover:text-sky-500">Sandal Pria</a>
+            <a className="hover:text-sky-500">Sandal Jepit</a>
+            <a className="hover:text-sky-500">Sandal Wanita</a>
+            <a className="hover:text-sky-500">Sandal Unisex</a>
+            <a className="hover:text-sky-500">Lainnya</a>
           </nav>
         </div>
       </section>
@@ -193,14 +193,14 @@ export default async function Storefront({ params }: { params: { slug: string } 
                     </div>
                     <div className="line-clamp-2 text-sm font-semibold text-gray-800">{p.title}</div>
                     {activeFlashSale && (
-                      <div className="inline-flex w-fit items-center rounded-full bg-orange-100 px-2 py-0.5 text-[11px] font-semibold text-orange-700">
+                      <div className="inline-flex w-fit items-center rounded-full bg-sky-100 px-2 py-0.5 text-[11px] font-semibold text-sky-700">
                         Flash Sale • {activeFlashSale.discountPercent}%
                       </div>
                     )}
                     {showOriginal && (
                       <div className="text-xs text-gray-400 line-through">Rp {formatIDR(referenceOriginal!)}</div>
                     )}
-                    <div className="mt-auto text-lg font-semibold text-orange-500">Rp {formatIDR(salePrice)}</div>
+                    <div className="mt-auto text-lg font-semibold text-sky-500">Rp {formatIDR(salePrice)}</div>
                   </div>
                 </a>
               );

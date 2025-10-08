@@ -33,7 +33,7 @@ export default async function Warehouses() {
     return (
       <div>
         <h1 className="text-2xl font-semibold mb-4">Gudang</h1>
-        <div className="rounded border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
+        <div className="rounded border border-sky-200 bg-sky-50 p-4 text-sm text-sky-700">
           Fitur gudang tersedia setelah toko Anda aktif. Ikuti tahapan pada
           <a className="ml-1 font-semibold underline" href="/seller/onboarding">
             halaman onboarding seller

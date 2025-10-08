@@ -35,7 +35,7 @@ export default async function SellerOrders() {
     return (
       <div>
         <h1 className="text-2xl font-semibold mb-4">Pesanan (Produk Saya)</h1>
-        <div className="rounded border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
+        <div className="rounded border border-sky-200 bg-sky-50 p-4 text-sm text-sky-700">
           Akses pesanan seller akan tersedia setelah proses onboarding selesai. Silakan cek panduan pada halaman
           <a className="ml-1 font-semibold underline" href="/seller/onboarding">
             onboarding seller

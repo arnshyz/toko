@@ -46,7 +46,7 @@ export default async function SellerEditProductPage({
     return (
       <div>
         <h1 className="text-2xl font-semibold mb-4">Edit Produk</h1>
-        <div className="rounded border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
+        <div className="rounded border border-sky-200 bg-sky-50 p-4 text-sm text-sky-700">
           Fitur manajemen produk tersedia setelah toko Anda diaktifkan. Selesaikan langkah onboarding pada halaman
           <a className="ml-1 font-semibold underline" href="/seller/onboarding">
             onboarding seller

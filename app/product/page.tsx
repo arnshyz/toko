@@ -108,7 +108,7 @@ export default async function ProductListingPage({
                   key={category.slug}
                   href={buildLink({ category: category.slug })}
                   className={`flex items-center justify-between rounded-xl border px-3 py-2 text-sm transition ${
-                    isActive ? "border-orange-400 bg-orange-50 text-orange-600" : "border-gray-200 hover:border-orange-200"
+                    isActive ? "border-sky-400 bg-sky-50 text-sky-600" : "border-gray-200 hover:border-sky-200"
                   }`}
                 >
                   <span className="flex items-center gap-2">
@@ -139,7 +139,7 @@ export default async function ProductListingPage({
                   key={filter.value}
                   href={buildLink({ rating: String(filter.value) })}
                   className={`rounded-xl border px-3 py-2 transition ${
-                    isActive ? "border-orange-400 bg-orange-50 text-orange-600" : "border-gray-200 hover:border-orange-200"
+                    isActive ? "border-sky-400 bg-sky-50 text-sky-600" : "border-gray-200 hover:border-sky-200"
                   }`}
                 >
                   {filter.label}
@@ -166,7 +166,7 @@ export default async function ProductListingPage({
                   key={filter.value}
                   href={buildLink({ sold: String(filter.value) })}
                   className={`rounded-xl border px-3 py-2 transition ${
-                    isActive ? "border-orange-400 bg-orange-50 text-orange-600" : "border-gray-200 hover:border-orange-200"
+                    isActive ? "border-sky-400 bg-sky-50 text-sky-600" : "border-gray-200 hover:border-sky-200"
                   }`}
                 >
                   {filter.label}
@@ -205,7 +205,7 @@ export default async function ProductListingPage({
                     key={option.value}
                     href={buildLink({ sort: option.value })}
                     className={`rounded-full px-3 py-1 transition ${
-                      isActive ? "bg-orange-500 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      isActive ? "bg-sky-500 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                     }`}
                   >
                     {option.label}

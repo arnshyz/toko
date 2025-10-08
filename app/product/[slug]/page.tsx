@@ -58,7 +58,7 @@ function ensureVariantGroups(value: unknown): VariantGroup[] {
 function renderStars(value: number) {
   const stars = Math.round(value);
   return "★★★★★".split("").map((star, index) => (
-    <span key={index} className={index < stars ? "text-orange-500" : "text-gray-300"}>
+    <span key={index} className={index < stars ? "text-sky-500" : "text-gray-300"}>
       ★
     </span>
   ));
@@ -422,12 +422,12 @@ export default async function ProductPage({ params }: { params: { slug: string }
           <div className="space-y-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm lg:hidden">
             <div className="flex items-end justify-between gap-3">
               <div>
-                <div className="text-2xl font-semibold text-orange-600">Rp {formatIDR(salePrice)}</div>
+                <div className="text-2xl font-semibold text-sky-600">Rp {formatIDR(salePrice)}</div>
                 {showOriginal && referenceOriginal ? (
                   <div className="mt-1 flex items-center gap-2 text-xs">
                     <span className="text-gray-400 line-through">Rp {formatIDR(referenceOriginal)}</span>
                     {discountPercent ? (
-                      <span className="rounded-full bg-orange-100 px-2 py-0.5 text-[11px] font-semibold text-orange-600">
+                      <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[11px] font-semibold text-sky-600">
                         -{discountPercent}%
                       </span>
                     ) : null}
@@ -479,7 +479,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
         <div className="space-y-6">
           <div className="space-y-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <nav className="hidden flex-wrap items-center gap-2 text-xs text-gray-500 lg:flex">
-              <Link href="/" className="hover:text-orange-500">
+              <Link href="/" className="hover:text-sky-500">
                 Beranda
               </Link>
               <span>/</span>
@@ -503,14 +503,14 @@ export default async function ProductPage({ params }: { params: { slug: string }
               </div>
             </div>
 
-            <div className="hidden space-y-3 rounded-xl bg-orange-50 p-5 lg:block">
+            <div className="hidden space-y-3 rounded-xl bg-sky-50 p-5 lg:block">
               <div className="flex flex-wrap items-end gap-4">
-                <div className="text-3xl font-semibold text-orange-600">Rp {formatIDR(salePrice)}</div>
+                <div className="text-3xl font-semibold text-sky-600">Rp {formatIDR(salePrice)}</div>
                 {showOriginal && referenceOriginal && (
                   <div className="flex items-center gap-2 text-sm text-gray-500">
                     <span className="line-through">Rp {formatIDR(referenceOriginal)}</span>
                     {discountPercent && (
-                      <span className="rounded-full bg-orange-100 px-2 py-0.5 text-xs font-semibold text-orange-600">
+                      <span className="rounded-full bg-sky-100 px-2 py-0.5 text-xs font-semibold text-sky-600">
                         -{discountPercent}%
                       </span>
                     )}
@@ -519,8 +519,8 @@ export default async function ProductPage({ params }: { params: { slug: string }
               </div>
 
               {activeFlashSale ? (
-                <div className="inline-flex flex-wrap items-center gap-2 rounded-lg bg-white px-3 py-2 text-xs font-medium text-orange-600">
-                  <span className="rounded bg-orange-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide">
+                <div className="inline-flex flex-wrap items-center gap-2 rounded-lg bg-white px-3 py-2 text-xs font-medium text-sky-600">
+                  <span className="rounded bg-sky-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide">
                     Flash Sale
                   </span>
                   <span>
@@ -532,8 +532,8 @@ export default async function ProductPage({ params }: { params: { slug: string }
                   </span>
                 </div>
               ) : nextFlashSale ? (
-                <div className="inline-flex flex-wrap items-center gap-2 rounded-lg bg-white px-3 py-2 text-xs font-medium text-orange-500">
-                  <span className="rounded bg-orange-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide">
+                <div className="inline-flex flex-wrap items-center gap-2 rounded-lg bg-white px-3 py-2 text-xs font-medium text-sky-500">
+                  <span className="rounded bg-sky-100 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide">
                     Flash Sale
                   </span>
                   <span>Jadwal berikutnya: {formatFlashSaleWindow(nextFlashSale)}</span>
@@ -654,11 +654,11 @@ export default async function ProductPage({ params }: { params: { slug: string }
               <div className="flex flex-col gap-2 sm:flex-row">
                 <Link
                   href={`/s/${seller.slug}`}
-                  className="rounded-full border border-orange-500 px-5 py-2 text-center text-sm font-semibold text-orange-600 transition hover:bg-orange-50"
+                  className="rounded-full border border-sky-500 px-5 py-2 text-center text-sm font-semibold text-sky-600 transition hover:bg-sky-50"
                 >
                   Kunjungi Toko
                 </Link>
-                <button className="rounded-full bg-orange-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-orange-600">
+                <button className="rounded-full bg-sky-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-sky-600">
                   Ikuti
                 </button>
               </div>
@@ -706,7 +706,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
                 key={filter}
                 className={`rounded-full border px-3 py-1 font-medium transition ${
                   filter === "Semua"
-                    ? "border-orange-500 bg-orange-50 text-orange-600"
+                    ? "border-sky-500 bg-sky-50 text-sky-600"
                     : "border-gray-200 text-gray-600 hover:border-gray-300 hover:text-gray-900"
                 }`}
                 type="button"
@@ -718,9 +718,9 @@ export default async function ProductPage({ params }: { params: { slug: string }
         </div>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[220px_1fr]">
-          <div className="flex h-full flex-col items-center justify-center rounded-xl bg-orange-50 p-5 text-center">
-            <div className="text-4xl font-semibold text-orange-500">{ratingValue.toFixed(1)}</div>
-            <div className="mt-2 flex items-center justify-center gap-1 text-lg text-orange-500">
+          <div className="flex h-full flex-col items-center justify-center rounded-xl bg-sky-50 p-5 text-center">
+            <div className="text-4xl font-semibold text-sky-500">{ratingValue.toFixed(1)}</div>
+            <div className="mt-2 flex items-center justify-center gap-1 text-lg text-sky-500">
               {renderStars(ratingValue)}
             </div>
             <div className="mt-1 text-xs text-gray-600">{ratingCount} penilaian</div>
@@ -743,14 +743,14 @@ export default async function ProductPage({ params }: { params: { slug: string }
                       <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-gray-500">
                         <div className="flex items-center gap-2 font-semibold text-gray-700">
                           <span>{buyerName}</span>
-                          <span className="flex gap-0.5 text-orange-500">{renderStars(review.rating)}</span>
+                          <span className="flex gap-0.5 text-sky-500">{renderStars(review.rating)}</span>
                         </div>
                         <span>{formatRelativeTime(review.createdAt)}</span>
                       </div>
-                      <div className="flex flex-wrap items-center gap-3 text-xs font-medium text-orange-600">
+                      <div className="flex flex-wrap items-center gap-3 text-xs font-medium text-sky-600">
                         <span>Diulas pada {formatReviewDateTime(review.createdAt)}</span>
                         <span className="text-gray-400">•</span>
-                        <span className="text-orange-500">{purchaseInfo}</span>
+                        <span className="text-sky-500">{purchaseInfo}</span>
                       </div>
                       <p className="text-sm text-gray-700">
                         {review.comment?.trim() || "Pembeli tidak meninggalkan komentar."}
@@ -778,7 +778,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-gray-900">Produk Lain dari Toko Ini</h2>
-          <Link href={`/s/${seller.slug}`} className="text-sm font-semibold text-orange-600 hover:underline">
+          <Link href={`/s/${seller.slug}`} className="text-sm font-semibold text-sky-600 hover:underline">
             Lihat Semua
           </Link>
         </div>
@@ -815,7 +815,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
                     {siblingShowOriginal && (
                       <div className="text-xs text-gray-400 line-through">Rp {formatIDR(siblingOriginal)}</div>
                     )}
-                    <div className="text-lg font-semibold text-orange-500">Rp {formatIDR(item.price)}</div>
+                    <div className="text-lg font-semibold text-sky-500">Rp {formatIDR(item.price)}</div>
                   </div>
                 </Link>
               );
@@ -827,7 +827,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-gray-900">Rekomendasi Untukmu</h2>
-          <Link href="/" className="text-sm font-semibold text-orange-600 hover:underline">
+          <Link href="/" className="text-sm font-semibold text-sky-600 hover:underline">
             Lihat Lainnya
           </Link>
         </div>
@@ -864,7 +864,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
                     {recShowOriginal && (
                       <div className="text-xs text-gray-400 line-through">Rp {formatIDR(recOriginal)}</div>
                     )}
-                    <div className="text-lg font-semibold text-orange-500">Rp {formatIDR(item.price)}</div>
+                    <div className="text-lg font-semibold text-sky-500">Rp {formatIDR(item.price)}</div>
                   </div>
                 </Link>
               );

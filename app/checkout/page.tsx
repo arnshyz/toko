@@ -237,9 +237,9 @@ export default function CheckoutPage() {
           ) : null}
 
           {loggedInWithoutAddress ? (
-            <div className="rounded border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            <div className="rounded border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
               Anda belum menyimpan alamat pengiriman. Silakan tambahkan alamat di{' '}
-              <a href="/account" className="font-semibold text-amber-900 underline">
+              <a href="/account" className="font-semibold text-sky-900 underline">
                 Akun Saya
               </a>{' '}
               sebelum melanjutkan checkout.
@@ -335,7 +335,7 @@ export default function CheckoutPage() {
                   {shippingQuoteUsedFallback ? ' (menggunakan tarif cadangan).' : ' (dihitung via RajaOngkir).'}
                 </p>
                 {shippingQuoteUsedFallback && shippingQuoteReason ? (
-                  <p className="mt-1 text-amber-700">{shippingQuoteReason}</p>
+                  <p className="mt-1 text-sky-700">{shippingQuoteReason}</p>
                 ) : null}
               </div>
             ) : (

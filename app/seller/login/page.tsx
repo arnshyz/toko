@@ -95,7 +95,7 @@ export default async function SellerLogin({
               </div>
             ) : null}
             {!errorMessage && infoMessage ? (
-              <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
+              <div className="mt-6 rounded-xl border border-sky-200 bg-sky-50 p-4 text-sm text-sky-700">
                 {infoMessage}
               </div>
             ) : null}

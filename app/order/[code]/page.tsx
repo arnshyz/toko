@@ -6,7 +6,7 @@ import { JAKARTA_TIME_ZONE } from "@/lib/time";
 export const dynamic = "force-dynamic";
 
 const STATUS_STYLES: Record<string, { label: string; className: string }> = {
-  PENDING: { label: "Menunggu Pembayaran", className: "bg-amber-100 text-amber-700" },
+  PENDING: { label: "Menunggu Pembayaran", className: "bg-sky-100 text-sky-700" },
   PAID: { label: "Sudah Dibayar", className: "bg-emerald-100 text-emerald-700" },
   CANCELLED: { label: "Dibatalkan", className: "bg-rose-100 text-rose-700" },
 };
@@ -161,7 +161,7 @@ export default async function OrderDetailPage({ params }: { params: { code: stri
                   {seller ? (
                     <p className="text-xs text-gray-500">
                       Toko:
-                      <Link href={`/s/${seller.slug}`} className="ml-1 font-medium text-orange-600 hover:underline">
+                      <Link href={`/s/${seller.slug}`} className="ml-1 font-medium text-sky-600 hover:underline">
                         {seller.name}
                       </Link>
                     </p>
@@ -183,7 +183,7 @@ export default async function OrderDetailPage({ params }: { params: { code: stri
         <h2 className="text-lg font-semibold text-gray-900">Penilaian Pesanan</h2>
         {review ? (
           <div className="mt-3 space-y-3">
-            <div className="flex items-center gap-1 text-amber-500">
+            <div className="flex items-center gap-1 text-sky-500">
               {Array.from({ length: 5 }, (_, index) => (
                 <span key={index} aria-hidden>
                   {index < review.rating ? "★" : "☆"}
@@ -207,7 +207,7 @@ export default async function OrderDetailPage({ params }: { params: { code: stri
             <p>Belum ada penilaian untuk pesanan ini.</p>
             <p>
               Berikan ulasan bintang dan komentar melalui halaman
-              <Link href="/orders" className="ml-1 font-semibold text-orange-600 hover:underline">
+              <Link href="/orders" className="ml-1 font-semibold text-sky-600 hover:underline">
                 Pesanan Saya
               </Link>
               .

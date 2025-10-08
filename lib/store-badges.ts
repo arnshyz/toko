@@ -7,8 +7,8 @@ export type StoreBadgeStyle = {
 
 export const STORE_BADGE_STYLES: Record<string, StoreBadgeStyle> = {
   BASIC: { label: "Basic", className: "bg-gray-100 text-gray-700" },
-  STAR: { label: "Star", className: "bg-amber-100 text-amber-700" },
-  STAR_PLUS: { label: "Star+", className: "bg-orange-100 text-orange-700" },
+  STAR: { label: "Star", className: "bg-sky-100 text-sky-700" },
+  STAR_PLUS: { label: "Star+", className: "bg-sky-100 text-sky-700" },
   MALL: {
     label: "MALL",
     className: "bg-transparent p-0",
