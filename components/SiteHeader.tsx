@@ -93,7 +93,7 @@ export function SiteHeader({ user }: SiteHeaderProps) {
   }, []);
 
   return (
-    <header className="bg-gradient-to-r from-[#f53d2d] via-[#f63] to-[#ff6f3c] text-white shadow">
+    <header className="bg-gradient-to-r from-sky-500 via-sky-400 to-sky-500 text-white shadow">
       <div className="hidden border-b border-white/20 md:block">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-2 text-xs">
           <div className="flex items-center gap-4">
@@ -231,7 +231,7 @@ export function SiteHeader({ user }: SiteHeaderProps) {
           />
           <button
             type="submit"
-            className="bg-[#f53d2d] px-4 text-sm font-semibold text-white transition hover:bg-[#d73224]"
+            className="bg-sky-500 px-4 text-sm font-semibold text-white transition hover:bg-sky-600"
           >
             Cari
           </button>
@@ -241,7 +241,7 @@ export function SiteHeader({ user }: SiteHeaderProps) {
             <span aria-hidden>🛒</span>
             Keranjang
             {cartCount > 0 ? (
-              <span className="absolute -right-4 -top-2 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-white px-1 text-xs font-semibold text-[#f53d2d]">
+              <span className="absolute -right-4 -top-2 inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-white px-1 text-xs font-semibold text-sky-600">
                 {cartCount}
               </span>
             ) : null}
@@ -261,7 +261,7 @@ export function SiteHeader({ user }: SiteHeaderProps) {
               <Link href="/cart" aria-label="Keranjang" className="relative transition hover:scale-105">
                 🛒
                 {cartCount > 0 ? (
-                  <span className="absolute -right-2 -top-2 inline-flex h-4 min-w-[18px] items-center justify-center rounded-full bg-white text-[10px] font-semibold text-[#f53d2d]">
+                  <span className="absolute -right-2 -top-2 inline-flex h-4 min-w-[18px] items-center justify-center rounded-full bg-white text-[10px] font-semibold text-sky-600">
                     {cartCount}
                   </span>
                 ) : null}
@@ -278,14 +278,14 @@ export function SiteHeader({ user }: SiteHeaderProps) {
             </div>
           </div>
           <form className="mt-3 flex items-center gap-2 rounded-full bg-white/95 px-4 py-2 text-sm text-gray-700 shadow-inner" action="/search" method="GET">
-            <span aria-hidden className="text-lg text-[#f53d2d]">🔍</span>
+            <span aria-hidden className="text-lg text-sky-500">🔍</span>
             <input
               name="q"
               type="search"
               placeholder="Cari produk, toko, dan voucher"
               className="flex-1 bg-transparent outline-none"
             />
-            <button type="submit" className="rounded-full bg-[#f53d2d] px-3 py-1 text-xs font-semibold text-white">
+            <button type="submit" className="rounded-full bg-sky-500 px-3 py-1 text-xs font-semibold text-white">
               Cari
             </button>
           </form>
