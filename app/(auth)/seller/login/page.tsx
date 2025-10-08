@@ -4,6 +4,12 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
 
+const benefits = [
+  "Analitik penjualan lengkap untuk keputusan yang lebih cepat.",
+  "Dukungan kampanye pemasaran otomatis untuk tingkatkan eksposur.",
+  "Tim support seller siap bantu setiap hari melalui live chat dan pusat bantuan.",
+];
+
 export default async function SellerLogin({
   searchParams,
 }: {
@@ -41,49 +47,77 @@ export default async function SellerLogin({
       : undefined;
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-10 rounded-3xl bg-white/70 p-6 text-sky-900 shadow-2xl shadow-sky-900/10 ring-1 ring-white/60 backdrop-blur-lg lg:flex-row lg:p-12">
-      <div className="relative hidden min-h-[460px] flex-1 flex-col justify-between overflow-hidden rounded-2xl bg-gradient-to-br from-sky-500 via-sky-600 to-sky-700 p-10 text-white shadow-lg lg:flex">
-        <div className="space-y-6">
-          <div className="flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-3xl font-bold text-sky-500 shadow-xl">
-              A
-            </div>
-            <div>
-              <p className="text-3xl font-semibold leading-tight">Masuk & kelola tokomu</p>
-              <p className="text-lg text-white/80">Semua kebutuhan seller dalam satu layar.</p>
-            </div>
+    <div className="grid gap-6 rounded-[40px] bg-white/20 p-3 shadow-[0_35px_90px_-45px_rgba(14,165,233,0.7)] backdrop-blur lg:grid-cols-[1.35fr_minmax(360px,420px)]">
+      <div className="flex flex-col gap-8 rounded-[32px] bg-gradient-to-br from-sky-500 via-sky-600 to-sky-700 p-8 text-white shadow-2xl shadow-sky-900/20 lg:hidden">
+        <div className="flex items-center gap-5">
+          <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-white/95 text-3xl font-bold text-sky-500 shadow-xl shadow-sky-900/30">
+            A
           </div>
-          <p className="max-w-sm text-base text-white/80">
-            Tingkatkan performa toko dengan promo terbaru, pantau pesanan secara real time, dan bangun loyalitas pembeli setiap hari.
-          </p>
-        </div>
-        <div className="space-y-4 text-sm text-white/90">
-          <div className="flex items-start gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/20 text-sm font-semibold text-white shadow-inner">1</span>
-            Kelola katalog produk dan stok dengan mudah dari dashboard cerdas kami.
-          </div>
-          <div className="flex items-start gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/20 text-sm font-semibold text-white shadow-inner">2</span>
-            Analisis performa penjualan dan kampanye promosi yang relevan bagi tokomu.
-          </div>
-          <div className="flex items-start gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/20 text-sm font-semibold text-white shadow-inner">3</span>
-            Tersedia dukungan tim Akay Nusantara setiap hari untuk bantu perkembangan usaha.
+          <div>
+            <p className="text-2xl font-semibold leading-tight">Akay Seller Center</p>
+            <p className="text-base text-white/85">Lebih hemat, lebih cepat kelola tokomu.</p>
           </div>
         </div>
-        <div className="pointer-events-none absolute -left-16 top-24 h-40 w-40 rounded-full bg-sky-300/40 blur-3xl" />
-        <div className="pointer-events-none absolute -right-10 bottom-10 h-48 w-48 rounded-full bg-sky-200/30 blur-3xl" />
+        <p className="text-sm leading-relaxed text-white/85">
+          Optimalkan performa toko dengan promo terbaru, pantau pesanan real time, dan bangun loyalitas pelanggan dari satu dashboard.
+        </p>
+        <ul className="space-y-2 text-sm text-white/80">
+          {benefits.map((benefit, index) => (
+            <li key={benefit} className="flex items-start gap-3">
+              <span className="mt-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-white/20 text-xs font-semibold text-white shadow-inner">
+                {index + 1}
+              </span>
+              {benefit}
+            </li>
+          ))}
+        </ul>
       </div>
 
-      <div className="w-full max-w-md rounded-2xl bg-white/90 p-6 shadow-xl shadow-sky-900/5 ring-1 ring-sky-100 backdrop-blur lg:p-10">
-        <div className="mb-6 space-y-2 text-sm font-medium uppercase tracking-wide text-sky-600">
-          <span>Masuk seller</span>
-          <span className="block h-px w-14 bg-sky-300" />
+      <div className="relative hidden overflow-hidden rounded-[32px] bg-gradient-to-br from-sky-500 via-sky-600 to-sky-700 p-10 text-white shadow-2xl shadow-sky-900/20 lg:flex lg:flex-col lg:justify-between">
+        <div className="space-y-8">
+          <div className="flex items-center gap-5">
+            <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-white/95 text-4xl font-bold text-sky-500 shadow-xl shadow-sky-900/30">
+              A
+            </div>
+            <div className="space-y-1">
+              <p className="text-3xl font-semibold leading-tight">Akay Seller Center</p>
+              <p className="text-lg text-white/85">Lebih hemat, lebih cepat kelola tokomu.</p>
+            </div>
+          </div>
+          <p className="max-w-sm text-base leading-relaxed text-white/85">
+            Optimalkan performa toko dengan promo terbaru, pantau pesanan real time, dan bangun loyalitas pelanggan dari satu dashboard.
+          </p>
         </div>
-        <h1 className="text-2xl font-semibold text-sky-900">Masuk ke akun seller Akay Nusantara</h1>
-        <p className="mt-2 text-sm text-sky-700/80">
-          Gunakan email atau nomor HP terdaftar untuk melanjutkan. Aktivasi toko tersedia setelah onboarding selesai.
-        </p>
+        <div className="space-y-4">
+          <h2 className="text-sm font-semibold uppercase tracking-widest text-white/70">Kenapa bergabung dengan kami</h2>
+          <ul className="space-y-3 text-sm text-white/85">
+            {benefits.map((benefit, index) => (
+              <li key={benefit} className="flex items-start gap-3">
+                <span className="mt-0.5 flex h-7 w-7 items-center justify-center rounded-full bg-white/20 text-xs font-semibold text-white shadow-inner">
+                  {index + 1}
+                </span>
+                {benefit}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="pointer-events-none absolute -left-24 top-24 h-48 w-48 rounded-full bg-sky-300/30 blur-3xl" />
+        <div className="pointer-events-none absolute -right-20 bottom-16 h-60 w-60 rounded-full bg-sky-200/30 blur-3xl" />
+      </div>
+
+      <div className="flex flex-col justify-center rounded-[32px] bg-white px-6 py-8 text-sky-900 shadow-xl shadow-sky-900/10 sm:px-10 sm:py-12">
+        <div className="flex flex-col gap-4 border-b border-sky-100 pb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-semibold text-sky-900">Log in seller</h1>
+              <p className="mt-1 text-sm text-sky-700/80">Masuk menggunakan email atau nomor HP terdaftar.</p>
+            </div>
+            <span className="hidden rounded-full bg-sky-100 px-4 py-1 text-xs font-semibold uppercase tracking-wide text-sky-600 sm:inline-block">
+              akun seller
+            </span>
+          </div>
+          <p className="text-xs text-sky-600">Akses dashboard Akay Nusantara untuk mengelola katalog, pesanan, dan promosi.</p>
+        </div>
 
         {errorMessage ? (
           <div className="mt-6 rounded-xl border border-red-200 bg-red-50/90 p-4 text-sm text-red-700">
@@ -96,9 +130,9 @@ export default async function SellerLogin({
           </div>
         ) : null}
 
-        <form method="POST" action="/api/auth/login" className="mt-6 space-y-4">
-          <div className="space-y-1">
-            <label htmlFor="email" className="text-sm font-medium text-sky-800">
+        <form method="POST" action="/api/auth/login" className="mt-6 space-y-5">
+          <div className="space-y-2">
+            <label htmlFor="email" className="text-sm font-semibold text-sky-800">
               Email atau nomor HP
             </label>
             <input
@@ -110,8 +144,8 @@ export default async function SellerLogin({
               className="w-full rounded-xl border border-sky-200 bg-white px-4 py-3 text-sm text-sky-900 shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
             />
           </div>
-          <div className="space-y-1">
-            <label htmlFor="password" className="text-sm font-medium text-sky-800">
+          <div className="space-y-2">
+            <label htmlFor="password" className="text-sm font-semibold text-sky-800">
               Password
             </label>
             <input
