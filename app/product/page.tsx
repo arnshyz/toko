@@ -225,7 +225,7 @@ export default async function ProductListingPage({
             {products.map((product) => (
               <ProductCard
                 key={product.id}
-                href={`/product/${product.id}`}
+                href={`/product/${product.slug}`}
                 title={product.title}
                 imageUrl={product.imageUrl}
                 salePrice={product.salePrice}

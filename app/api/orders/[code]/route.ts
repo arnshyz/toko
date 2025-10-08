@@ -17,6 +17,7 @@ export async function GET(_req: NextRequest, { params }: { params: { code: strin
           product: {
             select: {
               id: true,
+              slug: true,
               title: true,
               imageUrl: true,
               seller: { select: { id: true, name: true, slug: true } },

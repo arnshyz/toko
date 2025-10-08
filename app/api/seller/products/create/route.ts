@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getIronSession } from "iron-session";
 import { sessionOptions, SessionUser } from "@/lib/session";
 import { buildVariantPayload, parseVariantInput, resolveCategorySlug } from "@/lib/product-form";
+import { slugify } from "@/lib/utils";
 
 export async function POST(req: NextRequest) {
   const form = await req.formData();
@@ -56,10 +57,21 @@ export async function POST(req: NextRequest) {
 
   const validatedFiles = files.filter((file) => file.type.startsWith('image/'));
 
+  const baseSlugRaw = slugify(title);
+  const fallbackSlug = slugify(`produk-${Date.now().toString(36)}`) || `produk-${Date.now().toString(36)}`;
+  const baseSlug = baseSlugRaw || fallbackSlug;
+
+  let slugCandidate = baseSlug;
+  let attempt = 1;
+  while (await prisma.product.findUnique({ where: { slug: slugCandidate } })) {
+    slugCandidate = `${baseSlug}-${attempt++}`;
+  }
+
   const product = await prisma.product.create({
     data: {
       sellerId: user.id,
       title,
+      slug: slugCandidate,
       price,
       stock,
       description,

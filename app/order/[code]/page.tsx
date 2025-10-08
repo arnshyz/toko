@@ -39,6 +39,7 @@ export default async function OrderDetailPage({ params }: { params: { code: stri
           product: {
             select: {
               id: true,
+              slug: true,
               title: true,
               imageUrl: true,
               seller: { select: { id: true, name: true, slug: true } },
@@ -149,7 +150,7 @@ export default async function OrderDetailPage({ params }: { params: { code: stri
                 <div className="min-w-0 flex-1 space-y-1">
                   <h3 className="text-base font-semibold text-gray-900">
                     {product ? (
-                      <Link href={`/product/${product.id}`} className="hover:underline">
+                      <Link href={`/product/${product.slug}`} className="hover:underline">
                         {product.title ?? "Produk"}
                       </Link>
                     ) : (
