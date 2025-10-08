@@ -180,7 +180,7 @@ type OrderEmailBase = {
   orderCode: string;
 };
 
-export async function sendOrderCreatedEmailHtml(params: {
+export async function sendOrderCreatedEmail(params: {
   email: string;
   name: string;
   orderCode: string;
@@ -241,7 +241,7 @@ export async function sendOrderCreatedEmailHtml(params: {
     html,
   });
 }
-export async function sendPaymentSuccessEmailHtml(params: {
+export async function sendPaymentSuccessEmail(params: {
   email: string;
   name: string;
   orderCode: string;
@@ -295,7 +295,7 @@ export async function sendPaymentSuccessEmailHtml(params: {
   });
 }
 
-export async function sendOrderCompletedEmailHtml(params: {
+export async function sendOrderCompletedEmail(params: {
   email: string;
   name: string;
   orderCode: string;
@@ -351,7 +351,7 @@ export async function sendOrderCompletedEmailHtml(params: {
   });
 }
 
-export async function sendOrderProcessingEmailHtml(params: {
+export async function sendOrderProcessingEmail(params: {
   email: string;
   name: string;
   orderCode: string;
@@ -409,7 +409,7 @@ export async function sendOrderProcessingEmailHtml(params: {
   });
 }
 
-export async function sendOrderCancelledEmailHtml(params: {
+export async function sendOrderCancelledEmail(params: {
   email: string;
   name: string;
   orderCode: string;
@@ -474,7 +474,7 @@ export async function sendOrderCancelledEmailHtml(params: {
   });
 }
 
-export async function sendOrderPaymentPendingEmailHtml(params: {
+export async function sendOrderPaymentPendingEmail(params: {
   email: string;
   name: string;
   orderCode: string;
@@ -545,7 +545,7 @@ export async function sendOrderPaymentPendingEmailHtml(params: {
 }
 
 
-export async function sendLoginNotificationEmailHtml(params: {
+export async function sendLoginNotificationEmail(params: {
   email: string;
   name: string;
   loginAt?: Date | string;
@@ -613,7 +613,7 @@ export async function sendLoginNotificationEmailHtml(params: {
   });
 }
 
-export async function sendPasswordResetSuccessEmailHtml(params: {
+export async function sendPasswordResetSuccessEmail(params: {
   email: string;
   name?: string | null;
   loginUrl: string;
