@@ -1,7 +1,7 @@
 import nodemailer, { Transporter } from "nodemailer";
 import path from "path";
 import { renderTemplate } from "@/lib/email-template";
-import { sendMail } from "@/lib/mail";
+import { sendMail } from "@/lib/email";
 
 import { PASSWORD_RESET_TOKEN_EXPIRATION_MINUTES } from "@/lib/password-reset";
 
