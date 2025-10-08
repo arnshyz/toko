@@ -1,7 +1,7 @@
 import nodemailer, { Transporter } from "nodemailer";
 import path from "path";
 import { renderTemplate } from "@/lib/email-template";
-
+import { sendMail } from "@/lib/mail";
 
 import { PASSWORD_RESET_TOKEN_EXPIRATION_MINUTES } from "@/lib/password-reset";
 
@@ -264,8 +264,8 @@ export async function sendPaymentSuccessEmailHtml(params: {
   const html = await renderTemplate(
     path.join(process.cwd(), "templates/payment-success.html"),
     {
-      app_name: "Toko Nusantara",
-      user_salutation: "Sdr/i",
+      app_name: "AKAY NUSANTARA",
+      user_salutation: "Kak, ",
       user_name: name,
       user_email: email,
       order_code: orderCode,
@@ -320,8 +320,8 @@ export async function sendOrderCompletedEmailHtml(params: {
   const html = await renderTemplate(
     path.join(process.cwd(), "templates/order-completed.html"),
     {
-      app_name: "Toko Nusantara",
-      user_salutation: "Sdr/i",
+      app_name: "AKAY NUSANTARA",
+      user_salutation: "Kak, ",
       user_name: name,
       user_email: email,
       order_code: orderCode,
@@ -379,8 +379,8 @@ export async function sendOrderProcessingEmailHtml(params: {
   const html = await renderTemplate(
     path.join(process.cwd(), "templates/order-processing.html"),
     {
-      app_name: "Toko Nusantara",
-      user_salutation: "Sdr/i",
+      app_name: "AKAY NUSANTARA",
+      user_salutation: "Kak, ",
       user_name: name,
       user_email: email,
       order_code: orderCode,
@@ -439,8 +439,8 @@ export async function sendOrderCancelledEmailHtml(params: {
   const html = await renderTemplate(
     path.join(process.cwd(), "templates/order-cancelled.html"),
     {
-      app_name: "Toko Nusantara",
-      user_salutation: "Sdr/i",
+      app_name: "AKAY NUSANTARA",
+      user_salutation: "Kak, ",
       user_name: name,
       user_email: email,
 
@@ -505,8 +505,8 @@ export async function sendOrderPaymentPendingEmailHtml(params: {
   const html = await renderTemplate(
     path.join(process.cwd(), "templates/order-payment-pending.html"),
     {
-      app_name: "Toko Nusantara",
-      user_salutation: "Sdr/i",
+      app_name: "AKAY NUSANTARA",
+      user_salutation: "Kak, ",
       user_name: name,
       user_email: email,
 
@@ -542,4 +542,134 @@ export async function sendOrderPaymentPendingEmailHtml(params: {
       `Metode ${paymentMethod}. Bayar: ${payUrl} • Status: ${orderUrl}`,
     html,
   });
+}
+
+
+export async function sendLoginNotificationEmailHtml(params: {
+  email: string;
+  name: string;
+  loginAt?: Date | string;
+  ipAddress?: string;
+  device?: string;
+  location?: string;                 // contoh: Sidoarjo, ID
+  isNewDevice?: boolean;
+  activityUrl: string;               // halaman riwayat/aktivitas login
+  resetPasswordUrl: string;
+  securityUrl: string;               // halaman keamanan akun
+}) {
+  const {
+    email, name,
+    loginAt = new Date(),
+    ipAddress = "",
+    device = "",
+    location = "Tidak diketahui",
+    isNewDevice = false,
+    activityUrl,
+    resetPasswordUrl,
+    securityUrl,
+  } = params;
+
+  const loginLocal = new Intl.DateTimeFormat("id-ID", {
+    dateStyle: "full",
+    timeStyle: "short",
+  }).format(typeof loginAt === "string" ? new Date(loginAt) : loginAt);
+
+  const html = await renderTemplate(
+    path.join(process.cwd(), "templates/login-notification.html"),
+    {
+      app_name: "AKAY NUSANTARA",
+      user_salutation: "Kak, ",
+      user_name: name,
+      user_email: email,
+
+      login_at_local: loginLocal,
+      ip_address: ipAddress,
+      device,
+      location,
+      is_new_device: isNewDevice ? "Ya" : "Tidak",
+
+      activity_url: activityUrl,
+      reset_password_url: resetPasswordUrl,
+      security_url: securityUrl,
+
+      brand_logo_url: process.env.BRAND_LOGO_URL ?? "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgTFPWdo1aGRGXE22EIOHRGm-GMSnQlM4Ipq3hElGWDlKkvFreUP3j-KpC_clppmgqtQFE5Sky78ZndhW8bcJfdpBKqqI3YkaUYoUqDmYqN-moRfDXBLr3KNueZ_OQ-QRytSdzn7rD36NkOtb-qoEfdLZs50eg8Eum1pssd5Fzq7xSzzdoQA3zU-PHGI4k/s1600/4%20%281%29.png",
+      company_name: "PT AKAY NUSANTARA GROUP",
+      company_address_line: "Jl. Anjay No. 404, Sidoarjo",
+      privacy_url: "https://akay.web.id/privacy",
+      help_center_url: "https://akay.web.id/help",
+      support_url: "https://akay.web.id/support",
+      year: String(new Date().getFullYear()),
+    }
+  );
+
+  await sendMail({
+    to: email,
+    subject: "Notifikasi login ke akun Anda",
+    text:
+      `Halo ${name}, ada login ke akun Anda pada ${loginLocal}. ` +
+      `IP: ${ipAddress} • Perangkat: ${device} • Lokasi: ${location}. ` +
+      `Aktivitas: ${activityUrl} • Ganti sandi: ${resetPasswordUrl}`,
+    html,
+  });
+}
+
+export async function sendPasswordResetSuccessEmailHtml(params: {
+  email: string;
+  name?: string | null;
+  loginUrl: string;
+  securityUrl: string;
+  resetPasswordUrl: string;
+  changedAt?: Date | string;
+  deviceFingerprint?: string;
+}) {
+  const {
+    email,
+    name = null,
+    loginUrl,
+    securityUrl,
+    resetPasswordUrl,
+    changedAt = new Date(),
+    deviceFingerprint = "Web • ID",
+  } = params;
+
+  const subject = "Password berhasil diperbarui";
+
+  const changedLocal = new Intl.DateTimeFormat("id-ID", {
+    dateStyle: "full",
+    timeStyle: "short",
+  }).format(typeof changedAt === "string" ? new Date(changedAt) : changedAt);
+
+  const html = await renderTemplate(
+    path.join(process.cwd(), "templates/password-reset-success.html"),
+    {
+      app_name: "AKAY NUSANTARA",
+      user_salutation: "Kak, ",
+      user_name: name ?? "",
+      user_email: email,
+      changed_at_local: changedLocal,
+      device_fingerprint: deviceFingerprint,
+
+      login_url: loginUrl,
+      security_url: securityUrl,
+      reset_password_url: resetPasswordUrl,
+
+      activity_id: crypto.randomUUID(), // opsional
+
+      brand_logo_url: process.env.BRAND_LOGO_URL ?? "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgTFPWdo1aGRGXE22EIOHRGm-GMSnQlM4Ipq3hElGWDlKkvFreUP3j-KpC_clppmgqtQFE5Sky78ZndhW8bcJfdpBKqqI3YkaUYoUqDmYqN-moRfDXBLr3KNueZ_OQ-QRytSdzn7rD36NkOtb-qoEfdLZs50eg8Eum1pssd5Fzq7xSzzdoQA3zU-PHGI4k/s1600/4%20%281%29.png",
+      company_name: "PT AKAY NUSANTARA GROUP",
+      company_address_line: "Jl. Anjay No. 404, Sidoarjo",
+      privacy_url: "https://akay.web.id/privacy",
+      help_center_url: "https://akay.web.id/help",
+      support_url: "https://akay.web.id/support",
+      year: String(new Date().getFullYear()),
+    }
+  );
+
+  const text =
+    `${name ? `Halo ${name},` : "Halo,"}\n\n` +
+    `Kata sandi akun Anda telah berhasil diperbarui pada ${changedLocal}.\n` +
+    `Jika ini bukan Anda, segera ganti kata sandi: ${resetPasswordUrl} dan tinjau keamanan: ${securityUrl}.\n` +
+    `Masuk: ${loginUrl}`;
+
+  await sendMail({ to: email, subject, text, html });
 }
