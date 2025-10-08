@@ -241,169 +241,305 @@ export async function sendOrderCreatedEmailHtml(params: {
     html,
   });
 }
-export async function sendPaymentSuccessEmail(params: OrderEmailBase): Promise<void> {
-  const { email, name, orderCode } = params;
-  const subject = `Pembayaran pesanan ${orderCode} berhasil diverifikasi`;
-  const greeting = `Halo ${name},`;
-  const text = `${greeting}
-
-Pembayaran untuk pesanan ${orderCode} telah kami terima dan verifikasi. Pesanan sedang diproses oleh penjual.
-
-Salam,
-Tim Toko Nusantara`;
-  const html = `
-    <p>${greeting}</p>
-    <p>Pembayaran untuk pesanan <strong>${orderCode}</strong> telah kami terima dan verifikasi. Pesanan sedang diproses oleh penjual.</p>
-    <p>Salam,<br/>Tim Toko Nusantara</p>
-  `;
-
-  await sendMail({ to: email, subject, text, html });
-}
-
-export async function sendOrderCompletedEmail(params: OrderEmailBase): Promise<void> {
-  const { email, name, orderCode } = params;
-  const subject = `Pesanan ${orderCode} selesai`;
-  const greeting = `Halo ${name},`;
-  const text = `${greeting}
-
-Selamat! Semua item pada pesanan ${orderCode} telah diterima. Terima kasih sudah berbelanja di Toko Nusantara.
-
-Kami berharap dapat melayani Anda kembali.
-
-Salam,
-Tim Toko Nusantara`;
-  const html = `
-    <p>${greeting}</p>
-    <p>Selamat! Semua item pada pesanan <strong>${orderCode}</strong> telah diterima. Terima kasih sudah berbelanja di Toko Nusantara.</p>
-    <p>Kami berharap dapat melayani Anda kembali.</p>
-    <p>Salam,<br/>Tim Toko Nusantara</p>
-  `;
-
-  await sendMail({ to: email, subject, text, html });
-}
-
-export async function sendOrderProcessingEmail(params: OrderEmailBase & {
-  estimatedShipping?: string | Date | null;
-}): Promise<void> {
-  const { email, name, orderCode, estimatedShipping } = params;
-  const subject = `Pesanan ${orderCode} sedang diproses`;
-  const greeting = `Halo ${name},`;
-  const estimateText = estimatedShipping
-    ? `Perkiraan pengiriman pada ${new Intl.DateTimeFormat("id-ID", {
-        dateStyle: "full",
-      }).format(typeof estimatedShipping === "string" ? new Date(estimatedShipping) : estimatedShipping)}.`
-    : "Pesanan Anda sedang kami siapkan untuk dikirim.";
-
-  const text = `${greeting}
-
-Pesanan Anda dengan kode ${orderCode} sedang diproses oleh penjual.
-${estimateText}
-
-Kami akan mengirimkan notifikasi tambahan setelah paket dikirim.`;
-
-  const html = `
-    <p>${greeting}</p>
-    <p>Pesanan Anda dengan kode <strong>${orderCode}</strong> sedang diproses oleh penjual.</p>
-    <p>${estimateText}</p>
-    <p>Kami akan mengirimkan notifikasi tambahan setelah paket dikirim.</p>
-  `;
-
-  await sendMail({ to: email, subject, text, html });
-}
-
-export async function sendOrderCancelledEmail(params: OrderEmailBase & {
-  reason?: string | null;
-}): Promise<void> {
-  const { email, name, orderCode, reason } = params;
-  const subject = `Pesanan ${orderCode} dibatalkan`;
-  const greeting = `Halo ${name},`;
-  const extra = reason ? `Alasan pembatalan: ${reason}` : "Pesanan dibatalkan oleh admin atau penjual.";
-
-  const text = `${greeting}
-
-Pesanan dengan kode ${orderCode} telah dibatalkan.
-${extra}
-
-Jika Anda sudah melakukan pembayaran, tim kami akan membantu proses pengembalian dana.`;
-
-  const html = `
-    <p>${greeting}</p>
-    <p>Pesanan dengan kode <strong>${orderCode}</strong> telah dibatalkan.</p>
-    <p>${extra}</p>
-    <p>Jika Anda telah melakukan pembayaran, kami akan membantu proses pengembalian dana sesuai prosedur.</p>
-  `;
-
-  await sendMail({ to: email, subject, text, html });
-}
-
-export async function sendOrderPaymentPendingEmail(params: OrderEmailBase & {
-  paymentMethod: string;
-  total: number;
-  uniqueCode?: number | null;
-  bankName?: string | null;
-  bankAccountNumber?: string | null;
-  bankAccountName?: string | null;
-  paymentInstructions?: string | null;
-  dueDate?: Date | string | null;
-}): Promise<void> {
+export async function sendPaymentSuccessEmailHtml(params: {
+  email: string;
+  name: string;
+  orderCode: string;
+  amountDisplay: string;     // contoh: Rp120.000
+  paymentMethod: string;     // contoh: BCA Transfer
+  paidAt?: Date | string;    // waktu pembayaran
+  orderUrl: string;
+  paymentId?: string;
+}) {
   const {
-    email,
-    name,
-    orderCode,
-    paymentMethod,
-    total,
-    uniqueCode,
-    bankName = DEFAULT_BANK_NAME,
-    bankAccountNumber = DEFAULT_BANK_ACCOUNT,
-    bankAccountName = DEFAULT_BANK_HOLDER,
-    paymentInstructions,
-    dueDate,
+    email, name, orderCode, amountDisplay, paymentMethod,
+    paidAt = new Date(), orderUrl, paymentId = ""
   } = params;
 
-  const subject = `Menunggu pembayaran pesanan ${orderCode}`;
-  const greeting = `Halo ${name},`;
-  const totalDisplay = formatCurrencyIDR(total);
-  const uniqueCodeDisplay = typeof uniqueCode === "number" && uniqueCode > 0 ? `${uniqueCode}` : null;
-  const dueDisplay = dueDate
-    ? new Intl.DateTimeFormat("id-ID", { dateStyle: "full", timeStyle: "short" }).format(
-        typeof dueDate === "string" ? new Date(dueDate) : dueDate,
-      )
-    : null;
-  const instructionText =
-    paymentInstructions ??
-    `Transfer manual melalui ${bankName} ke nomor rekening ${bankAccountNumber} a.n ${bankAccountName}. Setelah pembayaran, unggah bukti di halaman pesanan.`;
+  const paidLocal = new Intl.DateTimeFormat("id-ID", {
+    dateStyle: "full",
+    timeStyle: "short",
+  }).format(typeof paidAt === "string" ? new Date(paidAt) : paidAt);
 
-  const textLines = [
-    greeting,
-    "",
-    `Pesanan Anda dengan kode ${orderCode} berhasil dibuat dan menunggu pembayaran (${paymentMethod}).`,
-    `Total yang harus dibayar: ${totalDisplay}.`,
-    instructionText,
-  ];
-  if (uniqueCodeDisplay) {
-    textLines.push(`Kode unik pembayaran: ${uniqueCodeDisplay}`);
-  }
-  if (dueDisplay) {
-    textLines.push(`Selesaikan pembayaran sebelum ${dueDisplay}.`);
-  }
-  textLines.push("Terima kasih telah berbelanja di Akay Nusantara.");
+  const html = await renderTemplate(
+    path.join(process.cwd(), "templates/payment-success.html"),
+    {
+      app_name: "Toko Nusantara",
+      user_salutation: "Sdr/i",
+      user_name: name,
+      user_email: email,
+      order_code: orderCode,
+      amount_display: amountDisplay,
+      payment_method: paymentMethod,
+      paid_at_local: paidLocal,
+      payment_id: paymentId,
+      order_url: orderUrl,
 
-  const text = textLines.join("\n");
+      brand_logo_url: process.env.BRAND_LOGO_URL ?? "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgTFPWdo1aGRGXE22EIOHRGm-GMSnQlM4Ipq3hElGWDlKkvFreUP3j-KpC_clppmgqtQFE5Sky78ZndhW8bcJfdpBKqqI3YkaUYoUqDmYqN-moRfDXBLr3KNueZ_OQ-QRytSdzn7rD36NkOtb-qoEfdLZs50eg8Eum1pssd5Fzq7xSzzdoQA3zU-PHGI4k/s1600/4%20%281%29.png",
+      company_name: "PT AKAY NUSANTARA GROUP",
+      company_address_line: "Jl. Anjay No. 404, Sidoarjo",
+      privacy_url: "https://akay.web.id/privacy",
+      help_center_url: "https://akay.web.id/help",
+      support_url: "https://akay.web.id/support",
+      year: String(new Date().getFullYear()),
+    }
+  );
 
-  const html = `
-    <p>${greeting}</p>
-    <p>Pesanan Anda dengan kode <strong>${orderCode}</strong> berhasil dibuat dan menunggu pembayaran (<strong>${paymentMethod}</strong>).</p>
-    <p>Total yang harus dibayar: <strong>${totalDisplay}</strong></p>
-    <ul>
-      <li>Bank: <strong>${bankName}</strong></li>
-      <li>Nomor Rekening: <strong>${bankAccountNumber}</strong></li>
-      <li>Atas Nama: <strong>${bankAccountName}</strong></li>
-      ${uniqueCodeDisplay ? `<li>Kode unik pembayaran: <strong>${uniqueCodeDisplay}</strong></li>` : ""}
-    </ul>
-    <p>${instructionText}</p>
-    ${dueDisplay ? `<p>Selesaikan pembayaran sebelum <strong>${dueDisplay}</strong>.</p>` : ""}
-    <p>Terima kasih telah berbelanja di Akay Nusantara.</p>
-  `;
+  await sendMail({
+    to: email,
+    subject: `Pembayaran pesanan ${orderCode} berhasil diverifikasi`,
+    text:
+      `Halo ${name}, pembayaran untuk pesanan ${orderCode} (${amountDisplay}) ` +
+      `dengan metode ${paymentMethod} telah kami terima. Lihat status: ${orderUrl}`,
+    html,
+  });
+}
 
-  await sendMail({ to: email, subject, text, html });
+export async function sendOrderCompletedEmailHtml(params: {
+  email: string;
+  name: string;
+  orderCode: string;
+  totalDisplay: string;          // Rp120.000
+  completedAt?: Date | string;
+  orderUrl: string;
+  reviewUrl?: string;
+  itemsRowsHtml?: string;        // <tr><td>Produk A</td><td align="right">1×</td><td align="right">Rp50.000</td></tr>
+}) {
+  const {
+    email, name, orderCode, totalDisplay,
+    completedAt = new Date(), orderUrl,
+    reviewUrl = `${orderUrl}#review`,
+    itemsRowsHtml = ""
+  } = params;
+
+  const completedLocal = new Intl.DateTimeFormat("id-ID", {
+    dateStyle: "full",
+    timeStyle: "short",
+  }).format(typeof completedAt === "string" ? new Date(completedAt) : completedAt);
+
+  const html = await renderTemplate(
+    path.join(process.cwd(), "templates/order-completed.html"),
+    {
+      app_name: "Toko Nusantara",
+      user_salutation: "Sdr/i",
+      user_name: name,
+      user_email: email,
+      order_code: orderCode,
+      total_display: totalDisplay,
+      completed_at_local: completedLocal,
+      order_url: orderUrl,
+      review_url: reviewUrl,
+      items_rows_html: itemsRowsHtml,
+
+      brand_logo_url: process.env.BRAND_LOGO_URL ?? "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgTFPWdo1aGRGXE22EIOHRGm-GMSnQlM4Ipq3hElGWDlKkvFreUP3j-KpC_clppmgqtQFE5Sky78ZndhW8bcJfdpBKqqI3YkaUYoUqDmYqN-moRfDXBLr3KNueZ_OQ-QRytSdzn7rD36NkOtb-qoEfdLZs50eg8Eum1pssd5Fzq7xSzzdoQA3zU-PHGI4k/s1600/4%20%281%29.png",
+      company_name: "PT AKAY NUSANTARA GROUP",
+      company_address_line: "Jl. Anjay No. 404, Sidoarjo",
+      privacy_url: "https://akay.web.id/privacy",
+      help_center_url: "https://akay.web.id/help",
+      support_url: "https://akay.web.id/support",
+      year: String(new Date().getFullYear()),
+    }
+  );
+
+  await sendMail({
+    to: email,
+    subject: `Pesanan ${orderCode} selesai`,
+    text:
+      `Halo ${name}, semua item pada pesanan ${orderCode} telah diterima. ` +
+      `Total ${totalDisplay}. Detail: ${orderUrl}`,
+    html,
+  });
+}
+
+export async function sendOrderProcessingEmailHtml(params: {
+  email: string;
+  name: string;
+  orderCode: string;
+  orderUrl: string;
+  estimatedShipping?: Date | string | null;
+  updatedAt?: Date | string;
+  itemsRowsHtml?: string;
+}) {
+  const {
+    email, name, orderCode, orderUrl,
+    estimatedShipping = null, updatedAt = new Date(),
+    itemsRowsHtml = ""
+  } = params;
+
+  const estimatedLocal = estimatedShipping
+    ? new Intl.DateTimeFormat("id-ID", { dateStyle: "full" })
+        .format(typeof estimatedShipping === "string" ? new Date(estimatedShipping) : estimatedShipping)
+    : "Menunggu konfirmasi";
+
+  const updatedLocal = new Intl.DateTimeFormat("id-ID", {
+    dateStyle: "full",
+    timeStyle: "short",
+  }).format(typeof updatedAt === "string" ? new Date(updatedAt) : updatedAt);
+
+  const html = await renderTemplate(
+    path.join(process.cwd(), "templates/order-processing.html"),
+    {
+      app_name: "Toko Nusantara",
+      user_salutation: "Sdr/i",
+      user_name: name,
+      user_email: email,
+      order_code: orderCode,
+      order_url: orderUrl,
+      estimated_shipping_local: estimatedLocal,
+      updated_at_local: updatedLocal,
+      items_rows_html: itemsRowsHtml,
+
+      brand_logo_url: process.env.BRAND_LOGO_URL ?? "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgTFPWdo1aGRGXE22EIOHRGm-GMSnQlM4Ipq3hElGWDlKkvFreUP3j-KpC_clppmgqtQFE5Sky78ZndhW8bcJfdpBKqqI3YkaUYoUqDmYqN-moRfDXBLr3KNueZ_OQ-QRytSdzn7rD36NkOtb-qoEfdLZs50eg8Eum1pssd5Fzq7xSzzdoQA3zU-PHGI4k/s1600/4%20%281%29.png",
+      company_name: "PT AKAY NUSANTARA GROUP",
+      company_address_line: "Jl. Anjay No. 404, Sidoarjo",
+      privacy_url: "https://akay.web.id/privacy",
+      help_center_url: "https://akay.web.id/help",
+      support_url: "https://akay.web.id/support",
+      year: String(new Date().getFullYear()),
+    }
+  );
+
+  await sendMail({
+    to: email,
+    subject: `Pesanan ${orderCode} sedang diproses`,
+    text:
+      `Halo ${name}, pesanan ${orderCode} sedang diproses. ` +
+      `Perkiraan kirim: ${estimatedLocal}. Lihat status: ${orderUrl}`,
+    html,
+  });
+}
+
+export async function sendOrderCancelledEmailHtml(params: {
+  email: string;
+  name: string;
+  orderCode: string;
+  totalDisplay?: string;          // Rp120.000
+  reason?: string;
+  cancelledAt?: Date | string;
+  orderUrl: string;
+  refundAmountDisplay?: string;   // jika ada refund
+  refundMethod?: string;          // contoh: Transfer bank
+  refundReference?: string;       // contoh: RFD-123
+}) {
+  const {
+    email, name, orderCode, orderUrl,
+    totalDisplay = "—",
+    reason = "Pembatalan oleh admin/penjual",
+    cancelledAt = new Date(),
+    refundAmountDisplay = "",
+    refundMethod = "",
+    refundReference = ""
+  } = params;
+
+  const cancelledLocal = new Intl.DateTimeFormat("id-ID", {
+    dateStyle: "full",
+    timeStyle: "short",
+  }).format(typeof cancelledAt === "string" ? new Date(cancelledAt) : cancelledAt);
+
+  const html = await renderTemplate(
+    path.join(process.cwd(), "templates/order-cancelled.html"),
+    {
+      app_name: "Toko Nusantara",
+      user_salutation: "Sdr/i",
+      user_name: name,
+      user_email: email,
+
+      order_code: orderCode,
+      total_display: totalDisplay,
+      cancelled_at_local: cancelledLocal,
+      order_url: orderUrl,
+      cancellation_reason: reason,
+
+      refund_amount_display: refundAmountDisplay,
+      refund_method: refundMethod,
+      refund_reference: refundReference,
+
+      brand_logo_url: process.env.BRAND_LOGO_URL ?? "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgTFPWdo1aGRGXE22EIOHRGm-GMSnQlM4Ipq3hElGWDlKkvFreUP3j-KpC_clppmgqtQFE5Sky78ZndhW8bcJfdpBKqqI3YkaUYoUqDmYqN-moRfDXBLr3KNueZ_OQ-QRytSdzn7rD36NkOtb-qoEfdLZs50eg8Eum1pssd5Fzq7xSzzdoQA3zU-PHGI4k/s1600/4%20%281%29.png",
+      company_name: "PT AKAY NUSANTARA GROUP",
+      company_address_line: "Jl. Anjay No. 404, Sidoarjo",
+      privacy_url: "https://akay.web.id/privacy",
+      help_center_url: "https://akay.web.id/help",
+      support_url: "https://akay.web.id/support",
+      year: String(new Date().getFullYear()),
+    }
+  );
+
+  await sendMail({
+    to: email,
+    subject: `Pesanan ${orderCode} dibatalkan`,
+    text:
+      `Halo ${name}, pesanan ${orderCode} telah dibatalkan. ` +
+      `Alasan: ${reason}. Detail: ${orderUrl}`,
+    html,
+  });
+}
+
+export async function sendOrderPaymentPendingEmailHtml(params: {
+  email: string;
+  name: string;
+  orderCode: string;
+  totalDisplay: string;          // Rp120.000
+  paymentMethod: string;         // Transfer Manual / VA
+  bankName?: string | null;
+  bankAccount?: string | null;
+  bankHolder?: string | null;
+  vaNumber?: string | null;
+  uniqueCode?: string | null;
+  dueDate?: Date | string | null;
+  payUrl: string;
+  orderUrl: string;
+  paymentInstructions?: string | null;
+}) {
+  const {
+    email, name, orderCode, totalDisplay, paymentMethod,
+    bankName = "BCA", bankAccount = "1234567890", bankHolder = "PT Akay Nusantara",
+    vaNumber = "", uniqueCode = "", dueDate = null, payUrl, orderUrl,
+    paymentInstructions = `Transfer ke ${bankName} ${bankAccount} a.n ${bankHolder}, lalu unggah bukti di halaman pesanan.`
+  } = params;
+
+  const dueLocal = dueDate
+    ? new Intl.DateTimeFormat("id-ID", { dateStyle: "full", timeStyle: "short" })
+        .format(typeof dueDate === "string" ? new Date(dueDate) : dueDate)
+    : "—";
+
+  const html = await renderTemplate(
+    path.join(process.cwd(), "templates/order-payment-pending.html"),
+    {
+      app_name: "Toko Nusantara",
+      user_salutation: "Sdr/i",
+      user_name: name,
+      user_email: email,
+
+      order_code: orderCode,
+      total_display: totalDisplay,
+      payment_method: paymentMethod,
+      bank_name: bankName ?? "",
+      bank_account: bankAccount ?? "",
+      bank_holder: bankHolder ?? "",
+      va_number: vaNumber ?? "",
+      unique_code: uniqueCode ?? "",
+      due_date_local: dueLocal,
+      payment_instructions: paymentInstructions,
+
+      pay_url: payUrl,
+      order_url: orderUrl,
+
+      brand_logo_url: process.env.BRAND_LOGO_URL ?? "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgTFPWdo1aGRGXE22EIOHRGm-GMSnQlM4Ipq3hElGWDlKkvFreUP3j-KpC_clppmgqtQFE5Sky78ZndhW8bcJfdpBKqqI3YkaUYoUqDmYqN-moRfDXBLr3KNueZ_OQ-QRytSdzn7rD36NkOtb-qoEfdLZs50eg8Eum1pssd5Fzq7xSzzdoQA3zU-PHGI4k/s1600/4%20%281%29.png",
+      company_name: "PT AKAY NUSANTARA GROUP",
+      company_address_line: "Jl. Anjay No. 404, Sidoarjo",
+      privacy_url: "https://akay.web.id/privacy",
+      help_center_url: "https://akay.web.id/help",
+      support_url: "https://akay.web.id/support",
+      year: String(new Date().getFullYear()),
+    }
+  );
+
+  await sendMail({
+    to: email,
+    subject: `Menunggu pembayaran pesanan ${orderCode}`,
+    text:
+      `Halo ${name}, pesanan ${orderCode} menunggu pembayaran. Total ${totalDisplay}. ` +
+      `Metode ${paymentMethod}. Bayar: ${payUrl} • Status: ${orderUrl}`,
+    html,
+  });
 }
