@@ -87,13 +87,13 @@ export async function sendPasswordResetLinkEmail(params: {
   const html = await renderTemplate(
     path.join(process.cwd(), "templates/reset-password.html"),
     {
-      app_name: "Toko Nusantara",
-      user_salutation: "Sdr/i",
+      app_name: "AKAY NUSANTARA",
+      user_salutation: "Kak, ",
       user_name: name ?? "",
       reset_url: resetUrl,
       link_expires_in: `${expiresInMinutes} menit`,
       expiry_datetime_local: expiryLocal,
-      brand_logo_url: process.env.BRAND_LOGO_URL ?? "https://your-domain/logo.png",
+      brand_logo_url: process.env.BRAND_LOGO_URL ?? "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgTFPWdo1aGRGXE22EIOHRGm-GMSnQlM4Ipq3hElGWDlKkvFreUP3j-KpC_clppmgqtQFE5Sky78ZndhW8bcJfdpBKqqI3YkaUYoUqDmYqN-moRfDXBLr3KNueZ_OQ-QRytSdzn7rD36NkOtb-qoEfdLZs50eg8Eum1pssd5Fzq7xSzzdoQA3zU-PHGI4k/s1600/4%20%281%29.png",
       company_name: "PT AKAY NUSANTARA GROUP",
       company_address_line: "Jl. Anjay No. 404, Sidoarjo",
       privacy_url: "https://www.akay.web.id/privacy",
