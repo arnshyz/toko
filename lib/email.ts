@@ -2,6 +2,7 @@ import nodemailer, { Transporter } from "nodemailer";
 import path from "path";
 import { renderTemplate } from "@/lib/email-template";
 
+
 import { PASSWORD_RESET_TOKEN_EXPIRATION_MINUTES } from "@/lib/password-reset";
 
 let cachedTransport: Transporter | null | undefined;
@@ -138,23 +139,39 @@ Jika perubahan ini bukan Anda, segera hubungi tim dukungan kami.`;
 export async function sendRegistrationSuccessEmail(params: {
   email: string;
   name: string;
-}): Promise<void> {
-  const { email, name } = params;
-  const subject = "Registrasi Berhasil";
-  const greeting = `Halo ${name},`;
-  const text = `${greeting}
+  loginUrl: string;
+}) {
+  const { email, name, loginUrl } = params;
 
-Selamat! Akun Toko Nusantara Anda berhasil dibuat. Silakan login untuk mulai mengelola toko Anda.
+  const html = await renderTemplate(
+    path.join(process.cwd(), "templates/registration-success.html"),
+    {
+      app_name: "AKAY NUSANTARA",
+      user_salutation: "Kak,",
+      user_name: name,
+      user_email: email,
+      account_id: crypto.randomUUID(), // opsional
+      login_url: loginUrl,
+      activated_datetime_local: new Intl.DateTimeFormat("id-ID", {
+        dateStyle: "full",
+        timeStyle: "short",
+      }).format(new Date()),
+      brand_logo_url: process.env.BRAND_LOGO_URL ?? "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgTFPWdo1aGRGXE22EIOHRGm-GMSnQlM4Ipq3hElGWDlKkvFreUP3j-KpC_clppmgqtQFE5Sky78ZndhW8bcJfdpBKqqI3YkaUYoUqDmYqN-moRfDXBLr3KNueZ_OQ-QRytSdzn7rD36NkOtb-qoEfdLZs50eg8Eum1pssd5Fzq7xSzzdoQA3zU-PHGI4k/s1600/4%20%281%29.png",
+      company_name: "PT AKAY NUSANTARA GROUP",
+      company_address_line: "Jl. Anjay No. 404, Sidoarjo",
+      privacy_url: "https://akay.web.id/privacy",
+      help_center_url: "https://akay.web.id/help",
+      support_url: "https://akay.web.id/support",
+      year: String(new Date().getFullYear()),
+    }
+  );
 
-Salam,
-Tim Toko Nusantara`;
-  const html = `
-    <p>${greeting}</p>
-    <p>Selamat! Akun Toko Nusantara Anda berhasil dibuat. Silakan login untuk mulai mengelola toko Anda.</p>
-    <p>Salam,<br/>Tim Toko Nusantara</p>
-  `;
-
-  await sendMail({ to: email, subject, text, html });
+  await sendMail({
+    to: email,
+    subject: "Registrasi akun berhasil",
+    text: `Halo ${name}, akun Toko Nusantara Anda sudah aktif. Masuk: ${loginUrl}`,
+    html,
+  });
 }
 
 type OrderEmailBase = {
@@ -163,55 +180,67 @@ type OrderEmailBase = {
   orderCode: string;
 };
 
-export async function sendOrderCreatedEmail(params: OrderEmailBase & {
-  paymentMethod: string;
-  total: number;
-}): Promise<void> {
-  const { email, name, orderCode, paymentMethod, total } = params;
-  const subject = `Pesanan ${orderCode} berhasil dibuat`;
-  const greeting = `Halo ${name},`;
-  const paymentLabel = paymentMethod === "COD" ? "COD (Bayar di Tempat)" : "Transfer Manual";
-  const totalDisplay = formatCurrencyIDR(total);
-  const text = `${greeting}
+export async function sendOrderCreatedEmailHtml(params: {
+  email: string;
+  name: string;
+  orderCode: string;
+  totalDisplay: string;         // contoh: Rp120.000
+  paymentMethod: string;        // contoh: Transfer Manual
+  bankName?: string;
+  bankAccount?: string;
+  bankHolder?: string;
+  uniqueCode?: string;
+  dueDate?: Date | string | null;
+  orderUrl: string;
+}) {
+  const {
+    email, name, orderCode, totalDisplay, paymentMethod, bankName = "BCA",
+    bankAccount = "5065223446", bankHolder = "Lubis Karisma Ariansyah",
+    uniqueCode = "", dueDate = null, orderUrl
+  } = params;
 
-Terima kasih telah berbelanja di Toko Nusantara. Pesanan Anda dengan kode ${orderCode} berhasil dibuat.
-Metode pembayaran: ${paymentLabel}.
-Total tagihan: ${totalDisplay}.
+  const dueLocal = dueDate
+    ? new Intl.DateTimeFormat("id-ID", { dateStyle: "full", timeStyle: "short" })
+        .format(typeof dueDate === "string" ? new Date(dueDate) : dueDate)
+    : "—";
 
-Anda dapat memantau status pesanan melalui halaman order kami.
+  const html = await renderTemplate(
+    path.join(process.cwd(), "templates/order-created.html"),
+    {
+      app_name: "AKAY NUSANTARA",
+      user_salutation: "Kak,",
+      user_name: name,
+      user_email: email,
+      order_code: orderCode,
+      total_display: totalDisplay,
+      payment_method: paymentMethod,
+      bank_name: bankName,
+      bank_account: bankAccount,
+      bank_holder: bankHolder,
+      unique_code: uniqueCode,
+      due_date_local: dueLocal,
+      payment_instructions:
+        `Transfer ke ${bankName} ${bankAccount} a.n ${bankHolder}, lalu unggah bukti di halaman pesanan.`,
+      order_url: orderUrl,
+      brand_logo_url: process.env.BRAND_LOGO_URL ?? "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgTFPWdo1aGRGXE22EIOHRGm-GMSnQlM4Ipq3hElGWDlKkvFreUP3j-KpC_clppmgqtQFE5Sky78ZndhW8bcJfdpBKqqI3YkaUYoUqDmYqN-moRfDXBLr3KNueZ_OQ-QRytSdzn7rD36NkOtb-qoEfdLZs50eg8Eum1pssd5Fzq7xSzzdoQA3zU-PHGI4k/s1600/4%20%281%29.png",
+      company_name: "PT AKAY NUSANTARA GROUP",
+      company_address_line: "Jl. Anjay No. 404, Sidoarjo",
+      privacy_url: "https://akay.web.id/privacy",
+      help_center_url: "https://akay.web.id/help",
+      support_url: "https://akay.web.id/support",
+      year: String(new Date().getFullYear()),
+    }
+  );
 
-Salam,
-Tim Toko Nusantara`;
-  const html = `
-    <p>${greeting}</p>
-    <p>Terima kasih telah berbelanja di Toko Nusantara. Pesanan Anda dengan kode <strong>${orderCode}</strong> berhasil dibuat.</p>
-    <p>Metode pembayaran: <strong>${paymentLabel}</strong><br/>Total tagihan: <strong>${totalDisplay}</strong></p>
-    <p>Anda dapat memantau status pesanan melalui halaman order kami.</p>
-    <p>Salam,<br/>Tim Toko Nusantara</p>
-  `;
-
-  await sendMail({ to: email, subject, text, html });
+  await sendMail({
+    to: email,
+    subject: `Pesanan ${orderCode} berhasil dibuat`,
+    text:
+      `Halo ${name}, pesanan ${orderCode} berhasil dibuat. Total ${totalDisplay}. ` +
+      `Metode ${paymentMethod}. Lihat status: ${orderUrl}`,
+    html,
+  });
 }
-
-export async function sendOrderShippedEmail(params: OrderEmailBase): Promise<void> {
-  const { email, name, orderCode } = params;
-  const subject = `Pesanan ${orderCode} sedang dikirim`;
-  const greeting = `Halo ${name},`;
-  const text = `${greeting}
-
-Pesanan Anda dengan kode ${orderCode} telah dikirim oleh penjual. Silakan pantau proses pengiriman sampai barang diterima.
-
-Salam,
-Tim Toko Nusantara`;
-  const html = `
-    <p>${greeting}</p>
-    <p>Pesanan Anda dengan kode <strong>${orderCode}</strong> telah dikirim oleh penjual. Silakan pantau proses pengiriman sampai barang diterima.</p>
-    <p>Salam,<br/>Tim Toko Nusantara</p>
-  `;
-
-  await sendMail({ to: email, subject, text, html });
-}
-
 export async function sendPaymentSuccessEmail(params: OrderEmailBase): Promise<void> {
   const { email, name, orderCode } = params;
   const subject = `Pembayaran pesanan ${orderCode} berhasil diverifikasi`;
