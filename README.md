@@ -43,7 +43,7 @@ Marketplace ala Shopee dengan **transfer manual + kode unik**, **COD**, **vouche
 - Buka `/api/seed` sekali setelah deploy.
 
 ## Route Ringkas
-- Public: `/`, `/product/[id]`, `/cart`, `/checkout`, `/order/[code]`, `/s/[slug]`
+- Public: `/`, `/product/[slug]`, `/cart`, `/checkout`, `/order/[code]`, `/s/[slug]`
 - Seller: `/seller/login`, `/seller/register`, `/seller/forgot-password`, `/seller/reset-password`, `/seller/dashboard`, `/seller/products`, `/seller/orders`, `/seller/warehouses`, `/seller/returns`
 - Admin: `/admin/orders`
 - API: lihat `/app/api/*`
