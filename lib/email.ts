@@ -1,4 +1,6 @@
 import nodemailer, { Transporter } from "nodemailer";
+import path from "path";
+import { renderTemplate } from "@/lib/email-template";
 
 import { PASSWORD_RESET_TOKEN_EXPIRATION_MINUTES } from "@/lib/password-reset";
 
@@ -73,26 +75,42 @@ export async function sendPasswordResetLinkEmail(params: {
   expiresInMinutes?: number;
 }): Promise<void> {
   const { email, name, resetUrl, expiresInMinutes = PASSWORD_RESET_TOKEN_EXPIRATION_MINUTES } = params;
+
   const subject = "Link Reset Password";
-  const greeting = name ? `Halo ${name},` : "Halo,";
-  const text = `${greeting}
 
-Kami menerima permintaan untuk mereset password akun Anda.
-Klik tautan berikut untuk membuat password baru (berlaku ${expiresInMinutes} menit):
-${resetUrl}
+  const expiryDate = new Date(Date.now() + expiresInMinutes * 60_000);
+  const expiryLocal = new Intl.DateTimeFormat("id-ID", {
+    dateStyle: "full",
+    timeStyle: "short",
+  }).format(expiryDate);
 
-Jika Anda tidak meminta reset password, abaikan email ini.`;
-  const html = `
-    <p>${greeting}</p>
-    <p>Kami menerima permintaan untuk mereset password akun Anda.</p>
-    <p>
-      <a href="${resetUrl}" style="display:inline-block;padding:12px 20px;background:#4f46e5;color:#ffffff;text-decoration:none;border-radius:6px;">
-        Reset Password
-      </a>
-    </p>
-    <p>Tautan ini berlaku selama ${expiresInMinutes} menit.</p>
-    <p>Jika Anda tidak meminta reset password, abaikan email ini.</p>
-  `;
+  const html = await renderTemplate(
+    path.join(process.cwd(), "templates/reset-password.html"),
+    {
+      app_name: "Toko Nusantara",
+      user_salutation: "Sdr/i",
+      user_name: name ?? "",
+      reset_url: resetUrl,
+      link_expires_in: `${expiresInMinutes} menit`,
+      expiry_datetime_local: expiryLocal,
+      brand_logo_url: process.env.BRAND_LOGO_URL ?? "https://your-domain/logo.png",
+      company_name: "PT Akay Nusantara",
+      company_address_line: "Jl. Contoh No. 123, Sidoarjo",
+      privacy_url: "https://your-domain/privacy",
+      help_center_url: "https://your-domain/help",
+      support_url: "https://your-domain/support",
+      year: String(new Date().getFullYear()),
+      request_id: crypto.randomUUID(),        // opsional
+      user_email: email,                       // opsional
+      device_fingerprint: "Web • ID",         // opsional
+    }
+  );
+
+  const text =
+    `Halo ${name ?? ""}\n\n` +
+    `Kami menerima permintaan reset password. ` +
+    `Klik tautan berikut (berlaku ${expiresInMinutes} menit):\n${resetUrl}\n\n` +
+    `Jika ini bukan Anda, abaikan email ini.`;
 
   await sendMail({ to: email, subject, text, html });
 }
