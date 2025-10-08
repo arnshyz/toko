@@ -16,6 +16,7 @@ export type ProductListingFilters = {
 
 export type ProductListingItem = {
   id: string;
+  slug: string;
   title: string;
   salePrice: number;
   basePrice: number;
@@ -105,6 +106,7 @@ export async function fetchProductListing(filters: ProductListingFilters) {
 
     return {
       id: product.id,
+      slug: product.slug,
       title: product.title,
       salePrice,
       basePrice: product.price,

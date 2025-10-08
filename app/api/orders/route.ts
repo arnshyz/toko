@@ -21,6 +21,7 @@ export async function GET(_req: NextRequest) {
           product: {
             select: {
               id: true,
+              slug: true,
               title: true,
               imageUrl: true,
               seller: { select: { id: true, name: true, slug: true } },

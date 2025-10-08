@@ -168,12 +168,12 @@ function IconShoppingCart({ className }: IconProps) {
   );
 }
 
-export default async function ProductPage({ params }: { params: { id: string } }) {
+export default async function ProductPage({ params }: { params: { slug: string } }) {
   const sessionPromise = getSession();
   const now = new Date();
 
   const product = await prisma.product.findUnique({
-    where: { id: params.id },
+    where: { slug: params.slug },
     include: {
       seller: true,
       warehouse: true,
@@ -798,7 +798,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
               return (
                 <Link
                   key={item.id}
-                  href={`/product/${item.id}`}
+                  href={`/product/${item.slug}`}
                   className="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
                 >
                   <img
@@ -847,7 +847,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
               return (
                 <Link
                   key={item.id}
-                  href={`/product/${item.id}`}
+                  href={`/product/${item.slug}`}
                   className="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
                 >
                   <img

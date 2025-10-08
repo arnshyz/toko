@@ -106,6 +106,7 @@ export default async function HomePage() {
 
       return {
         id: product.id,
+        slug: product.slug,
         title: product.title,
         sellerName: product.seller.name,
         sellerSlug: product.seller.slug,
@@ -234,7 +235,7 @@ export default async function HomePage() {
             return (
               <ProductCard
                 key={product.id}
-                href={`/product/${product.id}`}
+                href={`/product/${product.slug}`}
                 title={product.title}
                 imageUrl={getPrimaryProductImageSrc(product)}
                 salePrice={salePrice}
