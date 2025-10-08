@@ -51,7 +51,7 @@ export function PromoSlider({
 
   return (
     <div
-      className={`relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 text-white shadow-lg ${
+      className={`relative overflow-hidden rounded-2xl bg-gradient-to-r from-sky-600 via-sky-500 to-sky-400 text-white shadow-lg ${
         className ?? ""
       }`}
     >
@@ -77,7 +77,7 @@ export function PromoSlider({
               </p>
               <Link
                 href={slide.ctaHref}
-                className="inline-flex w-fit items-center justify-center rounded-full bg-white px-4 py-2 text-sm font-semibold text-indigo-600 transition hover:bg-indigo-50 md:px-5"
+                className="inline-flex w-fit items-center justify-center rounded-full bg-white px-4 py-2 text-sm font-semibold text-sky-600 transition hover:bg-sky-50 md:px-5"
               >
                 {slide.ctaLabel}
               </Link>

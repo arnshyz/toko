@@ -81,7 +81,7 @@ export function ProductCard({
             <div className="flex h-full w-full items-center justify-center text-3xl">🛍️</div>
           )}
           {derivedDiscountPercent ? (
-            <span className="absolute right-3 top-3 rounded-md bg-[#f53d2d] px-2 py-1 text-xs font-semibold text-white shadow">
+            <span className="absolute right-3 top-3 rounded-md bg-sky-500 px-2 py-1 text-xs font-semibold text-white shadow">
               -{derivedDiscountPercent}%
             </span>
           ) : null}
@@ -105,13 +105,13 @@ export function ProductCard({
           ) : null}
           <Link
             href={href}
-            className="flex-1 text-sm font-semibold text-gray-900 line-clamp-2 transition-colors duration-200 group-hover:text-[#f53d2d]"
+            className="flex-1 text-sm font-semibold text-gray-900 line-clamp-2 transition-colors duration-200 group-hover:text-sky-600"
           >
             {title}
           </Link>
         </div>
         <div className="mt-1 flex items-baseline justify-between">
-          <div className="text-lg font-bold text-[#f53d2d]">Rp {formatIDR(salePrice)}</div>
+          <div className="text-lg font-bold text-sky-600">Rp {formatIDR(salePrice)}</div>
           {typeof soldCount === "number" ? (
             <div className="text-[11px] font-medium text-gray-500">{formatSoldCount(soldCount)} Terjual</div>
           ) : null}

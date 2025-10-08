@@ -111,7 +111,7 @@ export default async function SellerOrders() {
                           <option value="SHIPPED">SHIPPED</option>
                           <option value="DELIVERED">DELIVERED</option>
                         </select>
-                        <button className="w-full rounded-xl bg-[#f53d2d] px-3 py-2 text-sm font-semibold text-white shadow-sm">
+                        <button className="w-full rounded-xl bg-sky-500 px-3 py-2 text-sm font-semibold text-white shadow-sm">
                           Simpan Status
                         </button>
                       </form>
@@ -122,7 +122,7 @@ export default async function SellerOrders() {
                   <span className="font-semibold text-gray-900">
                     Subtotal Anda: Rp {new Intl.NumberFormat("id-ID").format(subtotal)}
                   </span>
-                  <Link className="text-[#f53d2d] underline" href={`/order/${order.orderCode}`}>
+                  <Link className="text-sky-600 underline" href={`/order/${order.orderCode}`}>
                     Lihat detail
                   </Link>
                 </footer>

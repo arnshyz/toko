@@ -10,6 +10,6 @@
 .badge-shipped{ @apply bg-purple-100 text-purple-700; }
 .badge-delivered{ @apply bg-green-100 text-green-700; }
 
-.btn-primary { @apply bg-army text-white rounded px-4 py-2 hover:opacity-90; }
-.btn-outline { @apply border border-army text-army rounded px-4 py-2 hover:bg-army hover:text-white; }
-.link { @apply text-army hover:opacity-80 underline; }
+.btn-primary { @apply bg-sky-500 text-white rounded px-4 py-2 transition hover:bg-sky-400; }
+.btn-outline { @apply border border-sky-500 text-sky-600 rounded px-4 py-2 transition hover:bg-sky-50 hover:text-sky-600; }
+.link { @apply text-sky-600 underline transition hover:text-sky-500; }

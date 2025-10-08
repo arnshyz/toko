@@ -49,7 +49,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
-      <div className="rounded-3xl bg-gradient-to-r from-[#f53d2d] via-[#ff6f3c] to-[#ff9364] p-[1px] shadow-lg">
+      <div className="rounded-3xl bg-gradient-to-r from-sky-600 via-sky-500 to-sky-400 p-[1px] shadow-lg">
         <div className="rounded-3xl bg-white p-6">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
@@ -66,7 +66,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               method="GET"
             >
               <div className="flex flex-1 items-center gap-2 rounded-full bg-gray-100 px-4 py-2 text-sm text-gray-700 shadow-inner">
-                <span aria-hidden className="text-lg text-[#f53d2d]">🔍</span>
+                <span aria-hidden className="text-lg text-sky-600">🔍</span>
                 <input
                   name="q"
                   defaultValue={query}
@@ -78,7 +78,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               </div>
               <button
                 type="submit"
-                className="inline-flex items-center justify-center rounded-full bg-[#f53d2d] px-5 py-2 text-sm font-semibold text-white shadow transition hover:bg-[#d73224]"
+                className="inline-flex items-center justify-center rounded-full bg-sky-500 px-5 py-2 text-sm font-semibold text-white shadow transition hover:bg-sky-400"
               >
                 Cari
               </button>
