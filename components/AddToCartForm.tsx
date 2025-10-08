@@ -103,13 +103,13 @@ export function AddToCartForm({
               value={quantity}
               min={1}
               onChange={handleChange}
-              className="h-11 w-24 rounded-lg border border-gray-300 px-3 text-center text-sm focus:border-orange-500 focus:outline-none"
+              className="h-11 w-24 rounded-lg border border-gray-300 px-3 text-center text-sm focus:border-sky-500 focus:outline-none"
             />
             <span className="text-xs text-gray-500">Stok tersedia: {stock}</span>
           </div>
         </div>
         <div className="pointer-events-none fixed inset-x-0 bottom-0 z-50 px-4 pb-4">
-          <div className="pointer-events-auto space-y-3 rounded-3xl border border-orange-100 bg-white p-4 shadow-xl shadow-black/5">
+          <div className="pointer-events-auto space-y-3 rounded-3xl border border-sky-100 bg-white p-4 shadow-xl shadow-black/5">
             {status === "success" ? (
               <div className="rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
                 Produk berhasil ditambahkan ke keranjang. <a className="font-semibold underline" href="/cart">Lihat keranjang</a>.
@@ -123,20 +123,20 @@ export function AddToCartForm({
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                className="flex h-12 w-12 items-center justify-center rounded-full border border-gray-200 text-lg text-gray-600 transition hover:border-orange-200 hover:text-orange-500"
+                className="flex h-12 w-12 items-center justify-center rounded-full border border-gray-200 text-lg text-gray-600 transition hover:border-sky-200 hover:text-sky-500"
                 aria-label="Tambahkan ke favorit"
               >
                 ❤
               </button>
               <button
                 type="submit"
-                className="flex-1 rounded-full bg-orange-100 px-4 py-3 text-sm font-semibold text-orange-600 transition hover:bg-orange-200"
+                className="flex-1 rounded-full bg-sky-100 px-4 py-3 text-sm font-semibold text-sky-600 transition hover:bg-sky-200"
               >
                 Masukkan Keranjang
               </button>
               <a
                 href="/checkout"
-                className="flex-[1.3] rounded-full bg-orange-500 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-orange-600"
+                className="flex-[1.3] rounded-full bg-sky-500 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-sky-600"
               >
                 Beli Sekarang
               </a>
@@ -162,19 +162,19 @@ export function AddToCartForm({
             value={quantity}
             min={1}
             onChange={handleChange}
-            className="w-24 rounded-lg border border-gray-300 px-3 py-2 text-center text-sm focus:border-orange-500 focus:outline-none"
+            className="w-24 rounded-lg border border-gray-300 px-3 py-2 text-center text-sm focus:border-sky-500 focus:outline-none"
           />
           <span className="text-xs text-gray-500">Stok tersedia: {stock}</span>
         </div>
       </div>
       <div className="flex flex-wrap items-center gap-3">
-        <button type="submit" className="flex-1 rounded-full bg-orange-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-orange-600">
+        <button type="submit" className="flex-1 rounded-full bg-sky-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-sky-600">
           Masukkan Keranjang
         </button>
         <LinkButton href="/checkout" label="Beli Sekarang" variant="outline" />
         <button
           type="button"
-          className="rounded-full border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-600 transition hover:border-orange-200 hover:text-orange-600"
+          className="rounded-full border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-600 transition hover:border-sky-200 hover:text-sky-600"
         >
           ❤ Favorit
         </button>
@@ -204,7 +204,7 @@ function LinkButton({ href, label, variant = "solid" }: LinkButtonProps) {
     return (
       <a
         href={href}
-        className="flex-1 rounded-full border border-orange-500 px-6 py-3 text-center text-sm font-semibold text-orange-600 transition hover:bg-orange-50"
+        className="flex-1 rounded-full border border-sky-500 px-6 py-3 text-center text-sm font-semibold text-sky-600 transition hover:bg-sky-50"
       >
         {label}
       </a>
@@ -214,7 +214,7 @@ function LinkButton({ href, label, variant = "solid" }: LinkButtonProps) {
   return (
     <a
       href={href}
-      className="flex-1 rounded-full bg-orange-500 px-6 py-3 text-center text-sm font-semibold text-white transition hover:bg-orange-600"
+      className="flex-1 rounded-full bg-sky-500 px-6 py-3 text-center text-sm font-semibold text-white transition hover:bg-sky-600"
     >
       {label}
     </a>

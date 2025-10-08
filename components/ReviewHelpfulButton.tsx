@@ -66,7 +66,7 @@ export function ReviewHelpfulButton({
         onClick={handleClick}
         disabled={!canInteract || isPending}
         className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition ${
-          liked ? "border-orange-500 bg-orange-50 text-orange-600" : "border-gray-200 text-gray-600 hover:border-gray-300"
+          liked ? "border-sky-500 bg-sky-50 text-sky-600" : "border-gray-200 text-gray-600 hover:border-gray-300"
         } ${!canInteract ? "cursor-not-allowed opacity-50" : ""}`}
       >
         <span>{liked ? "Terbantu" : "Beri Suka"}</span>

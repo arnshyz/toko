@@ -208,7 +208,7 @@ export function SiteHeader({ user }: SiteHeaderProps) {
                           <Link
                             key={sub.slug}
                             href={`/categories/${sub.slug}`}
-                            className="block rounded-md px-2 py-1 text-xs text-gray-600 transition hover:bg-orange-50 hover:text-orange-600"
+                            className="block rounded-md px-2 py-1 text-xs text-gray-600 transition hover:bg-sky-50 hover:text-sky-600"
                             onClick={() => setCategoryOpen(false)}
                           >
                             {sub.name}

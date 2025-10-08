@@ -46,7 +46,7 @@ export default async function SellerFlashSalesPage({
     return (
       <div>
         <h1 className="mb-4 text-2xl font-semibold">Flash Sale</h1>
-        <div className="rounded border border-amber-200 bg-amber-50 p-4 text-sm text-amber-700">
+        <div className="rounded border border-sky-200 bg-sky-50 p-4 text-sm text-sky-700">
           Fitur flash sale dapat digunakan setelah toko Anda aktif. Selesaikan langkah onboarding pada{' '}
           <a className="font-semibold underline" href="/seller/onboarding">
             halaman onboarding seller
@@ -188,7 +188,7 @@ export default async function SellerFlashSalesPage({
               ? "bg-emerald-100 text-emerald-700"
               : hasEnded
               ? "bg-gray-100 text-gray-600"
-              : "bg-orange-100 text-orange-700";
+              : "bg-sky-100 text-sky-700";
 
             const basePrice = product.price;
             const salePrice = calculateFlashSalePrice(basePrice, sale);
@@ -260,7 +260,7 @@ export default async function SellerFlashSalesPage({
                       ? "bg-emerald-100 text-emerald-700"
                       : hasEnded
                       ? "bg-gray-100 text-gray-600"
-                      : "bg-orange-100 text-orange-700";
+                      : "bg-sky-100 text-sky-700";
 
                     const basePrice = product.price;
                     const salePrice = calculateFlashSalePrice(basePrice, sale);
@@ -284,7 +284,7 @@ export default async function SellerFlashSalesPage({
                           {formatFlashSaleWindow(sale)}
                         </td>
                         <td className="px-4 py-3 align-top">
-                          <span className="font-semibold text-orange-600">{sale.discountPercent}%</span>
+                          <span className="font-semibold text-sky-600">{sale.discountPercent}%</span>
                         </td>
                         <td className="px-4 py-3 align-top">
                           <div className="font-semibold text-gray-900">Rp {formatIDR(salePrice)}</div>

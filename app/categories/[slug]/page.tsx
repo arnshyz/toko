@@ -94,7 +94,7 @@ export default async function CategoryDetailPage({
                 key={sub.slug}
                 href={`/categories/${sub.slug}`}
                 className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
-                  sub.slug === slug ? "bg-orange-500 text-white" : "bg-white text-gray-700 shadow hover:bg-orange-50"
+                  sub.slug === slug ? "bg-sky-500 text-white" : "bg-white text-gray-700 shadow hover:bg-sky-50"
                 }`}
               >
                 {sub.parentName ? `${sub.parentName} • ${sub.name}` : sub.name}
@@ -127,7 +127,7 @@ export default async function CategoryDetailPage({
                     key={value}
                     href={buildSortLink(value)}
                     className={`rounded-full px-3 py-1 transition ${
-                      isActive ? "bg-orange-500 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                      isActive ? "bg-sky-500 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                     }`}
                   >
                     {labels[value]}

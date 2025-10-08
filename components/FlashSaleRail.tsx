@@ -99,19 +99,19 @@ export function FlashSaleRail({ items }: FlashSaleRailProps) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h2 className="text-2xl font-bold uppercase text-orange-500">Flash Sale</h2>
+          <h2 className="text-2xl font-bold uppercase text-sky-500">Flash Sale</h2>
           {nextExpiry ? <CountdownDisplay target={nextExpiry} /> : null}
         </div>
         <Link
           href="/product"
-          className="text-sm font-semibold text-orange-500 hover:text-orange-600"
+          className="text-sm font-semibold text-sky-500 hover:text-sky-600"
         >
           Lihat Semua
         </Link>
       </div>
 
       {items.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-orange-200 bg-orange-50 p-6 text-center text-sm text-orange-700">
+        <div className="rounded-lg border border-dashed border-sky-200 bg-sky-50 p-6 text-center text-sm text-sky-700">
           Belum ada produk yang sedang mengikuti flash sale. Pantau terus untuk promo terbaru!
         </div>
       ) : (
@@ -121,7 +121,7 @@ export function FlashSaleRail({ items }: FlashSaleRailProps) {
             return (
               <div
                 key={item.slug}
-                className="group w-48 shrink-0 overflow-hidden rounded-xl border border-orange-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+                className="group w-48 shrink-0 overflow-hidden rounded-xl border border-sky-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
               >
                 <Link href={`/product/${item.slug}`} className="relative block">
                   <img
@@ -129,7 +129,7 @@ export function FlashSaleRail({ items }: FlashSaleRailProps) {
                     alt={item.title}
                     className="h-32 w-full object-cover"
                   />
-                  <div className="absolute left-0 top-0 rounded-br-lg bg-orange-500 px-2 py-1 text-xs font-bold uppercase text-white">
+                  <div className="absolute left-0 top-0 rounded-br-lg bg-sky-500 px-2 py-1 text-xs font-bold uppercase text-white">
                     -{item.discountPercent}%
                   </div>
                   <div className="absolute right-2 top-2 flex items-center gap-1 rounded bg-black/70 px-2 py-0.5 text-[11px] font-semibold text-white">
@@ -143,7 +143,7 @@ export function FlashSaleRail({ items }: FlashSaleRailProps) {
                 <div className="space-y-2 p-3">
                   <Link
                     href={`/product/${item.slug}`}
-                    className="line-clamp-2 text-sm font-semibold text-gray-800 hover:text-orange-600"
+                    className="line-clamp-2 text-sm font-semibold text-gray-800 hover:text-sky-600"
                   >
                     {item.title}
                   </Link>
@@ -151,7 +151,7 @@ export function FlashSaleRail({ items }: FlashSaleRailProps) {
                     oleh{" "}
                     <Link
                       href={`/s/${item.sellerSlug}`}
-                      className="font-medium text-orange-500 hover:underline"
+                      className="font-medium text-sky-500 hover:underline"
                     >
                       {item.sellerName}
                     </Link>
@@ -162,11 +162,11 @@ export function FlashSaleRail({ items }: FlashSaleRailProps) {
                         Rp {formatIDR(item.originalPrice)}
                       </div>
                     ) : null}
-                    <div className="text-lg font-bold text-orange-500">
+                    <div className="text-lg font-bold text-sky-500">
                       Rp {formatIDR(item.salePrice)}
                     </div>
                   </div>
-                  <div className="text-[11px] font-semibold uppercase text-orange-600">
+                  <div className="text-[11px] font-semibold uppercase text-sky-600">
                     {item.stock > 0 ? `Sisa ${item.stock} pcs` : "Stok Habis"}
                   </div>
                 </div>

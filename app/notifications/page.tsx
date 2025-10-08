@@ -62,14 +62,14 @@ const sellerNotifications = [
 export default function NotificationsPage() {
   return (
     <div className="space-y-10">
-      <section className="rounded-3xl bg-gradient-to-br from-orange-500 via-orange-400 to-amber-400 px-6 py-10 text-white shadow-xl">
+      <section className="rounded-3xl bg-gradient-to-br from-sky-500 via-sky-400 to-sky-400 px-6 py-10 text-white shadow-xl">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="space-y-4">
             <p className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-1 text-xs font-semibold uppercase tracking-wide">
               Pusat Notifikasi
             </p>
             <h1 className="text-3xl font-bold md:text-4xl">Semua Informasi dalam Satu Halaman</h1>
-            <p className="max-w-2xl text-sm text-orange-50/90">
+            <p className="max-w-2xl text-sm text-sky-50/90">
               Dapatkan update promo spesial, kebijakan terbaru, status pesanan, hingga notifikasi penilaian pelanggan tanpa ketinggalan.
             </p>
             <div className="flex flex-wrap gap-2 text-sm font-semibold">

@@ -139,12 +139,12 @@ export default function HelpPage() {
       </section>
 
       <section className="grid gap-6 md:grid-cols-[1.1fr,0.9fr] md:items-center">
-        <div className="rounded-3xl border border-orange-100 bg-orange-50/70 p-6 shadow-inner">
-          <h2 className="text-lg font-semibold text-orange-900">Hubungi Kami</h2>
-          <p className="mt-2 text-sm text-orange-700">
+        <div className="rounded-3xl border border-sky-100 bg-sky-50/70 p-6 shadow-inner">
+          <h2 className="text-lg font-semibold text-sky-900">Hubungi Kami</h2>
+          <p className="mt-2 text-sm text-sky-700">
             Tim dukungan siap membantu Anda melalui berbagai kanal resmi. Silakan pilih metode yang paling nyaman.
           </p>
-          <ul className="mt-4 space-y-2 text-sm text-orange-800">
+          <ul className="mt-4 space-y-2 text-sm text-sky-800">
             <li>📧 Email: <a href="mailto:support@akay.id" className="font-semibold">support@akay.id</a></li>
             <li>💬 Live chat melalui aplikasi Akay Nusantara</li>
             <li>📞 Hotline operasional 08.00 - 22.00 WIB</li>
