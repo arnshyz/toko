@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { FormEvent, useState, useTransition } from 'react';
+import { FormEvent, useState, useTransition } from "react";
 
 type ResetPasswordFormProps = {
   token: string | null;
@@ -10,7 +10,7 @@ type ResetPasswordFormProps = {
 
 export default function ResetPasswordForm({ token, isTokenValid, invalidReason }: ResetPasswordFormProps) {
   const [error, setError] = useState<string | null>(
-    isTokenValid ? null : invalidReason ?? 'Token reset password tidak valid atau sudah tidak berlaku.',
+    isTokenValid ? null : invalidReason ?? "Token reset password tidak valid atau sudah tidak berlaku.",
   );
   const [message, setMessage] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -20,17 +20,17 @@ export default function ResetPasswordForm({ token, isTokenValid, invalidReason }
 
     if (!token || !isTokenValid) {
       setMessage(null);
-      setError('Token reset password tidak valid atau sudah tidak berlaku.');
+      setError("Token reset password tidak valid atau sudah tidak berlaku.");
       return;
     }
 
     const form = event.currentTarget;
     const formData = new FormData(form);
-    const password = String(formData.get('password') ?? '');
-    const confirmPassword = String(formData.get('confirmPassword') ?? '');
+    const password = String(formData.get("password") ?? "");
+    const confirmPassword = String(formData.get("confirmPassword") ?? "");
 
     if (password !== confirmPassword) {
-      setError('Konfirmasi password tidak sama.');
+      setError("Konfirmasi password tidak sama.");
       return;
     }
 
@@ -38,56 +38,62 @@ export default function ResetPasswordForm({ token, isTokenValid, invalidReason }
     setMessage(null);
 
     startTransition(async () => {
-      const response = await fetch('/api/auth/reset-password', {
-        method: 'POST',
+      const response = await fetch("/api/auth/reset-password", {
+        method: "POST",
         body: formData,
       });
       const body = await response.json().catch(() => ({}));
 
       if (response.ok) {
-        setMessage(String(body.message ?? 'Password berhasil diperbarui.'));
+        setMessage(String(body.message ?? "Password berhasil diperbarui."));
         form.reset();
       } else {
-        setError(String(body.error ?? body.message ?? 'Token reset password tidak valid atau sudah tidak berlaku.'));
+        setError(String(body.error ?? body.message ?? "Token reset password tidak valid atau sudah tidak berlaku."));
       }
     });
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <input type="hidden" name="token" value={token ?? ''} />
+      <input type="hidden" name="token" value={token ?? ""} />
       <div>
-        <label className="block text-sm font-medium text-gray-700">Password Baru</label>
+        <label className="block text-sm font-medium text-sky-800">Password Baru</label>
         <input
           type="password"
           name="password"
           required
           minLength={8}
-          className="mt-1 w-full rounded border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="mt-2 w-full rounded-xl border border-sky-200 bg-white px-4 py-3 text-sm text-sky-900 shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
           placeholder="minimal 8 karakter"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700">Konfirmasi Password</label>
+        <label className="block text-sm font-medium text-sky-800">Konfirmasi Password</label>
         <input
           type="password"
           name="confirmPassword"
           required
           minLength={8}
-          className="mt-1 w-full rounded border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="mt-2 w-full rounded-xl border border-sky-200 bg-white px-4 py-3 text-sm text-sky-900 shadow-sm transition focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-200"
           placeholder="ulangi password baru"
         />
       </div>
       <button
         type="submit"
-        className="w-full rounded bg-indigo-600 py-2 text-white hover:bg-indigo-700 disabled:opacity-50"
+        className="w-full rounded-xl bg-sky-500 px-4 py-3 text-sm font-semibold uppercase tracking-wide text-white shadow-lg shadow-sky-500/30 transition hover:bg-sky-600 focus:outline-none focus:ring-2 focus:ring-sky-200 focus:ring-offset-2 focus:ring-offset-white disabled:opacity-70"
         disabled={isPending || !token || !isTokenValid}
       >
-        {isPending ? 'Memproses...' : 'Reset Password'}
+        {isPending ? "Memproses..." : "Reset Password"}
       </button>
-      {message && <p className="rounded bg-green-50 px-3 py-2 text-sm text-green-700">{message}</p>}
-      {error && <p className="rounded bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-      <p className="text-sm text-gray-600">
+      {message && (
+        <p className="rounded-xl border border-emerald-200 bg-emerald-50/90 px-4 py-3 text-sm text-emerald-700 shadow-inner">
+          {message}
+        </p>
+      )}
+      {error && (
+        <p className="rounded-xl border border-red-200 bg-red-50/90 px-4 py-3 text-sm text-red-700 shadow-inner">{error}</p>
+      )}
+      <p className="text-sm text-sky-700/80">
         Pastikan Anda menggunakan password yang kuat dan tidak membagikan tautan reset kepada siapapun.
       </p>
     </form>
