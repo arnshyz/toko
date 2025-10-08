@@ -4,6 +4,7 @@ export const revalidate = 0;
 import Link from "next/link";
 
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
 import { formatIDR } from "@/lib/utils";
 import { PromoSlider, PromoSlide } from "@/components/PromoSlider";
 import { ActiveVoucherPopup } from "@/components/ActiveVoucherPopup";
@@ -219,10 +220,19 @@ const placeholderProductCards: ProductCardProps[] = [
   },
 ];
 
+type ProductWithRelations = Prisma.ProductGetPayload<{
+  include: {
+    seller: true;
+    images: { select: { id: true } };
+    flashSales: true;
+    _count: { select: { orderItems: true } };
+  };
+}>;
+
 export default async function HomePage() {
   const now = new Date();
 
-  let products: Awaited<ReturnType<typeof prisma.product.findMany>> = [];
+  let products: ProductWithRelations[] = [];
   try {
     products = await prisma.product.findMany({
       where: { isActive: true },
