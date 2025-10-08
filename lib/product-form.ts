@@ -1,4 +1,4 @@
-import { productCategories } from "@/lib/categories";
+import { getProductCategoryOptions } from "@/lib/categories";
 import { VariantGroup } from "@/types/product";
 
 type VariantJson = {
@@ -65,10 +65,11 @@ export function stringifyVariantGroups(variantOptions: unknown): string {
   return lines.join("\n");
 }
 
-export function resolveCategorySlug(rawCategory: string) {
+export async function resolveCategorySlug(rawCategory: string) {
   const trimmed = rawCategory.trim();
-  const fallback = productCategories[0]?.slug || "umum";
+  const options = await getProductCategoryOptions();
+  const fallback = options[0]?.slug || "umum";
 
   if (!trimmed) return fallback;
-  return productCategories.some((category) => category.slug === trimmed) ? trimmed : fallback;
+  return options.some((category) => category.slug === trimmed) ? trimmed : fallback;
 }

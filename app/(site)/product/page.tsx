@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { fetchProductListing } from "@/lib/product-listing";
-import { getCategoryInfo, productCategoryOptions } from "@/lib/categories";
+import { getCategoryDataset } from "@/lib/categories";
 import { ProductCard } from "@/components/ProductCard";
 
 export const dynamic = "force-dynamic";
@@ -54,7 +54,9 @@ export default async function ProductListingPage({
   const searchQueryRaw = searchParams?.q;
   const searchQuery = typeof searchQueryRaw === "string" ? searchQueryRaw : Array.isArray(searchQueryRaw) ? searchQueryRaw[0] : undefined;
 
-  const selectedCategory = categorySlug ? getCategoryInfo(categorySlug) : undefined;
+  const categoryDataset = await getCategoryDataset();
+  const productCategoryOptions = categoryDataset.options;
+  const selectedCategory = categorySlug ? categoryDataset.infoBySlug.get(categorySlug) : undefined;
 
   const products = await fetchProductListing({
     categorySlug,

@@ -2,14 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
-import { COURIERS, CourierKey, DEFAULT_ITEM_WEIGHT_GRAMS } from "@/lib/shipping";
+import { DEFAULT_ITEM_WEIGHT_GRAMS, getCourierMap, normalizeCourierKey } from "@/lib/shipping";
 import { calculateShippingCost } from "@/lib/shipping-cost";
 
 type QuoteItem = { productId: string; qty: number };
 
 type ParsedPayload = {
   items: QuoteItem[];
-  courier: CourierKey;
+  courier: string;
 };
 
 function sanitizePayload(raw: unknown): ParsedPayload | null {
@@ -18,12 +18,7 @@ function sanitizePayload(raw: unknown): ParsedPayload | null {
   }
 
   const value = raw as { items?: unknown; courier?: unknown };
-  const courierKey = typeof value.courier === "string" ? (value.courier as CourierKey) : "JNE_REG";
-  const courier = COURIERS[courierKey];
-
-  if (!courier) {
-    return null;
-  }
+  const courierKey = typeof value.courier === "string" ? value.courier : "";
 
   if (!Array.isArray(value.items)) {
     return null;
@@ -158,7 +153,16 @@ export async function POST(req: NextRequest) {
   }
 
   const defaultAddress = account.addresses[0];
-  const courier = COURIERS[parsed.courier];
+
+  const courierMap = await getCourierMap();
+  const courierKeys = Object.keys(courierMap);
+  if (!courierKeys.length) {
+    return NextResponse.json({ error: "Kurir belum dikonfigurasi." }, { status: 500 });
+  }
+
+  const requestedKey = normalizeCourierKey(parsed.courier);
+  const courierKey = requestedKey && courierMap[requestedKey] ? requestedKey : courierKeys[0]!;
+  const courier = courierMap[courierKey];
 
   const calculation = await calculateShippingCost({
     shipments: Array.from(shipmentsMap.values()),

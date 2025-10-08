@@ -1,6 +1,8 @@
 import Link from "next/link";
 
 import { prisma } from "@/lib/prisma";
+import { getProductCategoryOptions } from "@/lib/categories";
+import { getPrimaryProductImageSrc } from "@/lib/productImages";
 import { getSession } from "@/lib/session";
 
 export default async function AdminProductsPage({
@@ -17,25 +19,29 @@ export default async function AdminProductsPage({
   const sellerIdFilter =
     typeof searchParams?.sellerId === "string" ? searchParams?.sellerId : undefined;
 
-  const products = await prisma.product.findMany({
-    where: sellerIdFilter ? { sellerId: sellerIdFilter } : undefined,
-    orderBy: { createdAt: "desc" },
-    include: {
-      seller: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          slug: true,
+  const [products, categoryOptions] = await Promise.all([
+    prisma.product.findMany({
+      where: sellerIdFilter ? { sellerId: sellerIdFilter } : undefined,
+      orderBy: { createdAt: "desc" },
+      include: {
+        seller: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            slug: true,
+          },
         },
-      },
-      warehouse: {
-        select: {
-          name: true,
+        warehouse: {
+          select: {
+            name: true,
+          },
         },
+        images: { orderBy: { sortOrder: "asc" }, select: { id: true } },
       },
-    },
-  });
+    }),
+    getProductCategoryOptions(),
+  ]);
 
   const successMessage =
     typeof searchParams?.message === "string" ? searchParams.message : undefined;
@@ -96,21 +102,38 @@ export default async function AdminProductsPage({
               <th>Stok</th>
               <th>Status</th>
               <th>Aksi</th>
+              <th>Foto</th>
             </tr>
           </thead>
           <tbody>
-            {products.map((product) => (
-              <tr key={product.id} className="border-b align-top">
-                <td className="py-3">
-                  <div className="font-medium">{product.title}</div>
-                  <div className="text-xs text-gray-500">Kategori: {product.category}</div>
-                  {product.warehouse ? (
-                    <div className="text-xs text-gray-500">
-                      Gudang: {product.warehouse.name}
+            {products.map((product) => {
+              const imageSrc = getPrimaryProductImageSrc(product);
+              const categoryInfo = categoryOptions.find((option) => option.slug === product.category);
+              const categoryLabel = categoryInfo
+                ? categoryInfo.parentName
+                  ? `${categoryInfo.parentName} • ${categoryInfo.name}`
+                  : categoryInfo.name
+                : product.category;
+
+              return (
+                <tr key={product.id} className="border-b align-top">
+                  <td className="py-3">
+                    <div className="flex gap-3">
+                      <div className="hidden h-16 w-16 overflow-hidden rounded-md border bg-gray-50 sm:block">
+                        <img src={imageSrc} alt={product.title} className="h-full w-full object-cover" />
+                      </div>
+                      <div>
+                        <div className="font-medium">{product.title}</div>
+                        <div className="text-xs text-gray-500">Kategori: {categoryLabel}</div>
+                        {product.warehouse ? (
+                          <div className="text-xs text-gray-500">
+                            Gudang: {product.warehouse.name}
+                          </div>
+                        ) : null}
+                        <div className="text-xs text-gray-400">ID: {product.id}</div>
+                      </div>
                     </div>
-                  ) : null}
-                  <div className="text-xs text-gray-400">ID: {product.id}</div>
-                </td>
+                  </td>
                 <td className="py-3 text-xs">
                   <div className="font-medium text-sm">{product.seller?.name}</div>
                   <div>{product.seller?.email}</div>
@@ -174,12 +197,13 @@ export default async function AdminProductsPage({
                     </label>
                     <label className="flex flex-col gap-1 text-xs">
                       <span>Kategori</span>
-                      <input
-                        className="rounded border px-2 py-1"
-                        name="category"
-                        defaultValue={product.category}
-                        required
-                      />
+                      <select className="rounded border px-2 py-1" name="category" defaultValue={product.category} required>
+                        {categoryOptions.map((option) => (
+                          <option key={option.slug} value={option.slug}>
+                            {option.emoji} {option.parentName ? `${option.parentName} • ${option.name}` : option.name}
+                          </option>
+                        ))}
+                      </select>
                     </label>
                     <label className="flex flex-col gap-1 text-xs">
                       <span>Deskripsi</span>
@@ -194,11 +218,40 @@ export default async function AdminProductsPage({
                     </button>
                   </form>
                 </td>
-              </tr>
-            ))}
+                  <td className="py-3 align-top">
+                    <div className="space-y-2">
+                      <div className="hidden h-32 w-32 overflow-hidden rounded border bg-gray-50 sm:block">
+                        <img src={imageSrc} alt={product.title} className="h-full w-full object-cover" />
+                      </div>
+                      <form
+                        method="POST"
+                        action={`/api/admin/products/${product.id}/image`}
+                        encType="multipart/form-data"
+                        className="space-y-2 text-xs"
+                      >
+                        <input type="hidden" name="sellerId" value={sellerIdFilter ?? ""} />
+                        <label className="flex flex-col gap-1">
+                          <span>Ubah foto utama</span>
+                          <input
+                            type="file"
+                            name="image"
+                            accept="image/*"
+                            className="rounded border px-2 py-1"
+                            required
+                          />
+                        </label>
+                        <button className="btn-outline w-full" type="submit">
+                          Simpan foto
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
             {products.length === 0 ? (
               <tr>
-                <td className="py-4 text-center text-sm text-gray-500" colSpan={6}>
+                <td className="py-4 text-center text-sm text-gray-500" colSpan={7}>
                   Tidak ada produk yang ditemukan.
                 </td>
               </tr>

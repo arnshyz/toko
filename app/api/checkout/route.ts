@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { COURIERS, DEFAULT_ITEM_WEIGHT_GRAMS } from "@/lib/shipping";
+import { DEFAULT_ITEM_WEIGHT_GRAMS, getCourierMap, normalizeCourierKey } from "@/lib/shipping";
 import { getSession } from "@/lib/session";
 import { calculateFlashSalePrice } from "@/lib/flash-sale";
 import { sendOrderCreatedEmail, sendOrderPaymentPendingEmail } from "@/lib/email";
@@ -14,7 +14,17 @@ export async function POST(req: NextRequest) {
   let buyerPhone = String(form.get('buyerPhone') || '');
   let buyerEmail = String(form.get('buyerEmail') || '').toLowerCase();
   let buyerAddress = String(form.get('buyerAddress') || '');
-  const courierKey = String(form.get('courier') || 'JNE_REG') as keyof typeof COURIERS;
+  const courierMap = await getCourierMap();
+  const availableCourierKeys = Object.keys(courierMap);
+  if (availableCourierKeys.length === 0) {
+    return NextResponse.json({ error: 'Kurir belum dikonfigurasi' }, { status: 500 });
+  }
+
+  const courierKeyRaw = String(form.get('courier') || '');
+  let courierKey = normalizeCourierKey(courierKeyRaw);
+  if (!courierKey || !courierMap[courierKey]) {
+    courierKey = availableCourierKeys[0]!;
+  }
   const items = JSON.parse(String(form.get('items') || '[]')) as { productId: string; qty: number }[];
   const paymentMethod = String(form.get('paymentMethod') || 'TRANSFER') as 'TRANSFER'|'COD';
   const voucherCode = String(form.get('voucher') || '').trim().toUpperCase();
@@ -22,7 +32,7 @@ export async function POST(req: NextRequest) {
   if (!items.length) {
     return NextResponse.json({ error: 'Keranjang kosong' }, { status: 400 });
   }
-  const courier = COURIERS[courierKey];
+  const courier = courierMap[courierKey];
   if (!courier) {
     return NextResponse.json({ error: 'Kurir tidak didukung' }, { status: 400 });
   }

@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
   const warehouseId = String(form.get('warehouseId') || '');
   const categoryValue = String(form.get('category') || '').trim();
   const variantsRaw = String(form.get('variants') || '').trim();
-  const category = resolveCategorySlug(categoryValue);
+  const category = await resolveCategorySlug(categoryValue);
 
   const variantGroups = parseVariantInput(variantsRaw);
   const variantPayload = buildVariantPayload(variantGroups);

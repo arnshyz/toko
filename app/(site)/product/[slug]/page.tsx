@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatIDR } from "@/lib/utils";
-import { getCategoryInfo } from "@/lib/categories";
+import { getCategoryDataset } from "@/lib/categories";
 import { VariantSelector } from "@/components/VariantSelector";
 import { AddToCartForm } from "@/components/AddToCartForm";
 import { VariantGroup } from "@/types/product";
@@ -197,6 +197,9 @@ export default async function ProductPage({ params }: { params: { slug: string }
   const session = await sessionPromise;
   const currentUserId = session.user?.id ?? null;
 
+  const categoryDataset = await getCategoryDataset();
+  const categoryInfoMap = categoryDataset.infoBySlug;
+
   const [
     siblingProducts,
     recommendedProducts,
@@ -287,7 +290,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
 
   const likedReviewIds = new Set(likedReviewRows.map((row) => row.reviewId));
 
-  const category = getCategoryInfo(product.category);
+  const category = categoryInfoMap.get(product.category);
   const originalPrice = typeof product.originalPrice === "number" ? product.originalPrice : null;
   const activeFlashSale = getActiveFlashSale(product.flashSales ?? [], now);
   const nextFlashSale = getNextFlashSale(product.flashSales ?? [], now);
@@ -789,7 +792,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
         ) : (
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
             {siblingProducts.map((item) => {
-              const siblingCategory = getCategoryInfo(item.category);
+              const siblingCategory = categoryInfoMap.get(item.category);
               const siblingLabel = siblingCategory?.name ?? item.category.replace(/-/g, " ");
               const siblingEmoji = siblingCategory?.emoji ?? "🏷️";
               const siblingOriginal = typeof item.originalPrice === "number" ? item.originalPrice : null;
@@ -838,7 +841,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
         ) : (
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4">
             {recommendedProducts.map((item) => {
-              const recommendationCategory = getCategoryInfo(item.category);
+              const recommendationCategory = categoryInfoMap.get(item.category);
               const recommendationLabel = recommendationCategory?.name ?? item.category.replace(/-/g, " ");
               const recommendationEmoji = recommendationCategory?.emoji ?? "🏷️";
               const recOriginal = typeof item.originalPrice === "number" ? item.originalPrice : null;

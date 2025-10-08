@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { productCategories, productCategoryOptions } from "@/lib/categories";
+import { getProductCategories, getProductCategoryOptions } from "@/lib/categories";
 
 export const metadata = {
   title: "Kategori Produk | Akay Nusantara",
@@ -14,7 +14,12 @@ const quickFilters: { label: string; slug?: string; href?: string }[] = [
   { label: "Banyak Terjual", href: "/product?sort=sold" },
 ];
 
-export default function CategoriesPage() {
+export default async function CategoriesPage() {
+  const [productCategories, productCategoryOptions] = await Promise.all([
+    getProductCategories(),
+    getProductCategoryOptions(),
+  ]);
+
   return (
     <div className="space-y-10">
       <section className="rounded-3xl bg-gradient-to-br from-sky-500 via-sky-400 to-sky-400 px-6 py-10 text-white shadow-xl">

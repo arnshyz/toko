@@ -61,6 +61,8 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const variantGroups = parseVariantInput(variantsRaw);
   const variantPayload = buildVariantPayload(variantGroups);
 
+  const resolvedCategory = await resolveCategorySlug(categoryRaw);
+
   await prisma.product.update({
     where: { id: prod.id },
     data: {
@@ -69,7 +71,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       stock,
       description,
       warehouseId: warehouseId || null,
-      category: resolveCategorySlug(categoryRaw),
+      category: resolvedCategory,
       originalPrice: finalOriginalPrice,
       variantOptions: variantPayload ?? Prisma.JsonNull,
     },
