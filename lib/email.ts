@@ -94,11 +94,11 @@ export async function sendPasswordResetLinkEmail(params: {
       link_expires_in: `${expiresInMinutes} menit`,
       expiry_datetime_local: expiryLocal,
       brand_logo_url: process.env.BRAND_LOGO_URL ?? "https://your-domain/logo.png",
-      company_name: "PT Akay Nusantara",
-      company_address_line: "Jl. Contoh No. 123, Sidoarjo",
-      privacy_url: "https://your-domain/privacy",
-      help_center_url: "https://your-domain/help",
-      support_url: "https://your-domain/support",
+      company_name: "PT AKAY NUSANTARA GROUP",
+      company_address_line: "Jl. Anjay No. 404, Sidoarjo",
+      privacy_url: "https://www.akay.web.id/privacy",
+      help_center_url: "https://www.akay.web.id/help",
+      support_url: "https://www.akay.web.id/support",
       year: String(new Date().getFullYear()),
       request_id: crypto.randomUUID(),        // opsional
       user_email: email,                       // opsional
