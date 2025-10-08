@@ -168,12 +168,12 @@ function IconShoppingCart({ className }: IconProps) {
   );
 }
 
-export default async function ProductPage({ params }: { params: { id: string } }) {
+export default async function ProductPage({ params }: { params: { slug: string } }) {
   const sessionPromise = getSession();
   const now = new Date();
 
   const product = await prisma.product.findUnique({
-    where: { id: params.id },
+    where: { id: params.slug },
     include: {
       seller: true,
       warehouse: true,
