@@ -1,7 +1,6 @@
 import nodemailer, { Transporter } from "nodemailer";
 import path from "path";
 import { renderTemplate } from "@/lib/email-template";
-import { sendMail } from "@/lib/email";
 
 import { PASSWORD_RESET_TOKEN_EXPIRATION_MINUTES } from "@/lib/password-reset";
 
@@ -116,26 +115,6 @@ export async function sendPasswordResetLinkEmail(params: {
   await sendMail({ to: email, subject, text, html });
 }
 
-export async function sendPasswordResetSuccessEmail(params: {
-  email: string;
-  name?: string | null;
-}): Promise<void> {
-  const { email, name } = params;
-  const subject = "Password Berhasil Direset";
-  const greeting = name ? `Halo ${name},` : "Halo,";
-  const text = `${greeting}
-
-Password akun Toko Nusantara Anda telah berhasil diperbarui.
-Jika perubahan ini bukan Anda, segera hubungi tim dukungan kami.`;
-  const html = `
-    <p>${greeting}</p>
-    <p>Password akun Toko Nusantara Anda telah berhasil diperbarui.</p>
-    <p>Jika perubahan ini bukan Anda, segera hubungi tim dukungan kami.</p>
-  `;
-
-  await sendMail({ to: email, subject, text, html });
-}
-
 export async function sendRegistrationSuccessEmail(params: {
   email: string;
   name: string;
@@ -184,20 +163,41 @@ export async function sendOrderCreatedEmail(params: {
   email: string;
   name: string;
   orderCode: string;
-  totalDisplay: string;         // contoh: Rp120.000
-  paymentMethod: string;        // contoh: Transfer Manual
-  bankName?: string;
-  bankAccount?: string;
-  bankHolder?: string;
-  uniqueCode?: string;
+  totalDisplay?: string;         // contoh: Rp120.000
+  total?: number;
+  paymentMethod?: string;        // contoh: Transfer Manual
+  bankName?: string | null;
+  bankAccount?: string | null;
+  bankHolder?: string | null;
+  uniqueCode?: string | number | null;
   dueDate?: Date | string | null;
-  orderUrl: string;
+  orderUrl?: string;
+  paymentInstructions?: string | null;
 }) {
   const {
-    email, name, orderCode, totalDisplay, paymentMethod, bankName = "BCA",
-    bankAccount = "5065223446", bankHolder = "Lubis Karisma Ariansyah",
-    uniqueCode = "", dueDate = null, orderUrl
+    email,
+    name,
+    orderCode,
+    totalDisplay,
+    total = null,
+    paymentMethod = "Transfer Manual",
+    bankName = "BCA",
+    bankAccount = "5065223446",
+    bankHolder = "Lubis Karisma Ariansyah",
+    uniqueCode = "",
+    dueDate = null,
+    orderUrl: orderUrlParam = "#",
+    paymentInstructions,
   } = params;
+
+  const totalDisplayValue =
+    totalDisplay ?? (typeof total === "number" ? formatCurrencyIDR(total) : "—");
+  const orderUrl = orderUrlParam ?? "#";
+  const uniqueCodeDisplay =
+    typeof uniqueCode === "number" ? String(uniqueCode) : uniqueCode ?? "";
+  const paymentInstructionsDisplay =
+    paymentInstructions ??
+    `Transfer ke ${bankName ?? ""} ${bankAccount ?? ""} a.n ${bankHolder ?? ""}, lalu unggah bukti di halaman pesanan.`;
 
   const dueLocal = dueDate
     ? new Intl.DateTimeFormat("id-ID", { dateStyle: "full", timeStyle: "short" })
@@ -212,15 +212,14 @@ export async function sendOrderCreatedEmail(params: {
       user_name: name,
       user_email: email,
       order_code: orderCode,
-      total_display: totalDisplay,
+      total_display: totalDisplayValue,
       payment_method: paymentMethod,
-      bank_name: bankName,
-      bank_account: bankAccount,
-      bank_holder: bankHolder,
-      unique_code: uniqueCode,
+      bank_name: bankName ?? "",
+      bank_account: bankAccount ?? "",
+      bank_holder: bankHolder ?? "",
+      unique_code: uniqueCodeDisplay,
       due_date_local: dueLocal,
-      payment_instructions:
-        `Transfer ke ${bankName} ${bankAccount} a.n ${bankHolder}, lalu unggah bukti di halaman pesanan.`,
+      payment_instructions: paymentInstructionsDisplay,
       order_url: orderUrl,
       brand_logo_url: process.env.BRAND_LOGO_URL ?? "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgTFPWdo1aGRGXE22EIOHRGm-GMSnQlM4Ipq3hElGWDlKkvFreUP3j-KpC_clppmgqtQFE5Sky78ZndhW8bcJfdpBKqqI3YkaUYoUqDmYqN-moRfDXBLr3KNueZ_OQ-QRytSdzn7rD36NkOtb-qoEfdLZs50eg8Eum1pssd5Fzq7xSzzdoQA3zU-PHGI4k/s1600/4%20%281%29.png",
       company_name: "PT AKAY NUSANTARA GROUP",
@@ -236,7 +235,7 @@ export async function sendOrderCreatedEmail(params: {
     to: email,
     subject: `Pesanan ${orderCode} berhasil dibuat`,
     text:
-      `Halo ${name}, pesanan ${orderCode} berhasil dibuat. Total ${totalDisplay}. ` +
+      `Halo ${name}, pesanan ${orderCode} berhasil dibuat. Total ${totalDisplayValue}. ` +
       `Metode ${paymentMethod}. Lihat status: ${orderUrl}`,
     html,
   });
@@ -245,21 +244,31 @@ export async function sendPaymentSuccessEmail(params: {
   email: string;
   name: string;
   orderCode: string;
-  amountDisplay: string;     // contoh: Rp120.000
-  paymentMethod: string;     // contoh: BCA Transfer
-  paidAt?: Date | string;    // waktu pembayaran
-  orderUrl: string;
+  amountDisplay?: string;     // contoh: Rp120.000
+  paymentMethod?: string;     // contoh: BCA Transfer
+  paidAt?: Date | string;     // waktu pembayaran
+  orderUrl?: string;
   paymentId?: string;
 }) {
   const {
-    email, name, orderCode, amountDisplay, paymentMethod,
-    paidAt = new Date(), orderUrl, paymentId = ""
+    email,
+    name,
+    orderCode,
+    amountDisplay = "—",
+    paymentMethod = "",
+    paidAt = new Date(),
+    orderUrl: orderUrlParam = "#",
+    paymentId = "",
   } = params;
 
   const paidLocal = new Intl.DateTimeFormat("id-ID", {
     dateStyle: "full",
     timeStyle: "short",
   }).format(typeof paidAt === "string" ? new Date(paidAt) : paidAt);
+
+  const orderUrlDisplay = orderUrlParam ?? "#";
+  const paymentMethodDisplay = paymentMethod || "Transfer";
+  const paymentIdDisplay = paymentId ?? "";
 
   const html = await renderTemplate(
     path.join(process.cwd(), "templates/payment-success.html"),
@@ -270,10 +279,10 @@ export async function sendPaymentSuccessEmail(params: {
       user_email: email,
       order_code: orderCode,
       amount_display: amountDisplay,
-      payment_method: paymentMethod,
+      payment_method: paymentMethodDisplay,
       paid_at_local: paidLocal,
-      payment_id: paymentId,
-      order_url: orderUrl,
+      payment_id: paymentIdDisplay,
+      order_url: orderUrlDisplay,
 
       brand_logo_url: process.env.BRAND_LOGO_URL ?? "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgTFPWdo1aGRGXE22EIOHRGm-GMSnQlM4Ipq3hElGWDlKkvFreUP3j-KpC_clppmgqtQFE5Sky78ZndhW8bcJfdpBKqqI3YkaUYoUqDmYqN-moRfDXBLr3KNueZ_OQ-QRytSdzn7rD36NkOtb-qoEfdLZs50eg8Eum1pssd5Fzq7xSzzdoQA3zU-PHGI4k/s1600/4%20%281%29.png",
       company_name: "PT AKAY NUSANTARA GROUP",
@@ -290,7 +299,7 @@ export async function sendPaymentSuccessEmail(params: {
     subject: `Pembayaran pesanan ${orderCode} berhasil diverifikasi`,
     text:
       `Halo ${name}, pembayaran untuk pesanan ${orderCode} (${amountDisplay}) ` +
-      `dengan metode ${paymentMethod} telah kami terima. Lihat status: ${orderUrl}`,
+      `dengan metode ${paymentMethodDisplay} telah kami terima. Lihat status: ${orderUrlDisplay}`,
     html,
   });
 }
@@ -299,18 +308,23 @@ export async function sendOrderCompletedEmail(params: {
   email: string;
   name: string;
   orderCode: string;
-  totalDisplay: string;          // Rp120.000
+  totalDisplay?: string;          // Rp120.000
   completedAt?: Date | string;
-  orderUrl: string;
+  orderUrl?: string;
   reviewUrl?: string;
   itemsRowsHtml?: string;        // <tr><td>Produk A</td><td align="right">1×</td><td align="right">Rp50.000</td></tr>
 }) {
   const {
-    email, name, orderCode, totalDisplay,
-    completedAt = new Date(), orderUrl,
-    reviewUrl = `${orderUrl}#review`,
-    itemsRowsHtml = ""
+    email, name, orderCode,
+    totalDisplay = "—",
+    completedAt = new Date(),
+    orderUrl: orderUrlParam = "#",
+    reviewUrl: reviewUrlParam,
+    itemsRowsHtml = "",
   } = params;
+
+  const orderUrlDisplay = orderUrlParam ?? "#";
+  const reviewUrlDisplay = reviewUrlParam ?? `${orderUrlDisplay}#review`;
 
   const completedLocal = new Intl.DateTimeFormat("id-ID", {
     dateStyle: "full",
@@ -327,8 +341,8 @@ export async function sendOrderCompletedEmail(params: {
       order_code: orderCode,
       total_display: totalDisplay,
       completed_at_local: completedLocal,
-      order_url: orderUrl,
-      review_url: reviewUrl,
+      order_url: orderUrlDisplay,
+      review_url: reviewUrlDisplay,
       items_rows_html: itemsRowsHtml,
 
       brand_logo_url: process.env.BRAND_LOGO_URL ?? "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgTFPWdo1aGRGXE22EIOHRGm-GMSnQlM4Ipq3hElGWDlKkvFreUP3j-KpC_clppmgqtQFE5Sky78ZndhW8bcJfdpBKqqI3YkaUYoUqDmYqN-moRfDXBLr3KNueZ_OQ-QRytSdzn7rD36NkOtb-qoEfdLZs50eg8Eum1pssd5Fzq7xSzzdoQA3zU-PHGI4k/s1600/4%20%281%29.png",
@@ -346,7 +360,7 @@ export async function sendOrderCompletedEmail(params: {
     subject: `Pesanan ${orderCode} selesai`,
     text:
       `Halo ${name}, semua item pada pesanan ${orderCode} telah diterima. ` +
-      `Total ${totalDisplay}. Detail: ${orderUrl}`,
+      `Total ${totalDisplay}. Detail: ${orderUrlDisplay}`,
     html,
   });
 }
@@ -355,16 +369,20 @@ export async function sendOrderProcessingEmail(params: {
   email: string;
   name: string;
   orderCode: string;
-  orderUrl: string;
+  orderUrl?: string;
   estimatedShipping?: Date | string | null;
   updatedAt?: Date | string;
   itemsRowsHtml?: string;
 }) {
   const {
-    email, name, orderCode, orderUrl,
-    estimatedShipping = null, updatedAt = new Date(),
-    itemsRowsHtml = ""
+    email, name, orderCode,
+    orderUrl: orderUrlParam = "#",
+    estimatedShipping = null,
+    updatedAt = new Date(),
+    itemsRowsHtml = "",
   } = params;
+
+  const orderUrlDisplay = orderUrlParam ?? "#";
 
   const estimatedLocal = estimatedShipping
     ? new Intl.DateTimeFormat("id-ID", { dateStyle: "full" })
@@ -384,7 +402,7 @@ export async function sendOrderProcessingEmail(params: {
       user_name: name,
       user_email: email,
       order_code: orderCode,
-      order_url: orderUrl,
+      order_url: orderUrlDisplay,
       estimated_shipping_local: estimatedLocal,
       updated_at_local: updatedLocal,
       items_rows_html: itemsRowsHtml,
@@ -404,7 +422,97 @@ export async function sendOrderProcessingEmail(params: {
     subject: `Pesanan ${orderCode} sedang diproses`,
     text:
       `Halo ${name}, pesanan ${orderCode} sedang diproses. ` +
-      `Perkiraan kirim: ${estimatedLocal}. Lihat status: ${orderUrl}`,
+      `Perkiraan kirim: ${estimatedLocal}. Lihat status: ${orderUrlDisplay}`,
+    html,
+  });
+}
+
+export async function sendOrderShippedEmail(params: {
+  email: string;
+  name: string;
+  orderCode: string;
+  courier?: string | null;
+  trackingNumber?: string | null;
+  trackingUrl?: string | null;
+  shippedAt?: Date | string;
+  orderUrl?: string | null;
+  itemsRowsHtml?: string;
+}) {
+  const {
+    email,
+    name,
+    orderCode,
+    courier = "",
+    trackingNumber = "",
+    trackingUrl = null,
+    shippedAt = new Date(),
+    orderUrl = "#",
+    itemsRowsHtml = "",
+  } = params;
+
+  const shippedLocal = new Intl.DateTimeFormat("id-ID", {
+    dateStyle: "full",
+    timeStyle: "short",
+  }).format(typeof shippedAt === "string" ? new Date(shippedAt) : shippedAt);
+
+  const courierDisplay = courier ?? "";
+  const trackingNumberDisplay = trackingNumber ?? "";
+  const trackingUrlDisplay = trackingUrl ?? "";
+  const orderUrlDisplay = orderUrl ?? "#";
+
+  const shipmentSummary = [courierDisplay, trackingNumberDisplay]
+    .filter((value) => value && value.trim())
+    .join(" • ");
+
+  const htmlSections = [
+    `<p>Halo ${name},</p>`,
+    `<p>Pesanan ${orderCode} telah dikirim pada ${shippedLocal}.</p>`,
+  ];
+
+  if (shipmentSummary) {
+    htmlSections.push(`<p>Detail pengiriman: ${shipmentSummary}</p>`);
+  }
+
+  if (trackingUrlDisplay) {
+    htmlSections.push(
+      `<p>Lacak pengiriman: <a href="${trackingUrlDisplay}">${trackingUrlDisplay}</a></p>`
+    );
+  }
+
+  htmlSections.push(
+    `<p>Lihat status pesanan: <a href="${orderUrlDisplay}">${orderUrlDisplay}</a></p>`
+  );
+
+  if (itemsRowsHtml.trim()) {
+    htmlSections.push(
+      `<table width="100%" cellpadding="6" cellspacing="0" style="border-collapse: collapse; margin-top: 16px;">${itemsRowsHtml}</table>`
+    );
+  }
+
+  const html = htmlSections.join("\n");
+
+  const textLines = [
+    `Halo ${name},`,
+    ``,
+    `Pesanan ${orderCode} telah dikirim pada ${shippedLocal}.`,
+  ];
+
+  if (shipmentSummary) {
+    textLines.push(`Detail pengiriman: ${shipmentSummary}`);
+  }
+
+  if (trackingUrlDisplay) {
+    textLines.push(`Lacak pengiriman: ${trackingUrlDisplay}`);
+  }
+
+  textLines.push(`Lihat status pesanan: ${orderUrlDisplay}`);
+
+  const text = textLines.join("\n");
+
+  await sendMail({
+    to: email,
+    subject: `Pesanan ${orderCode} sedang dikirim`,
+    text,
     html,
   });
 }
@@ -414,15 +522,16 @@ export async function sendOrderCancelledEmail(params: {
   name: string;
   orderCode: string;
   totalDisplay?: string;          // Rp120.000
-  reason?: string;
+  reason?: string | null;
   cancelledAt?: Date | string;
-  orderUrl: string;
+  orderUrl?: string;
   refundAmountDisplay?: string;   // jika ada refund
   refundMethod?: string;          // contoh: Transfer bank
   refundReference?: string;       // contoh: RFD-123
 }) {
   const {
-    email, name, orderCode, orderUrl,
+    email, name, orderCode,
+    orderUrl: orderUrlParam = "#",
     totalDisplay = "—",
     reason = "Pembatalan oleh admin/penjual",
     cancelledAt = new Date(),
@@ -430,6 +539,12 @@ export async function sendOrderCancelledEmail(params: {
     refundMethod = "",
     refundReference = ""
   } = params;
+
+  const orderUrlDisplay = orderUrlParam ?? "#";
+  const cancellationReason = reason ?? "Pembatalan oleh admin/penjual";
+  const refundAmount = refundAmountDisplay ?? "";
+  const refundMethodDisplay = refundMethod ?? "";
+  const refundReferenceDisplay = refundReference ?? "";
 
   const cancelledLocal = new Intl.DateTimeFormat("id-ID", {
     dateStyle: "full",
@@ -447,12 +562,12 @@ export async function sendOrderCancelledEmail(params: {
       order_code: orderCode,
       total_display: totalDisplay,
       cancelled_at_local: cancelledLocal,
-      order_url: orderUrl,
-      cancellation_reason: reason,
+      order_url: orderUrlDisplay,
+      cancellation_reason: cancellationReason,
 
-      refund_amount_display: refundAmountDisplay,
-      refund_method: refundMethod,
-      refund_reference: refundReference,
+      refund_amount_display: refundAmount,
+      refund_method: refundMethodDisplay,
+      refund_reference: refundReferenceDisplay,
 
       brand_logo_url: process.env.BRAND_LOGO_URL ?? "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgTFPWdo1aGRGXE22EIOHRGm-GMSnQlM4Ipq3hElGWDlKkvFreUP3j-KpC_clppmgqtQFE5Sky78ZndhW8bcJfdpBKqqI3YkaUYoUqDmYqN-moRfDXBLr3KNueZ_OQ-QRytSdzn7rD36NkOtb-qoEfdLZs50eg8Eum1pssd5Fzq7xSzzdoQA3zU-PHGI4k/s1600/4%20%281%29.png",
       company_name: "PT AKAY NUSANTARA GROUP",
@@ -469,7 +584,7 @@ export async function sendOrderCancelledEmail(params: {
     subject: `Pesanan ${orderCode} dibatalkan`,
     text:
       `Halo ${name}, pesanan ${orderCode} telah dibatalkan. ` +
-      `Alasan: ${reason}. Detail: ${orderUrl}`,
+      `Alasan: ${cancellationReason}. Detail: ${orderUrlDisplay}`,
     html,
   });
 }
@@ -478,24 +593,46 @@ export async function sendOrderPaymentPendingEmail(params: {
   email: string;
   name: string;
   orderCode: string;
-  totalDisplay: string;          // Rp120.000
-  paymentMethod: string;         // Transfer Manual / VA
+  totalDisplay?: string;          // Rp120.000
+  total?: number;
+  paymentMethod?: string;         // Transfer Manual / VA
   bankName?: string | null;
   bankAccount?: string | null;
   bankHolder?: string | null;
   vaNumber?: string | null;
-  uniqueCode?: string | null;
+  uniqueCode?: string | number | null;
   dueDate?: Date | string | null;
-  payUrl: string;
-  orderUrl: string;
+  payUrl?: string;
+  orderUrl?: string;
   paymentInstructions?: string | null;
 }) {
   const {
-    email, name, orderCode, totalDisplay, paymentMethod,
-    bankName = "BCA", bankAccount = "1234567890", bankHolder = "PT Akay Nusantara",
-    vaNumber = "", uniqueCode = "", dueDate = null, payUrl, orderUrl,
-    paymentInstructions = `Transfer ke ${bankName} ${bankAccount} a.n ${bankHolder}, lalu unggah bukti di halaman pesanan.`
+    email,
+    name,
+    orderCode,
+    totalDisplay,
+    total = null,
+    paymentMethod = "Transfer Manual",
+    bankName = "BCA",
+    bankAccount = "1234567890",
+    bankHolder = "PT Akay Nusantara",
+    vaNumber = "",
+    uniqueCode = "",
+    dueDate = null,
+    payUrl: payUrlParam = "#",
+    orderUrl: orderUrlParam = "#",
+    paymentInstructions,
   } = params;
+
+  const totalDisplayValue =
+    totalDisplay ?? (typeof total === "number" ? formatCurrencyIDR(total) : "—");
+  const payUrl = payUrlParam ?? "#";
+  const orderUrl = orderUrlParam ?? "#";
+  const uniqueCodeDisplay =
+    typeof uniqueCode === "number" ? String(uniqueCode) : uniqueCode ?? "";
+  const paymentInstructionsDisplay =
+    paymentInstructions ??
+    `Transfer ke ${bankName ?? ""} ${bankAccount ?? ""} a.n ${bankHolder ?? ""}, lalu unggah bukti di halaman pesanan.`;
 
   const dueLocal = dueDate
     ? new Intl.DateTimeFormat("id-ID", { dateStyle: "full", timeStyle: "short" })
@@ -511,15 +648,15 @@ export async function sendOrderPaymentPendingEmail(params: {
       user_email: email,
 
       order_code: orderCode,
-      total_display: totalDisplay,
+      total_display: totalDisplayValue,
       payment_method: paymentMethod,
       bank_name: bankName ?? "",
       bank_account: bankAccount ?? "",
       bank_holder: bankHolder ?? "",
       va_number: vaNumber ?? "",
-      unique_code: uniqueCode ?? "",
+      unique_code: uniqueCodeDisplay,
       due_date_local: dueLocal,
-      payment_instructions: paymentInstructions,
+      payment_instructions: paymentInstructionsDisplay,
 
       pay_url: payUrl,
       order_url: orderUrl,
@@ -538,7 +675,7 @@ export async function sendOrderPaymentPendingEmail(params: {
     to: email,
     subject: `Menunggu pembayaran pesanan ${orderCode}`,
     text:
-      `Halo ${name}, pesanan ${orderCode} menunggu pembayaran. Total ${totalDisplay}. ` +
+      `Halo ${name}, pesanan ${orderCode} menunggu pembayaran. Total ${totalDisplayValue}. ` +
       `Metode ${paymentMethod}. Bayar: ${payUrl} • Status: ${orderUrl}`,
     html,
   });
@@ -616,23 +753,30 @@ export async function sendLoginNotificationEmail(params: {
 export async function sendPasswordResetSuccessEmail(params: {
   email: string;
   name?: string | null;
-  loginUrl: string;
-  securityUrl: string;
-  resetPasswordUrl: string;
+  loginUrl?: string;
+  securityUrl?: string;
+  resetPasswordUrl?: string;
   changedAt?: Date | string;
   deviceFingerprint?: string;
 }) {
   const {
     email,
     name = null,
-    loginUrl,
-    securityUrl,
-    resetPasswordUrl,
+    loginUrl: loginUrlParam,
+    securityUrl: securityUrlParam,
+    resetPasswordUrl: resetPasswordUrlParam,
     changedAt = new Date(),
     deviceFingerprint = "Web • ID",
   } = params;
 
   const subject = "Password berhasil diperbarui";
+
+  const loginUrl =
+    loginUrlParam ?? process.env.NEXT_PUBLIC_APP_LOGIN_URL ?? process.env.APP_LOGIN_URL ?? "#";
+  const securityUrl =
+    securityUrlParam ?? process.env.NEXT_PUBLIC_APP_SECURITY_URL ?? process.env.APP_SECURITY_URL ?? "#";
+  const resetPasswordUrl =
+    resetPasswordUrlParam ?? process.env.NEXT_PUBLIC_APP_RESET_PASSWORD_URL ?? loginUrl;
 
   const changedLocal = new Intl.DateTimeFormat("id-ID", {
     dateStyle: "full",
