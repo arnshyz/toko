@@ -14,7 +14,7 @@ type ClaimVoucherButtonProps = {
   className?: string;
   size?: "sm" | "md";
   variant?: "solid" | "outline";
-  color?: "indigo" | "salmon";
+  color?: "sky" | "neutral";
 };
 
 export function ClaimVoucherButton({
@@ -24,7 +24,7 @@ export function ClaimVoucherButton({
   className,
   size = "md",
   variant = "solid",
-  color = "indigo",
+  color = "sky",
 }: ClaimVoucherButtonProps) {
   const router = useRouter();
   const [status, setStatus] = useState<"idle" | "loading" | "claimed" | "error">("idle");
@@ -36,17 +36,17 @@ export function ClaimVoucherButton({
   const sizeClass = size === "sm" ? "px-3 py-2 text-xs" : "px-4 py-2.5 text-sm";
   const baseClass = (() => {
     if (variant === "outline") {
-      if (color === "salmon") {
-        return "border border-[#fcd3c7] text-[#f53d2d] hover:border-[#f8b5a3] hover:text-[#d73224]";
+      if (color === "neutral") {
+        return "border border-slate-200 text-slate-600 hover:border-slate-300 hover:text-slate-500";
       }
-      return "border border-indigo-200 text-indigo-600 hover:border-indigo-300 hover:text-indigo-500";
+      return "border border-sky-200 text-sky-600 hover:border-sky-300 hover:text-sky-500";
     }
 
-    if (color === "salmon") {
-      return "bg-[#f53d2d] text-white hover:bg-[#d73224]";
+    if (color === "neutral") {
+      return "bg-slate-200 text-slate-600 hover:bg-slate-300";
     }
 
-    return "bg-indigo-600 text-white hover:bg-indigo-500";
+    return "bg-sky-500 text-white hover:bg-sky-400";
   })();
 
   const disabledClass = isLoading || isClaimed ? "opacity-80 cursor-not-allowed" : "";
@@ -100,7 +100,7 @@ export function ClaimVoucherButton({
         disabled={isLoading || isClaimed}
         onClick={handleClaim}
         className={mergeClassNames(
-          "inline-flex items-center justify-center rounded-full font-semibold transition focus:outline-none focus:ring-2 focus:ring-indigo-500/40",
+          "inline-flex items-center justify-center rounded-full font-semibold transition focus:outline-none focus:ring-2 focus:ring-sky-500/40",
           sizeClass,
           baseClass,
           disabledClass,

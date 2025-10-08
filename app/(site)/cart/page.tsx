@@ -34,7 +34,7 @@ export default function CartPage() {
               <td>Rp {new Intl.NumberFormat('id-ID').format(it.price)}</td>
               <td><input type="number" min={1} value={it.qty} onChange={(e)=>updateQty(it.productId, Math.max(1, parseInt(e.target.value||'1')))} className="border rounded px-2 py-1 w-16"/></td>
               <td>Rp {new Intl.NumberFormat('id-ID').format(sub)}</td>
-              <td><button className="px-3 py-1 text-red-600" onClick={()=>removeItem(it.productId)}>Hapus</button></td>
+              <td><button className="px-3 py-1 text-sky-600 transition hover:text-sky-500" onClick={()=>removeItem(it.productId)}>Hapus</button></td>
             </tr>
           );
         })}

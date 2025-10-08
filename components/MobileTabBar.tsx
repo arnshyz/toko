@@ -28,7 +28,7 @@ export function MobileTabBar() {
               key={tab.href}
               href={tab.href}
               className={`flex flex-1 flex-col items-center gap-1 rounded-xl px-1 py-1 text-[11px] font-medium transition ${
-                isActive ? "text-[#f53d2d]" : "text-gray-500 hover:text-[#f53d2d]"
+                isActive ? "text-sky-600" : "text-gray-500 hover:text-sky-500"
               }`}
             >
               <span className="text-lg">{tab.icon}</span>

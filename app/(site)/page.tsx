@@ -140,11 +140,11 @@ export default async function HomePage() {
       <PromoSlider slides={slides.length > 0 ? slides : fallbackSlides} />
 
       <div className="space-y-4 md:hidden">
-        <div className="rounded-3xl bg-gradient-to-br from-white/95 via-white/90 to-white/70 px-4 py-4 text-gray-900 shadow-xl shadow-[#f53d2d]/10 ring-1 ring-white/70">
+        <div className="rounded-3xl bg-gradient-to-br from-white/95 via-white/90 to-white/70 px-4 py-4 text-gray-900 shadow-xl shadow-sky-500/10 ring-1 ring-white/70">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs uppercase tracking-wide text-gray-500">Voucher Pilihan</p>
-              <p className="text-lg font-semibold text-[#f53d2d]">
+              <p className="text-lg font-semibold text-sky-600">
                 {highlightedVoucher ? highlightedVoucher.code : "Diskon Spesial"}
               </p>
               <p className="text-xs text-gray-500">
@@ -158,7 +158,7 @@ export default async function HomePage() {
                 voucherId={highlightedVoucher.id}
                 voucherCode={highlightedVoucher.code}
                 size="sm"
-                color="salmon"
+                color="sky"
                 className="shadow"
               >
                 Klaim
@@ -166,7 +166,7 @@ export default async function HomePage() {
             ) : (
               <Link
                 href="/promo"
-                className="rounded-full bg-[#f53d2d] px-4 py-2 text-xs font-semibold text-white shadow"
+                className="rounded-full bg-sky-500 px-4 py-2 text-xs font-semibold text-white shadow"
               >
                 Jelajahi
               </Link>
@@ -218,7 +218,7 @@ export default async function HomePage() {
           <h1 className="text-2xl font-semibold">Produk Terbaru</h1>
           <Link
             href="/product"
-            className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
+            className="text-sm font-medium text-sky-600 hover:text-sky-500"
           >
             Lihat semua
           </Link>

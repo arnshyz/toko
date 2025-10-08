@@ -165,7 +165,7 @@ export default async function SellerFlashSalesPage({
             </label>
 
             <div className="flex items-center justify-end md:col-span-2">
-              <button className="rounded-full bg-[#f53d2d] px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#d73224]">
+              <button className="rounded-full bg-sky-500 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-400">
                 Simpan Flash Sale
               </button>
             </div>
@@ -213,7 +213,7 @@ export default async function SellerFlashSalesPage({
                   {referenceOriginal > basePrice ? (
                     <p className="text-gray-400 line-through">Harga sebelum diskon: Rp {formatIDR(referenceOriginal)}</p>
                   ) : null}
-                  <p className="mt-1 text-sm font-semibold text-[#f53d2d]">
+                  <p className="mt-1 text-sm font-semibold text-sky-600">
                     Diskon {sale.discountPercent}% • Harga flash Rp {formatIDR(salePrice)}
                   </p>
                 </div>

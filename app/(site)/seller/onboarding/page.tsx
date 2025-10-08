@@ -51,9 +51,9 @@ export default async function SellerOnboarding() {
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-8">
-      <header className="rounded-3xl bg-gradient-to-br from-[#f53d2d] to-[#ff7243] p-[1px] shadow-xl">
+      <header className="rounded-3xl bg-gradient-to-br from-sky-500 to-sky-400 p-[1px] shadow-xl">
         <div className="rounded-[34px] bg-white p-8 shadow-inner">
-          <p className="text-sm font-semibold uppercase tracking-widest text-[#f53d2d]">Onboarding Seller</p>
+          <p className="text-sm font-semibold uppercase tracking-widest text-sky-600">Onboarding Seller</p>
           <h1 className="mt-3 text-3xl font-bold text-gray-900">Mulai buka toko di Akay Nusantara</h1>
           <p className="mt-3 max-w-2xl text-sm text-gray-600">
             Hai {account.name.split(" ")[0]}, akun Anda saat ini berada pada status <strong>{statusLabel}</strong>.
@@ -61,7 +61,7 @@ export default async function SellerOnboarding() {
           </p>
           <div className="mt-6 flex flex-col gap-3 text-sm text-gray-600 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-2">
-              <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#f53d2d]/10 text-base font-semibold text-[#f53d2d]">
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-sky-500/10 text-base font-semibold text-sky-600">
                 {account.sellerOnboardingStatus === "IN_PROGRESS" ? "⏳" : "🛍️"}
               </span>
               <span>
@@ -70,7 +70,7 @@ export default async function SellerOnboarding() {
             </div>
             <Link
               href="/"
-              className="inline-flex items-center justify-center rounded-full bg-[#f53d2d] px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-[#f53d2d]/30 transition hover:bg-[#d63b22]"
+              className="inline-flex items-center justify-center rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-sky-500/30 transition hover:bg-sky-400"
             >
               Belanja sebagai pembeli
             </Link>
@@ -87,7 +87,7 @@ export default async function SellerOnboarding() {
         <ol className="mt-6 space-y-4">
           {steps.map((step, index) => (
             <li key={step.title} className="flex gap-4 rounded-2xl border border-gray-100 bg-gray-50/80 p-5">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-lg font-semibold text-[#f53d2d] shadow">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-lg font-semibold text-sky-600 shadow">
                 {index + 1}
               </div>
               <div className="space-y-1">
@@ -99,7 +99,7 @@ export default async function SellerOnboarding() {
         </ol>
       </section>
 
-      <section className="rounded-3xl border border-dashed border-[#f53d2d]/40 bg-[#fef2f2] p-8 text-sm text-[#b42318]">
+      <section className="rounded-3xl border border-dashed border-sky-300/40 bg-sky-50 p-8 text-sm text-sky-700">
         <p>
           Setelah seluruh tahap selesai, hubungi tim kami melalui email <a className="underline" href="mailto:support@akay.id">support@akay.id</a> dengan melampirkan bukti data toko untuk proses aktivasi.
         </p>

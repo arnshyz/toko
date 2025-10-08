@@ -113,7 +113,7 @@ export default async function SellerSettings({ searchParams }: SettingsPageProps
               minLength={3}
               defaultValue={account.name}
               placeholder="Contoh: Akay Nusantara"
-              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm transition focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/40"
+              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
             />
             <p className="text-xs text-gray-500">Nama toko akan ditampilkan kepada pembeli di halaman etalase Anda.</p>
           </div>
@@ -130,7 +130,7 @@ export default async function SellerSettings({ searchParams }: SettingsPageProps
           </div>
 
           <div className="flex flex-col gap-2 md:flex-row md:items-center">
-            <button className="rounded-full bg-[#f53d2d] px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#d73224]" type="submit">
+            <button className="rounded-full bg-sky-500 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-400" type="submit">
               Simpan perubahan
             </button>
             <span className="text-xs text-gray-500 md:ml-3">Perubahan dapat memerlukan waktu beberapa menit untuk muncul di hasil pencarian.</span>
@@ -168,7 +168,7 @@ export default async function SellerSettings({ searchParams }: SettingsPageProps
               defaultValue={account.storeAddressLine ?? ""}
               placeholder="Contoh: Jl. Melati No. 10, Blok B"
               rows={3}
-              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm transition focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/40"
+              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
             />
           </div>
 
@@ -184,7 +184,7 @@ export default async function SellerSettings({ searchParams }: SettingsPageProps
                 required
                 defaultValue={account.storeProvince ?? ""}
                 placeholder="Contoh: Jawa Barat"
-                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm transition focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/40"
+                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
               />
             </div>
             <div className="space-y-1">
@@ -198,7 +198,7 @@ export default async function SellerSettings({ searchParams }: SettingsPageProps
                 required
                 defaultValue={account.storeCity ?? ""}
                 placeholder="Contoh: Bandung"
-                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm transition focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/40"
+                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
               />
             </div>
           </div>
@@ -214,7 +214,7 @@ export default async function SellerSettings({ searchParams }: SettingsPageProps
                 type="text"
                 defaultValue={account.storeDistrict ?? ""}
                 placeholder="Contoh: Sukajadi"
-                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm transition focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/40"
+                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
               />
             </div>
             <div className="space-y-1">
@@ -229,7 +229,7 @@ export default async function SellerSettings({ searchParams }: SettingsPageProps
                 pattern="[0-9]*"
                 defaultValue={account.storePostalCode ?? ""}
                 placeholder="Contoh: 40162"
-                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm transition focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/40"
+                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
               />
             </div>
           </div>
@@ -244,7 +244,7 @@ export default async function SellerSettings({ searchParams }: SettingsPageProps
               type="text"
               defaultValue={account.storeOriginCityId ?? ""}
               placeholder="Opsional, isi jika Anda tahu kode kota RajaOngkir"
-              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm transition focus:border-[#f53d2d] focus:outline-none focus:ring-2 focus:ring-[#f53d2d]/40"
+              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
             />
             <p className="text-xs text-gray-500">
               Mengisi kode kota RajaOngkir membantu mempercepat pencocokan kota asal secara otomatis.
@@ -252,7 +252,7 @@ export default async function SellerSettings({ searchParams }: SettingsPageProps
           </div>
 
           <div className="flex flex-col gap-2 md:flex-row md:items-center">
-            <button className="rounded-full bg-[#f53d2d] px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-[#d73224]" type="submit">
+            <button className="rounded-full bg-sky-500 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-400" type="submit">
               Simpan alamat
             </button>
             <span className="text-xs text-gray-500 md:ml-3">Pastikan kota sesuai dengan data RajaOngkir agar ongkir otomatis berhasil.</span>

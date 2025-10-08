@@ -74,12 +74,12 @@ export default async function VoucherPage() {
               return (
                 <article
                   key={entry.id}
-                  className="flex flex-col justify-between rounded-3xl border border-[#fcd3c7] bg-gradient-to-br from-white via-white to-[#fff4f1] p-5 shadow-sm"
+                  className="flex flex-col justify-between rounded-3xl border border-sky-100 bg-gradient-to-br from-white via-white to-sky-50 p-5 shadow-sm"
                 >
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-[#f53d2d]">
+                    <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-sky-600">
                       <span>Kode {voucher.code}</span>
-                      <span className="rounded-full bg-[#f53d2d]/10 px-3 py-1 text-[11px] text-[#f53d2d]">Tersimpan</span>
+                      <span className="rounded-full bg-sky-500/10 px-3 py-1 text-[11px] text-sky-600">Tersimpan</span>
                     </div>
                     <p className="text-lg font-semibold text-gray-900">{benefit}</p>
                     <p className="text-sm text-gray-600">Min. belanja Rp {formatIDR(voucher.minSpend)}</p>
@@ -118,12 +118,12 @@ export default async function VoucherPage() {
               return (
                 <article
                   key={voucher.id}
-                  className="flex flex-col justify-between rounded-3xl border border-indigo-100 bg-white p-5 shadow-sm"
+                  className="flex flex-col justify-between rounded-3xl border border-sky-100 bg-white p-5 shadow-sm"
                 >
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-indigo-600">
+                    <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wide text-sky-600">
                       <span>Kode {voucher.code}</span>
-                      <span className="rounded-full bg-indigo-100 px-3 py-1 text-[11px] text-indigo-700">
+                      <span className="rounded-full bg-sky-100 px-3 py-1 text-[11px] text-sky-600">
                         {voucher.expiresAt ? `Sampai ${formatDate(voucher.expiresAt)}` : "Stok terbatas"}
                       </span>
                     </div>
@@ -137,7 +137,7 @@ export default async function VoucherPage() {
                         voucherId={voucher.id}
                         voucherCode={voucher.code}
                         size="sm"
-                        color={isClaimed ? "indigo" : "salmon"}
+                        color={isClaimed ? "neutral" : "sky"}
                         variant={isClaimed ? "outline" : "solid"}
                         className={isClaimed ? "w-full" : "w-full shadow"}
                       >

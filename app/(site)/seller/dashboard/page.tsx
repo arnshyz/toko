@@ -180,7 +180,7 @@ export default async function Dashboard() {
   return (
     <div className="space-y-6">
       <div className="space-y-4 md:hidden">
-        <div className="rounded-3xl bg-gradient-to-br from-[#f53d2d] via-[#ff6f3c] to-[#ff8f59] px-6 py-6 text-white shadow-xl">
+        <div className="rounded-3xl bg-gradient-to-br from-sky-600 via-sky-500 to-sky-400 px-6 py-6 text-white shadow-xl">
           <div className="flex items-start justify-between gap-3">
             <div className="space-y-1">
               <p className="text-xs uppercase tracking-wider text-white/70">Dashboard Seller</p>
@@ -200,7 +200,7 @@ export default async function Dashboard() {
             </div>
             <form method="POST" action="/api/seller/store/toggle" className="flex-shrink-0">
               <input type="hidden" name="status" value={storeIsOnline ? "offline" : "online"} />
-              <button className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-[#f53d2d] shadow">
+              <button className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-sky-600 shadow">
                 {storeIsOnline ? "Tutup Toko" : "Buka Toko"}
               </button>
             </form>
@@ -217,25 +217,25 @@ export default async function Dashboard() {
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-2xl bg-white p-4 text-gray-900 shadow-sm">
             <p className="text-xs text-gray-500">Produk Aktif</p>
-            <p className="text-xl font-semibold text-[#f53d2d]">{productCount}</p>
+            <p className="text-xl font-semibold text-sky-600">{productCount}</p>
           </div>
           <div className="rounded-2xl bg-white p-4 text-gray-900 shadow-sm">
             <p className="text-xs text-gray-500">Pesanan Unik</p>
-            <p className="text-xl font-semibold text-[#f53d2d]">{ordersCount}</p>
+            <p className="text-xl font-semibold text-sky-600">{ordersCount}</p>
           </div>
           <div className="rounded-2xl bg-white p-4 text-gray-900 shadow-sm">
             <p className="text-xs text-gray-500">Omzet (Paid)</p>
-            <p className="text-xl font-semibold text-[#f53d2d]">Rp {new Intl.NumberFormat("id-ID").format(revenueTotal)}</p>
+            <p className="text-xl font-semibold text-sky-600">Rp {new Intl.NumberFormat("id-ID").format(revenueTotal)}</p>
           </div>
           <div className="rounded-2xl bg-white p-4 text-gray-900 shadow-sm">
             <p className="text-xs text-gray-500">Permintaan Retur</p>
-            <p className="text-xl font-semibold text-[#f53d2d]">{returnRequestCount}</p>
+            <p className="text-xl font-semibold text-sky-600">{returnRequestCount}</p>
           </div>
         </div>
         <div className="rounded-3xl bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-semibold text-gray-900">Status Pesanan</h2>
-            <Link href="/seller/orders" className="text-xs font-semibold text-[#f53d2d]">
+            <Link href="/seller/orders" className="text-xs font-semibold text-sky-600">
               Lihat Semua
             </Link>
           </div>
@@ -248,7 +248,7 @@ export default async function Dashboard() {
               >
                 <span className="text-xl">{item.icon}</span>
                 <span className="text-xs text-gray-900">{item.label}</span>
-                <span className="text-[11px] font-semibold text-[#f53d2d]">{item.value}</span>
+                <span className="text-[11px] font-semibold text-sky-600">{item.value}</span>
               </Link>
             ))}
           </div>
@@ -256,7 +256,7 @@ export default async function Dashboard() {
         <div className="rounded-3xl bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-semibold text-gray-900">Alat Toko</h2>
-            <Link href="/seller/settings" className="text-xs font-semibold text-[#f53d2d]">
+            <Link href="/seller/settings" className="text-xs font-semibold text-sky-600">
               Selengkapnya
             </Link>
           </div>
@@ -309,7 +309,7 @@ export default async function Dashboard() {
                 gudang tertentu.
               </div>
             )}
-            <a className="text-sm font-semibold text-[#f53d2d] hover:text-[#d63b22]" href="/seller/settings">
+            <a className="text-sm font-semibold text-sky-600 hover:text-sky-500" href="/seller/settings">
               Atur nama &amp; alamat toko →
             </a>
           </div>
@@ -344,7 +344,7 @@ export default async function Dashboard() {
         </div>
         <div className="grid grid-cols-5 gap-3 rounded border bg-white p-4">
           {sellerOrderSummary.map((item) => (
-            <a key={item.label} href={item.href} className="flex flex-col items-center gap-2 text-sm text-gray-600 hover:text-[#f53d2d]">
+            <a key={item.label} href={item.href} className="flex flex-col items-center gap-2 text-sm text-gray-600 hover:text-sky-600">
               <span className="text-xl">{item.icon}</span>
               <span className="font-semibold text-gray-900">{item.value}</span>
               <span className="text-xs">{item.label}</span>
