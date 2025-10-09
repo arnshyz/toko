@@ -34,6 +34,7 @@ type BuyerOrder = {
     price: number;
     status: "PENDING" | "PACKED" | "SHIPPED" | "DELIVERED" | string;
     productId: string;
+    note: string | null;
     product: null | {
       id: string;
       slug: string;

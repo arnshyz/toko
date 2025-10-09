@@ -131,6 +131,7 @@ export default async function OrderDetailPage({ params }: { params: { code: stri
             </p>
           ) : null}
           {order.items.map((item) => {
+            const itemNote = (item as { note?: string | null }).note;
             const product = item.product;
             const seller = product?.seller ?? null;
             return (
@@ -158,8 +159,8 @@ export default async function OrderDetailPage({ params }: { params: { code: stri
                     )}
                   </h3>
                   <p className="text-xs text-gray-500">Qty: {item.qty} • Status item: {item.status}</p>
-                  {item.note ? (
-                    <p className="text-xs text-gray-500">Catatan pesanan: {item.note}</p>
+                  {itemNote ? (
+                    <p className="text-xs text-gray-500">Catatan pesanan: {itemNote}</p>
                   ) : null}
                   {seller ? (
                     <p className="text-xs text-gray-500">
