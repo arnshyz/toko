@@ -1,6 +1,15 @@
 'use client';
 import { useEffect, useState } from "react";
-type CartItem = { productId: string; title: string; price: number; qty: number; imageUrl?: string; sellerId: string };
+type CartItem = {
+  productId: string;
+  title: string;
+  price: number;
+  qty: number;
+  imageUrl?: string;
+  sellerId: string;
+  note?: string | null;
+  variants?: Record<string, string>;
+};
 
 export default function CartPage() {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -10,13 +19,17 @@ export default function CartPage() {
     const arr: CartItem[] = raw ? JSON.parse(raw) : [];
     setItems(arr); setTotal(arr.reduce((s, it) => s + it.price * it.qty, 0));
   }, []);
-  function updateQty(id: string, qty: number) {
-    const arr = items.map(it => it.productId === id ? { ...it, qty } : it);
+  function updateQty(productId: string, note: string | null | undefined, qty: number) {
+    const arr = items.map((it) =>
+      it.productId === productId && (it.note ?? "") === (note ?? "")
+        ? { ...it, qty }
+        : it,
+    );
     setItems(arr); localStorage.setItem('cart', JSON.stringify(arr));
     setTotal(arr.reduce((s, it) => s + it.price * it.qty, 0));
   }
-  function removeItem(id: string) {
-    const arr = items.filter(it => it.productId !== id);
+  function removeItem(productId: string, note: string | null | undefined) {
+    const arr = items.filter((it) => !(it.productId === productId && (it.note ?? "") === (note ?? "")));
     setItems(arr); localStorage.setItem('cart', JSON.stringify(arr));
     setTotal(arr.reduce((s, it) => s + it.price * it.qty, 0));
   }
@@ -28,13 +41,17 @@ export default function CartPage() {
         <tbody>
         {items.map(it => {
           const sub = it.price * it.qty;
+          const key = `${it.productId}::${it.note ?? ''}`;
           return (
-            <tr key={it.productId} className="border-b">
-              <td className="py-2"><div className="font-medium">{it.title}</div></td>
+            <tr key={key} className="border-b">
+              <td className="py-2">
+                <div className="font-medium">{it.title}</div>
+                {it.note ? <div className="text-xs text-gray-500">Catatan: {it.note}</div> : null}
+              </td>
               <td>Rp {new Intl.NumberFormat('id-ID').format(it.price)}</td>
-              <td><input type="number" min={1} value={it.qty} onChange={(e)=>updateQty(it.productId, Math.max(1, parseInt(e.target.value||'1')))} className="border rounded px-2 py-1 w-16"/></td>
+              <td><input type="number" min={1} value={it.qty} onChange={(e)=>updateQty(it.productId, it.note ?? null, Math.max(1, parseInt(e.target.value||'1')))} className="border rounded px-2 py-1 w-16"/></td>
               <td>Rp {new Intl.NumberFormat('id-ID').format(sub)}</td>
-              <td><button className="px-3 py-1 text-sky-600 transition hover:text-sky-500" onClick={()=>removeItem(it.productId)}>Hapus</button></td>
+              <td><button className="px-3 py-1 text-sky-600 transition hover:text-sky-500" onClick={()=>removeItem(it.productId, it.note ?? null)}>Hapus</button></td>
             </tr>
           );
         })}

@@ -1,7 +1,15 @@
 "use client";
 import { useEffect, useState } from "react";
 
-type CartItem = { productId: string; title: string; price: number; qty: number; sellerId: string };
+type CartItem = {
+  productId: string;
+  title: string;
+  price: number;
+  qty: number;
+  sellerId: string;
+  note?: string | null;
+  variants?: Record<string, string>;
+};
 
 type CheckoutAccountData = {
   profile: {
@@ -302,7 +310,16 @@ export default function CheckoutPage() {
     }
 
     const fd = new FormData(e.currentTarget);
-    fd.append('items', JSON.stringify(items));
+    fd.append(
+      'items',
+      JSON.stringify(
+        items.map((item) => ({
+          productId: item.productId,
+          qty: item.qty,
+          note: item.note ?? undefined,
+        })),
+      ),
+    );
     fd.append('courier', courier);
 
     setSubmitting(true);
@@ -519,12 +536,24 @@ export default function CheckoutPage() {
       <div className="bg-white border rounded p-4">
         <h2 className="font-semibold mb-2">Ringkasan</h2>
         <ul className="text-sm">
-          {items.map(it => (
-            <li key={it.productId} className="flex justify-between border-b py-1">
-              <span>{it.title} × {it.qty}</span>
-              <span>Rp {new Intl.NumberFormat('id-ID').format(it.price*it.qty)}</span>
-            </li>
-          ))}
+          {items.map((it) => {
+            const key = `${it.productId}::${it.note ?? ''}`;
+            return (
+              <li key={key} className="border-b py-1">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <span className="block font-medium text-gray-800">
+                      {it.title} × {it.qty}
+                    </span>
+                    {it.note ? (
+                      <span className="mt-0.5 block text-xs text-gray-500">Catatan: {it.note}</span>
+                    ) : null}
+                  </div>
+                  <span>Rp {new Intl.NumberFormat('id-ID').format(it.price * it.qty)}</span>
+                </div>
+              </li>
+            );
+          })}
         </ul>
         <div className="space-y-2 text-sm mt-4">
           <div className="flex items-center justify-between">

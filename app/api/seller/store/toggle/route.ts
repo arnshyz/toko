@@ -42,7 +42,12 @@ export async function POST(req: NextRequest) {
   if (account.storeIsOnline !== shouldOnline) {
     await prisma.user.update({
       where: { id: user.id },
-      data: { storeIsOnline: shouldOnline },
+      data: { storeIsOnline: shouldOnline, lastActiveAt: new Date() } as any,
+    });
+  } else {
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { lastActiveAt: new Date() } as any,
     });
   }
 

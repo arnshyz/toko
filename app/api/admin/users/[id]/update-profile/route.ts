@@ -108,12 +108,13 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         slug: slug.trim().toLowerCase(),
         storeBadge: badge as StoreBadgeValue,
         storeIsOnline,
+        lastActiveAt: new Date(),
         storeRating,
         storeRatingCount,
         storeFollowers,
         storeFollowing,
         avatarUrl: avatarUrlValue,
-      },
+      } as any,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Gagal memperbarui pengguna";
