@@ -4,6 +4,7 @@ import { formatIDR } from "@/lib/utils";
 import { calculateFlashSalePrice, getActiveFlashSale } from "@/lib/flash-sale";
 import { getPrimaryProductImageSrc } from "@/lib/productImages";
 import { resolveStoreBadgeStyle } from "@/lib/store-badges";
+import { VerifiedBadge } from "@/components/VerifiedBadge";
 
 function formatCompactNumber(value: number) {
   return new Intl.NumberFormat("id-ID", { notation: "compact", maximumFractionDigits: 1 }).format(value);
@@ -42,6 +43,7 @@ export default async function Storefront({ params }: { params: { slug: string } 
   const categoryDataset = await getCategoryDataset();
   const categoryInfoMap = categoryDataset.infoBySlug;
 
+  const sellerRecord = seller as typeof seller & { isVerified?: boolean | null };
   const badge = resolveStoreBadgeStyle(seller.storeBadge);
   const isOnline = seller.storeIsOnline ?? false;
   const followers = seller.storeFollowers ?? 0;
@@ -52,6 +54,7 @@ export default async function Storefront({ params }: { params: { slug: string } 
     ? `${ratingValue.toFixed(1)} (${formatCompactNumber(ratingCount)} penilaian)`
     : "Belum ada penilaian";
   const joinedLabel = formatJoinedSince(seller.createdAt);
+  const sellerVerified = Boolean(sellerRecord.isVerified);
 
   return (
     <div className="space-y-8">
@@ -95,7 +98,10 @@ export default async function Storefront({ params }: { params: { slug: string } 
               <div className="flex flex-col items-start gap-3 md:flex-row md:items-center md:justify-between">
                 <div>
                   <div className="flex items-center gap-2 text-lg font-semibold text-gray-900">
-                    {seller.name}
+                    <span className="flex items-center gap-1">
+                      <span>{seller.name}</span>
+                      {sellerVerified ? <VerifiedBadge size={16} /> : null}
+                    </span>
                     <span
                       className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${isOnline ? "border-emerald-200 bg-emerald-50 text-emerald-600" : "border-gray-200 bg-gray-50 text-gray-500"}`}
                     >

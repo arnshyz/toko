@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { formatIDR } from "@/lib/utils";
 import { getCategoryDataset } from "@/lib/categories";
 import { ProductPurchaseOptions } from "@/components/ProductPurchaseOptions";
+import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { VariantGroup } from "@/types/product";
 import {
   getPrimaryProductImageSrc,
@@ -251,7 +252,12 @@ export default async function ProductPage({ params }: { params: { slug: string }
       },
       orderBy: { createdAt: "desc" },
       include: {
-        buyer: { select: { name: true, avatarUrl: true } },
+        buyer: {
+          select: {
+            name: true,
+            avatarUrl: true,
+          },
+        },
         order: {
           select: {
             orderCode: true,
@@ -289,6 +295,23 @@ export default async function ProductPage({ params }: { params: { slug: string }
 
   const likedReviewIds = new Set(likedReviewRows.map((row) => row.reviewId));
 
+  const buyerIds = Array.from(
+    new Set(
+      productReviews
+        .map((review) => review.buyerId)
+        .filter((buyerId): buyerId is string => typeof buyerId === "string" && buyerId.length > 0)
+    )
+  );
+  const verifiedBuyerRows = buyerIds.length
+    ? ((await prisma.user.findMany({
+        where: { id: { in: buyerIds } },
+        select: { id: true, isVerified: true },
+      } as any)) as { id: string; isVerified?: boolean | null }[])
+    : [];
+  const verifiedBuyerIds = new Set(
+    verifiedBuyerRows.filter((row) => row.isVerified).map((row) => row.id)
+  );
+
   const category = categoryInfoMap.get(product.category);
   const originalPrice = typeof product.originalPrice === "number" ? product.originalPrice : null;
   const activeFlashSale = getActiveFlashSale(product.flashSales ?? [], now);
@@ -318,6 +341,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
   const primaryImage = getPrimaryProductImageSrc(product);
 
   const seller = product.seller;
+  const sellerRecord = seller as typeof seller & { isVerified?: boolean | null };
   const badge = resolveStoreBadgeStyle(seller.storeBadge);
   const isOnline = seller.storeIsOnline ?? false;
   const followers = seller.storeFollowers ?? 0;
@@ -333,6 +357,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
 
   const soldCount = product._count?.orderItems ?? 0;
   const totalSellerProducts = siblingProducts.length + 1;
+  const sellerVerified = Boolean(sellerRecord.isVerified);
   const favoriteEstimate = Math.max(18, Math.round(salePrice / 50000));
   const specifications: { label: string; value: string }[] = [
     { label: "Kategori", value: `${categoryEmoji} ${categoryLabel}` },
@@ -597,7 +622,10 @@ export default async function ProductPage({ params }: { params: { slug: string }
                 </div>
                 <div className="space-y-1">
                   <div className="flex flex-wrap items-center gap-2 text-lg font-semibold text-gray-900">
-                    {seller.name}
+                    <span className="flex items-center gap-1">
+                      <span>{seller.name}</span>
+                      {sellerVerified ? <VerifiedBadge size={16} /> : null}
+                    </span>
                     <span
                       className={`inline-flex items-center rounded-full text-[11px] font-semibold ${
                         badge.imageSrc ? "" : "px-2 py-0.5"
@@ -710,12 +738,19 @@ export default async function ProductPage({ params }: { params: { slug: string }
             {productReviews.length > 0 ? (
               <div className="space-y-4">
                 {productReviews.map((review) => {
-                  const buyerName = review.buyer.name.trim() || "Pembeli";
-                  const firstItem = review.order.items[0];
+                  const reviewWithRelations = review as typeof review & {
+                    buyer: { name: string; avatarUrl: string | null };
+                    order: { items: { id: string; qty: number }[] };
+                    _count: { helpfulVotes?: number | null };
+                  };
+                  const buyerRecord = reviewWithRelations.buyer;
+                  const buyerName = buyerRecord.name.trim() || "Pembeli";
+                  const buyerVerified = verifiedBuyerIds.has(review.buyerId);
+                  const firstItem = reviewWithRelations.order.items[0];
                   const purchaseInfo = firstItem
                     ? `${firstItem.qty} barang dibeli`
                     : "Pesanan diverifikasi";
-                  const helpfulCount = review._count.helpfulVotes ?? 0;
+                  const helpfulCount = reviewWithRelations._count.helpfulVotes ?? 0;
                   const likedByCurrentUser = likedReviewIds.has(review.id);
                   const isOwnReview = currentUserId ? review.buyerId === currentUserId : false;
 
@@ -723,7 +758,10 @@ export default async function ProductPage({ params }: { params: { slug: string }
                     <article key={review.id} className="space-y-3 rounded-xl border border-gray-100 p-4">
                       <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-gray-500">
                         <div className="flex items-center gap-2 font-semibold text-gray-700">
-                          <span>{buyerName}</span>
+                          <span className="flex items-center gap-1">
+                            <span>{buyerName}</span>
+                            {buyerVerified ? <VerifiedBadge size={14} /> : null}
+                          </span>
                           <span className="flex gap-0.5 text-sky-500">{renderStars(review.rating)}</span>
                         </div>
                         <span>{formatRelativeTime(review.createdAt)}</span>
