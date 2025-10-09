@@ -102,13 +102,13 @@ export function SiteHeader({ user, categories, siteSettings }: SiteHeaderProps) 
       <div className="hidden border-b border-white/20 md:block">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-2 text-xs">
           <div className="flex items-center gap-4">
-            <Link href="/seller/login" className="hover:underline">
+            <Link href="/seller/dashboard" className="hover:underline">
               Mulai Jualan
             </Link>
-            <Link href="/help" className="hover:underline">
+            <Link href="/seller/dashboard" className="hover:underline">
               Bantuan
             </Link>
-            <Link href="/promo" className="hover:underline">
+            <Link href="/seller/dashboard" className="hover:underline">
               Promo Harian
             </Link>
           </div>
