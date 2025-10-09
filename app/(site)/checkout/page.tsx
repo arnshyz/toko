@@ -67,6 +67,10 @@ export default function CheckoutPage() {
   const [shippingQuoteError, setShippingQuoteError] = useState<string | null>(null);
   const [shippingQuoteUsedFallback, setShippingQuoteUsedFallback] = useState(false);
   const [shippingQuoteReason, setShippingQuoteReason] = useState<string | null>(null);
+  const [voucherCode, setVoucherCode] = useState("");
+  const [voucherChecking, setVoucherChecking] = useState(false);
+  const [voucherMessage, setVoucherMessage] = useState<string | null>(null);
+  const [voucherDiscount, setVoucherDiscount] = useState(0);
   const hasPrefilledAddress = Boolean(accountData?.defaultAddress);
 
   useEffect(() => {
@@ -113,6 +117,79 @@ export default function CheckoutPage() {
     setItems(arr);
     setTotal(arr.reduce((s, it) => s + it.price * it.qty, 0));
   }, []);
+
+  useEffect(() => {
+    const trimmedCode = voucherCode.trim();
+
+    if (!trimmedCode) {
+      setVoucherDiscount(0);
+      setVoucherMessage(null);
+      setVoucherChecking(false);
+      return;
+    }
+
+    if (total <= 0) {
+      setVoucherDiscount(0);
+      setVoucherMessage('Tambahkan produk ke keranjang untuk menggunakan voucher.');
+      setVoucherChecking(false);
+      return;
+    }
+
+    let cancelled = false;
+    const controller = new AbortController();
+    setVoucherChecking(true);
+    setVoucherMessage(null);
+
+    const timer = setTimeout(async () => {
+      try {
+        const response = await fetch('/api/vouchers/preview', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ code: trimmedCode, itemsTotal: total }),
+          signal: controller.signal,
+        });
+
+        const payload = (await response.json().catch(() => null)) as
+          | { valid?: boolean; discount?: number; message?: string }
+          | null;
+
+        if (cancelled) {
+          return;
+        }
+
+        if (!response.ok || !payload) {
+          throw new Error('Voucher tidak dapat diverifikasi saat ini.');
+        }
+
+        if (payload.valid && typeof payload.discount === 'number') {
+          setVoucherDiscount(payload.discount);
+          setVoucherMessage(payload.message ?? 'Voucher berhasil diterapkan.');
+        } else {
+          setVoucherDiscount(0);
+          setVoucherMessage(payload.message ?? 'Voucher tidak valid untuk pesanan ini.');
+        }
+      } catch (error) {
+        if (cancelled) {
+          return;
+        }
+
+        setVoucherDiscount(0);
+        const message =
+          error instanceof Error ? error.message : 'Voucher tidak dapat diverifikasi saat ini.';
+        setVoucherMessage(message);
+      } finally {
+        if (!cancelled) {
+          setVoucherChecking(false);
+        }
+      }
+    }, 400);
+
+    return () => {
+      cancelled = true;
+      controller.abort();
+      clearTimeout(timer);
+    };
+  }, [total, voucherCode]);
 
   useEffect(() => {
     let cancelled = false;
@@ -264,6 +341,9 @@ export default function CheckoutPage() {
     (missingPrefilledFields ?? false) ||
     !courier;
 
+  const selectedCourier = couriers.find((option) => option.key === courier) ?? null;
+  const estimatedShipping = shippingQuote ?? selectedCourier?.fallbackCost ?? null;
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div className="bg-white border rounded p-4">
@@ -409,8 +489,26 @@ export default function CheckoutPage() {
 
           <div>
             <label className="block text-sm mb-1">Voucher</label>
-            <input name="voucher" placeholder="KODEVOUCHER" className="border rounded w-full px-3 py-2"/>
-            <p className="text-xs text-gray-500 mt-1">* Potongan diterapkan ke total barang (belum termasuk ongkir & kode unik).</p>
+            <input
+              name="voucher"
+              value={voucherCode}
+              onChange={(event) => {
+                setVoucherCode(event.target.value.toUpperCase());
+              }}
+              placeholder="KODEVOUCHER"
+              className="border rounded w-full px-3 py-2 uppercase"
+            />
+            {voucherChecking ? (
+              <p className="text-xs text-gray-500 mt-1">Memeriksa kode voucher…</p>
+            ) : voucherMessage ? (
+              <p className={`text-xs mt-1 ${voucherDiscount > 0 ? "text-emerald-600" : "text-red-600"}`}>
+                {voucherMessage}
+              </p>
+            ) : (
+              <p className="text-xs text-gray-500 mt-1">
+                * Potongan diterapkan ke total barang (belum termasuk ongkir & kode unik).
+              </p>
+            )}
           </div>
 
           <button className="btn-primary disabled:opacity-60" disabled={disableSubmit}>
@@ -428,8 +526,40 @@ export default function CheckoutPage() {
             </li>
           ))}
         </ul>
-        <div className="text-right mt-3 font-semibold">Total barang: Rp {new Intl.NumberFormat('id-ID').format(total)}</div>
-        <p className="text-xs text-gray-500 mt-1">Total final termasuk ongkir & (jika transfer) kode unik akan muncul di halaman pesanan.</p>
+        <div className="space-y-2 text-sm mt-4">
+          <div className="flex items-center justify-between">
+            <span>Subtotal barang</span>
+            <span>Rp {new Intl.NumberFormat('id-ID').format(total)}</span>
+          </div>
+          {voucherDiscount > 0 ? (
+            <div className="flex items-center justify-between text-emerald-600">
+              <span>Diskon voucher</span>
+              <span>- Rp {new Intl.NumberFormat('id-ID').format(voucherDiscount)}</span>
+            </div>
+          ) : null}
+          <div className="flex items-center justify-between">
+            <span>Estimasi ongkir</span>
+            {estimatedShipping !== null ? (
+              <span>
+                {shippingQuote === null ? '≈ ' : ''}Rp {new Intl.NumberFormat('id-ID').format(estimatedShipping)}
+              </span>
+            ) : (
+              <span className="text-gray-500">Ditentukan saat membuat pesanan</span>
+            )}
+          </div>
+          <div className="flex items-center justify-between border-t pt-2 font-semibold">
+            <span>Perkiraan total</span>
+            <span>
+              Rp{' '}
+              {new Intl.NumberFormat('id-ID').format(
+                Math.max(0, total - voucherDiscount) + (estimatedShipping ?? 0)
+              )}
+            </span>
+          </div>
+        </div>
+        <p className="text-xs text-gray-500 mt-3">
+          Total final termasuk ongkir aktual & kode unik (untuk transfer manual) akan muncul di halaman pesanan.
+        </p>
       </div>
     </div>
   );
