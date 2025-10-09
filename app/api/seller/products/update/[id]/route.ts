@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getIronSession } from "iron-session";
 import { sessionOptions, SessionUser } from "@/lib/session";
 import { buildVariantPayload, parseVariantInput, resolveCategorySlug } from "@/lib/product-form";
+import { DEFAULT_ITEM_WEIGHT_GRAMS } from "@/lib/shipping";
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const form = await req.formData();
@@ -43,6 +44,9 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const stockInput = String(form.get('stock') || '').trim();
   const parsedStock = Number.parseInt(stockInput, 10);
   const stock = Number.isFinite(parsedStock) ? Math.max(parsedStock, 0) : 0;
+  const weightInput = String(form.get('weight') || '').trim();
+  const parsedWeight = Number.parseInt(weightInput, 10);
+  const weight = Number.isFinite(parsedWeight) && parsedWeight > 0 ? parsedWeight : DEFAULT_ITEM_WEIGHT_GRAMS;
   const originalPriceValue = String(form.get('originalPrice') || '').trim();
   const parsedOriginalPrice = originalPriceValue ? Number.parseInt(originalPriceValue, 10) : NaN;
   const originalPrice = Number.isFinite(parsedOriginalPrice) && parsedOriginalPrice > 0 ? parsedOriginalPrice : null;
@@ -61,15 +65,18 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const variantGroups = parseVariantInput(variantsRaw);
   const variantPayload = buildVariantPayload(variantGroups);
 
+  const resolvedCategory = await resolveCategorySlug(categoryRaw);
+
   await prisma.product.update({
     where: { id: prod.id },
     data: {
       title,
       price,
       stock,
+      weight,
       description,
       warehouseId: warehouseId || null,
-      category: resolveCategorySlug(categoryRaw),
+      category: resolvedCategory,
       originalPrice: finalOriginalPrice,
       variantOptions: variantPayload ?? Prisma.JsonNull,
     },

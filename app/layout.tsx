@@ -1,10 +1,25 @@
+import type { Metadata } from "next";
+
 import "./globals.css";
 
+import { getSiteSettings } from "@/lib/site-settings";
 
-export const metadata = {
-  title: "Akay Nusantara",
-  description: "Marketplace dengan transfer manual, COD, multi-gudang, voucher & retur",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const siteSettings = await getSiteSettings();
+  const title = siteSettings.pageTitle || siteSettings.siteName;
+  const icons: Metadata["icons"] = siteSettings.faviconUrl
+    ? [
+        { rel: "icon", url: siteSettings.faviconUrl },
+        { rel: "icon", url: "/favicon.ico" },
+      ]
+    : [{ rel: "icon", url: "/favicon.ico" }];
+
+  return {
+    title,
+    description: siteSettings.siteDescription,
+    icons,
+  };
+}
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

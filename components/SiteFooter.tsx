@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import type { SiteSettings } from "@/lib/site-settings";
+
 const customerServiceLinks = [
   { label: "Bantuan", href: "#" },
   { label: "Metode Pembayaran", href: "#" },
@@ -164,15 +166,38 @@ const downloadButtons = [
   },
 ];
 
-export function SiteFooter() {
+type SiteFooterProps = {
+  siteSettings: SiteSettings;
+};
+
+export function SiteFooter({ siteSettings }: SiteFooterProps) {
   const year = new Date().getFullYear();
   const bankName = process.env.BANK_NAME ?? "Bank Contoh";
   const accountName = process.env.ACCOUNT_NAME ?? "Nama Rekening";
   const bankAccount = process.env.BANK_ACCOUNT ?? "0000000000";
+  const displayName = siteSettings.siteName;
+  const description = siteSettings.siteDescription;
+  const logoUrl = siteSettings.logoUrl;
 
   return (
     <footer className="mt-16 border-t border-gray-200 bg-white text-sm text-gray-600">
       <div className="mx-auto max-w-6xl px-4 py-12">
+        <div className="mb-10 grid gap-4 text-center md:grid-cols-[auto_1fr] md:items-center md:text-left">
+          <div className="flex items-center justify-center gap-3 md:justify-start">
+            {logoUrl ? (
+              <span className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-gray-200 bg-white">
+                <img src={logoUrl} alt={displayName} className="h-full w-full object-cover" loading="lazy" />
+              </span>
+            ) : (
+              <span aria-hidden className="text-3xl">🛍️</span>
+            )}
+            <div className="text-left">
+              <h2 className="text-xl font-semibold text-gray-800">{displayName}</h2>
+              <p className="text-xs text-gray-500">Platform marketplace terpercaya</p>
+            </div>
+          </div>
+          <p className="text-sm text-gray-600 md:max-w-2xl">{description}</p>
+        </div>
         <div className="grid gap-10 md:grid-cols-5">
           <div>
             <h2 className="text-base font-semibold text-gray-800">Layanan Pelanggan</h2>
@@ -295,7 +320,7 @@ export function SiteFooter() {
           <div>
             Transfer ke: <strong>{bankName} - {accountName}</strong> | No. Rek: <strong>{bankAccount}</strong>
           </div>
-          <div>© {year} Akay Nusantara. Semua hak dilindungi.</div>
+          <div>© {year} {displayName}. Semua hak dilindungi.</div>
         </div>
       </div>
     </footer>

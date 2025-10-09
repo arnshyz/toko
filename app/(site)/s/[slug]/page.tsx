@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { getCategoryInfo } from "@/lib/categories";
+import { getCategoryDataset } from "@/lib/categories";
 import { formatIDR } from "@/lib/utils";
 import { calculateFlashSalePrice, getActiveFlashSale } from "@/lib/flash-sale";
 import { getPrimaryProductImageSrc } from "@/lib/productImages";
@@ -38,6 +38,9 @@ export default async function Storefront({ params }: { params: { slug: string } 
       },
     },
   });
+
+  const categoryDataset = await getCategoryDataset();
+  const categoryInfoMap = categoryDataset.infoBySlug;
 
   const badge = resolveStoreBadgeStyle(seller.storeBadge);
   const isOnline = seller.storeIsOnline ?? false;
@@ -160,7 +163,7 @@ export default async function Storefront({ params }: { params: { slug: string } 
         ) : (
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
             {products.map((p) => {
-              const category = getCategoryInfo(p.category);
+              const category = categoryInfoMap.get(p.category);
               const categoryLabel = category?.name ?? p.category.replace(/-/g, " ");
               const categoryEmoji = category?.emoji ?? "🏷️";
               const originalPrice = typeof p.originalPrice === "number" ? p.originalPrice : null;

@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
-import { productCategories, productCategoryOptions, getCategoryInfo } from "@/lib/categories";
+import { getCategoryDataset } from "@/lib/categories";
 import { formatFlashSaleWindow, isFlashSaleActive } from "@/lib/flash-sale";
 
 export const dynamic = 'force-dynamic';
@@ -55,7 +55,7 @@ export default async function SellerProducts({
 
   const now = new Date();
 
-  const [products, warehouses] = await Promise.all([
+  const [products, warehouses, categoryDataset] = await Promise.all([
     prisma.product.findMany({
       where: { sellerId: user.id },
       orderBy: { createdAt: "desc" },
@@ -67,10 +67,15 @@ export default async function SellerProducts({
         },
       },
     }),
-    prisma.warehouse.findMany({ where: { ownerId: user.id }, orderBy: { createdAt: "desc" } })
+    prisma.warehouse.findMany({ where: { ownerId: user.id }, orderBy: { createdAt: "desc" } }),
+    getCategoryDataset(),
   ]);
 
-  const categoryLabel = (slug: string) => getCategoryInfo(slug)?.name ?? slug.replace(/-/g, ' ');
+  const productCategories = categoryDataset.categories;
+  const productCategoryOptions = categoryDataset.options;
+  const categoryInfoMap = categoryDataset.infoBySlug;
+
+  const categoryLabel = (slug: string) => categoryInfoMap.get(slug)?.name ?? slug.replace(/-/g, ' ');
 
   const updatedFlag = typeof searchParams?.updated === 'string' || Array.isArray(searchParams?.updated);
 
@@ -136,6 +141,14 @@ export default async function SellerProducts({
             type="number"
             placeholder="Stok"
             className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+          />
+          <input
+            name="weight"
+            type="number"
+            min={1}
+            placeholder="Berat (gram)"
+            className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"
+            required
           />
           <label className="space-y-2 text-sm md:col-span-2">
             <span className="font-medium text-gray-700">Gambar Produk</span>

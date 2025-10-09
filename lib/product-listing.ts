@@ -3,7 +3,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { calculateFlashSalePrice, getActiveFlashSale } from "@/lib/flash-sale";
 import { getPrimaryProductImageSrc } from "@/lib/productImages";
-import { getCategoryInfo, getCategoryWithChildrenSlugs } from "@/lib/categories";
+import { getCategoryDataset } from "@/lib/categories";
 import { getProductRatingSummary } from "@/lib/product-ratings";
 
 export type ProductListingFilters = {
@@ -35,9 +35,29 @@ export type ProductListingItem = {
 };
 
 export async function fetchProductListing(filters: ProductListingFilters) {
-  const categorySlugs = filters.categorySlug
-    ? getCategoryWithChildrenSlugs(filters.categorySlug)
-    : undefined;
+  const categoryDataset = await getCategoryDataset();
+  const categoryInfoMap = categoryDataset.infoBySlug;
+
+  const categorySlugs = (() => {
+    if (!filters.categorySlug) {
+      return undefined;
+    }
+
+    const info = categoryInfoMap.get(filters.categorySlug);
+    if (!info) {
+      return undefined;
+    }
+
+    if (info.parentSlug) {
+      return [info.slug];
+    }
+
+    const childSlugs = categoryDataset.options
+      .filter((option) => option.parentSlug === info.slug)
+      .map((option) => option.slug);
+
+    return [info.slug, ...childSlugs];
+  })();
 
   const where: Prisma.ProductWhereInput = {
     isActive: true,
@@ -91,7 +111,7 @@ export async function fetchProductListing(filters: ProductListingFilters) {
   const ratingSummary = await getProductRatingSummary(products.map((product) => product.id));
 
   const items: ProductListingItem[] = products.map((product) => {
-    const category = getCategoryInfo(product.category);
+    const category = categoryInfoMap.get(product.category);
     const activeFlashSale = getActiveFlashSale(product.flashSales ?? [], now);
     const salePrice = activeFlashSale
       ? calculateFlashSalePrice(product.price, activeFlashSale)

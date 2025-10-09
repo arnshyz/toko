@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getIronSession } from "iron-session";
 
 import { prisma } from "@/lib/prisma";
+import { getProductCategoryOptions } from "@/lib/categories";
 import { sessionOptions, SessionUser } from "@/lib/session";
 
 function parseNumber(value: FormDataEntryValue | null, label: string) {
@@ -37,6 +38,13 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     return NextResponse.redirect(new URL(`/admin/products?error=${encodeURIComponent("Kategori wajib diisi")}`, req.url));
   }
 
+  const categoryOptions = await getProductCategoryOptions();
+  const trimmedCategory = category.trim();
+  const fallbackCategory = categoryOptions[0]?.slug ?? "umum";
+  const finalCategory = categoryOptions.some((option) => option.slug === trimmedCategory)
+    ? trimmedCategory
+    : fallbackCategory;
+
   let price: number;
   let stock: number;
   try {
@@ -57,7 +65,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       where: { id: params.id },
       data: {
         title: title.trim(),
-        category: category.trim(),
+        category: finalCategory,
         description: typeof description === "string" ? description : null,
         price,
         stock,

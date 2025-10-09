@@ -72,6 +72,7 @@ model Product {
   description  String?
   price        Int
   originalPrice Int?
+  weight       Int      @default(1000)
   variantOptions Json?
   category     String     @default("umum")
   stock        Int        @default(0)
@@ -84,6 +85,48 @@ model Product {
   orderItems   OrderItem[]
   images       ProductImage[]
   flashSales   FlashSale[]
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  description String?
+  emoji       String?
+  parentId    String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  parent   Category? @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryHierarchy")
+
+  @@index([parentId])
+}
+
+model Courier {
+  id               String   @id @default(cuid())
+  key              String   @unique
+  label            String
+  fallbackCost     Int
+  rajaOngkirCourier String
+  rajaOngkirService String
+  sortOrder        Int      @default(0)
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model SiteSetting {
+  id              String   @id @default("site")
+  siteName        String
+  siteDescription String?
+  logoUrl         String?
+  pageTitle       String?
+  faviconUrl      String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 enum Gender {

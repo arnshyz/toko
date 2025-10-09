@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { fetchProductListing } from "@/lib/product-listing";
-import { getCategoryInfo, productCategories, productCategoryOptions } from "@/lib/categories";
+import { getCategoryDataset } from "@/lib/categories";
 import { ProductCard } from "@/components/ProductCard";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +16,8 @@ export default async function CategoryDetailPage({
   searchParams?: Record<string, string | string[] | undefined>;
 }) {
   const { slug } = params;
-  const category = getCategoryInfo(slug);
+  const categoryDataset = await getCategoryDataset();
+  const category = categoryDataset.infoBySlug.get(slug);
   const sortRaw = searchParams?.sort;
   const allowedSort: CategorySort[] = ["best", "sold", "rating", "price-asc", "price-desc"];
   const sort =
@@ -30,21 +31,21 @@ export default async function CategoryDetailPage({
   });
 
   const parentCategory = category?.parentSlug
-    ? productCategories.find((item) => item.slug === category.parentSlug)
+    ? categoryDataset.categories.find((item) => item.slug === category.parentSlug)
     : category?.parent;
 
-  let relatedSubCategories = [] as typeof productCategoryOptions;
+  let relatedSubCategories = [] as typeof categoryDataset.options;
   if (category?.parentSlug) {
-    relatedSubCategories = productCategoryOptions.filter(
+    relatedSubCategories = categoryDataset.options.filter(
       (option) => option.parentSlug === category.parentSlug,
     );
   } else if (category?.parent?.slug) {
     const parentSlug = category.parent.slug;
-    relatedSubCategories = productCategoryOptions.filter(
+    relatedSubCategories = categoryDataset.options.filter(
       (option) => option.parentSlug === parentSlug,
     );
   } else if (category?.slug) {
-    relatedSubCategories = productCategoryOptions.filter(
+    relatedSubCategories = categoryDataset.options.filter(
       (option) => option.parentSlug === category.slug,
     );
   }

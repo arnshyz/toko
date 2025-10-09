@@ -1,3 +1,5 @@
+import { prisma } from "@/lib/prisma";
+
 export type ProductSubCategory = {
   slug: string;
   name: string;
@@ -21,66 +23,179 @@ export type CategoryOption = {
   parentName?: string;
 };
 
-export const productCategories: ProductCategory[] = [
-  { slug: "elektronik", name: "Elektronik", description: "Gadget & aksesoris", emoji: "🔌" },
-  { slug: "fashion", name: "Fashion", description: "Gaya terkini", emoji: "👗" },
-  { slug: "rumah-tangga", name: "Rumah Tangga", description: "Peralatan rumah", emoji: "🏠" },
-  { slug: "kecantikan", name: "Kecantikan", description: "Perawatan diri", emoji: "💄" },
-  { slug: "olahraga", name: "Olahraga", description: "Perlengkapan sport", emoji: "🏃" },
-  { slug: "hobi", name: "Hobi", description: "Koleksi & hobi", emoji: "🎨" },
-  { slug: "otomotif", name: "Otomotif", description: "Aksesoris kendaraan", emoji: "🚗" },
-  { slug: "makanan", name: "Makanan & Minuman", description: "Kuliner Nusantara", emoji: "🍜" },
-  {
-    slug: "produk-digital",
-    name: "Produk Digital",
-    description: "Produk virtual, software, dan layanan instan",
-    emoji: "💾",
-    subCategories: [
-      { slug: "produk-digital-akun", name: "Akun" },
-      { slug: "produk-digital-tools-software", name: "Tools & Software" },
-      { slug: "produk-digital-voucher", name: "Voucher" },
-      { slug: "produk-digital-jasa", name: "Jasa" },
-      { slug: "produk-digital-desain-grafis", name: "Desain Grafis" },
-      { slug: "produk-digital-ebook-template", name: "Ebook & Template" },
-    ],
-  },
-];
+export type CategoryInfo = CategoryOption & { parent?: ProductCategory };
 
-export const productCategoryOptions: CategoryOption[] = productCategories.flatMap((category) => {
-  const baseOption: CategoryOption = {
-    slug: category.slug,
-    name: category.name,
-    description: category.description,
-    emoji: category.emoji,
-  };
+type CategoryDataset = {
+  categories: ProductCategory[];
+  options: CategoryOption[];
+  infoBySlug: Map<string, CategoryInfo>;
+};
 
-  const children = (category.subCategories ?? []).map<CategoryOption>((sub) => ({
-    slug: sub.slug,
-    name: sub.name,
-    description: sub.description ?? category.description,
-    emoji: category.emoji,
-    parentSlug: category.slug,
-    parentName: category.name,
-  }));
+type CategoryRecord = {
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  emoji: string | null;
+  parentId: string | null;
+};
 
-  return [baseOption, ...children];
-});
+const FALLBACK_CATEGORY: ProductCategory = {
+  slug: "umum",
+  name: "Umum",
+  description: "Semua produk",
+  emoji: "🛒",
+};
 
-export function getCategoryInfo(slug: string) {
-  const info = productCategoryOptions.find((category) => category.slug === slug);
-  if (!info) {
-    return undefined;
+const FALLBACK_OPTION: CategoryOption = {
+  slug: FALLBACK_CATEGORY.slug,
+  name: FALLBACK_CATEGORY.name,
+  description: FALLBACK_CATEGORY.description,
+  emoji: FALLBACK_CATEGORY.emoji,
+};
+
+function ensureDescription(...values: (string | null | undefined)[]) {
+  for (const value of values) {
+    if (typeof value === "string" && value.trim()) {
+      return value.trim();
+    }
   }
-
-  const parent = info.parentSlug
-    ? productCategories.find((category) => category.slug === info.parentSlug)
-    : undefined;
-
-  return { ...info, parent };
+  return "Temukan produk pilihan";
 }
 
-export function getCategoryWithChildrenSlugs(slug: string) {
-  const info = getCategoryInfo(slug);
+function ensureEmoji(value: string | null | undefined) {
+  return value && value.trim() ? value.trim() : "🏷️";
+}
+
+function buildDataset(records: CategoryRecord[]): CategoryDataset {
+  if (records.length === 0) {
+    const infoBySlug = new Map<string, CategoryInfo>();
+    infoBySlug.set(FALLBACK_OPTION.slug, { ...FALLBACK_OPTION });
+    return {
+      categories: [FALLBACK_CATEGORY],
+      options: [FALLBACK_OPTION],
+      infoBySlug,
+    };
+  }
+
+  const byId = new Map(records.map((record) => [record.id, record] as const));
+  const byParent = new Map<string, CategoryRecord[]>();
+  const rootCandidates: CategoryRecord[] = [];
+
+  for (const record of records) {
+    if (!record.parentId || !byId.has(record.parentId)) {
+      rootCandidates.push(record);
+    }
+    if (record.parentId) {
+      const list = byParent.get(record.parentId) ?? [];
+      list.push(record);
+      byParent.set(record.parentId, list);
+    }
+  }
+
+  if (!rootCandidates.length) {
+    rootCandidates.push(...records);
+  }
+
+  const uniqueRoots = Array.from(new Set(rootCandidates.map((record) => record.id))).map(
+    (id) => byId.get(id)!,
+  );
+
+  const infoBySlug = new Map<string, CategoryInfo>();
+  const options: CategoryOption[] = [];
+
+  const categories: ProductCategory[] = uniqueRoots.map((root) => {
+    const description = ensureDescription(root.description);
+    const emoji = ensureEmoji(root.emoji);
+
+    const children = (byParent.get(root.id) ?? []).map<ProductSubCategory>((child) => ({
+      slug: child.slug,
+      name: child.name,
+      description: child.description ?? description,
+    }));
+
+    const category: ProductCategory = {
+      slug: root.slug,
+      name: root.name,
+      description,
+      emoji,
+      subCategories: children.length ? children : undefined,
+    };
+
+    const baseOption: CategoryOption = {
+      slug: category.slug,
+      name: category.name,
+      description: category.description,
+      emoji: category.emoji,
+    };
+
+    options.push(baseOption);
+    infoBySlug.set(baseOption.slug, { ...baseOption });
+
+    for (const child of children) {
+      const childOption: CategoryOption = {
+        slug: child.slug,
+        name: child.name,
+        description: child.description ?? category.description,
+        emoji: category.emoji,
+        parentSlug: category.slug,
+        parentName: category.name,
+      };
+      options.push(childOption);
+      infoBySlug.set(childOption.slug, { ...childOption, parent: category });
+    }
+
+    return category;
+  });
+
+  if (!categories.length) {
+    const infoBySlugFallback = new Map<string, CategoryInfo>();
+    infoBySlugFallback.set(FALLBACK_OPTION.slug, { ...FALLBACK_OPTION });
+    return {
+      categories: [FALLBACK_CATEGORY],
+      options: [FALLBACK_OPTION],
+      infoBySlug: infoBySlugFallback,
+    };
+  }
+
+  return { categories, options, infoBySlug };
+}
+
+export async function getCategoryDataset(): Promise<CategoryDataset> {
+  const records = await prisma.category.findMany({
+    where: { isActive: true },
+    orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
+    select: {
+      id: true,
+      slug: true,
+      name: true,
+      description: true,
+      emoji: true,
+      parentId: true,
+    },
+  });
+
+  return buildDataset(records);
+}
+
+export async function getProductCategories() {
+  const { categories } = await getCategoryDataset();
+  return categories;
+}
+
+export async function getProductCategoryOptions() {
+  const { options } = await getCategoryDataset();
+  return options;
+}
+
+export async function getCategoryInfo(slug: string) {
+  const { infoBySlug } = await getCategoryDataset();
+  return infoBySlug.get(slug);
+}
+
+export async function getCategoryWithChildrenSlugs(slug: string) {
+  const dataset = await getCategoryDataset();
+  const info = dataset.infoBySlug.get(slug);
   if (!info) {
     return [] as string[];
   }
@@ -89,9 +204,17 @@ export function getCategoryWithChildrenSlugs(slug: string) {
     return [info.slug];
   }
 
-  const children = productCategoryOptions
-    .filter((category) => category.parentSlug === info.slug)
-    .map((category) => category.slug);
+  const childSlugs = dataset.options
+    .filter((option) => option.parentSlug === info.slug)
+    .map((option) => option.slug);
 
-  return [info.slug, ...children];
+  return [info.slug, ...childSlugs];
+}
+
+export async function resolveCategorySlug(rawCategory: string) {
+  const trimmed = rawCategory.trim();
+  const options = await getProductCategoryOptions();
+  const fallback = options[0]?.slug || FALLBACK_OPTION.slug;
+  if (!trimmed) return fallback;
+  return options.some((category) => category.slug === trimmed) ? trimmed : fallback;
 }

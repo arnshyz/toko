@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
-import { productCategories } from "@/lib/categories";
+import { getProductCategoryOptions } from "@/lib/categories";
 import { stringifyVariantGroups } from "@/lib/product-form";
 
 export const dynamic = 'force-dynamic';
@@ -57,7 +57,7 @@ export default async function SellerEditProductPage({
     );
   }
 
-  const [product, warehouses] = await Promise.all([
+  const [product, warehouses, categoryOptions] = await Promise.all([
     prisma.product.findFirst({
       where: { id: params.id, sellerId: user.id },
       select: {
@@ -67,6 +67,7 @@ export default async function SellerEditProductPage({
         price: true,
         originalPrice: true,
         stock: true,
+        weight: true,
         category: true,
         variantOptions: true,
         warehouseId: true,
@@ -74,6 +75,7 @@ export default async function SellerEditProductPage({
       },
     }),
     prisma.warehouse.findMany({ where: { ownerId: user.id }, orderBy: { createdAt: "desc" } }),
+    getProductCategoryOptions(),
   ]);
 
   if (!product) {
@@ -134,9 +136,9 @@ export default async function SellerEditProductPage({
             defaultValue={product.category}
             className="border rounded px-3 py-2"
           >
-            {productCategories.map((category) => (
+            {categoryOptions.map((category) => (
               <option key={category.slug} value={category.slug}>
-                {category.emoji} {category.name}
+                {category.emoji} {category.parentName ? `${category.parentName} • ${category.name}` : category.name}
               </option>
             ))}
           </select>
@@ -187,6 +189,18 @@ export default async function SellerEditProductPage({
             type="number"
             defaultValue={product.stock}
             className="border rounded px-3 py-2"
+          />
+          <label className="text-sm font-medium text-gray-700" htmlFor="weight">
+            Berat (gram)
+          </label>
+          <input
+            id="weight"
+            name="weight"
+            type="number"
+            min={1}
+            defaultValue={product.weight ?? 1000}
+            className="border rounded px-3 py-2"
+            required
           />
           <label className="text-sm font-medium text-gray-700 md:col-span-2" htmlFor="description">
             Deskripsi

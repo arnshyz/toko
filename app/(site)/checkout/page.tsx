@@ -1,5 +1,4 @@
 "use client";
-import { COURIERS } from "@/lib/shipping";
 import { useEffect, useState } from "react";
 
 type CartItem = { productId: string; title: string; price: number; qty: number; sellerId: string };
@@ -28,6 +27,12 @@ type CheckoutResponse = {
   error?: string;
 };
 
+type CourierOption = {
+  key: string;
+  label: string;
+  fallbackCost: number;
+};
+
 type ShippingQuoteResponse = {
   cost?: number;
   usedFallback?: boolean;
@@ -51,7 +56,8 @@ function formatAddress(address: NonNullable<CheckoutAccountData["defaultAddress"
 export default function CheckoutPage() {
   const [items, setItems] = useState<CartItem[]>([]);
   const [total, setTotal] = useState(0);
-  const [courier, setCourier] = useState<keyof typeof COURIERS>('JNE_REG');
+  const [couriers, setCouriers] = useState<CourierOption[]>([]);
+  const [courier, setCourier] = useState<string>('');
   const [accountData, setAccountData] = useState<CheckoutAccountData | null>(null);
   const [accountLoading, setAccountLoading] = useState(true);
   const [accountError, setAccountError] = useState<string | null>(null);
@@ -62,6 +68,44 @@ export default function CheckoutPage() {
   const [shippingQuoteUsedFallback, setShippingQuoteUsedFallback] = useState(false);
   const [shippingQuoteReason, setShippingQuoteReason] = useState<string | null>(null);
   const hasPrefilledAddress = Boolean(accountData?.defaultAddress);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadCouriers() {
+      try {
+        const response = await fetch('/api/couriers');
+        const payload = (await response.json().catch(() => null)) as
+          | { couriers?: CourierOption[]; defaultKey?: string; error?: string }
+          | null;
+
+        if (!response.ok || !payload || !Array.isArray(payload.couriers)) {
+          throw new Error(payload?.error || 'Gagal memuat kurir pengiriman.');
+        }
+
+        if (!cancelled) {
+          setCouriers(payload.couriers);
+          if (payload.defaultKey) {
+            setCourier(payload.defaultKey);
+          } else if (payload.couriers.length > 0) {
+            setCourier(payload.couriers[0]!.key);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load couriers', error);
+        if (!cancelled) {
+          setCouriers([]);
+          setCourier('');
+        }
+      }
+    }
+
+    loadCouriers();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     const raw = localStorage.getItem('cart');
@@ -109,7 +153,7 @@ export default function CheckoutPage() {
   }, []);
 
   useEffect(() => {
-    if (accountLoading || !items.length || !hasPrefilledAddress) {
+    if (accountLoading || !items.length || !hasPrefilledAddress || !courier) {
       setShippingQuote(null);
       setShippingQuoteUsedFallback(false);
       setShippingQuoteError(null);
@@ -217,7 +261,8 @@ export default function CheckoutPage() {
     submitting ||
     items.length === 0 ||
     loggedInWithoutAddress ||
-    (missingPrefilledFields ?? false);
+    (missingPrefilledFields ?? false) ||
+    !courier;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -312,12 +357,16 @@ export default function CheckoutPage() {
             <label className="block text-sm mb-1">Kurir</label>
             <select
               value={courier}
-              onChange={(e) => setCourier(e.target.value as keyof typeof COURIERS)}
+              onChange={(e) => setCourier(e.target.value)}
               className="border rounded w-full px-3 py-2"
+              disabled={couriers.length === 0}
             >
-              {Object.entries(COURIERS).map(([k, v]) => (
-                <option key={k} value={k}>
-                  {v.label} (estimasi Rp {new Intl.NumberFormat('id-ID').format(v.fallbackCost)})
+              {couriers.length === 0 ? (
+                <option value="">Kurir tidak tersedia</option>
+              ) : null}
+              {couriers.map((option) => (
+                <option key={option.key} value={option.key}>
+                  {option.label} (estimasi Rp {new Intl.NumberFormat('id-ID').format(option.fallbackCost)})
                 </option>
               ))}
             </select>
