@@ -256,8 +256,6 @@ export default async function ProductPage({ params }: { params: { slug: string }
           select: {
             name: true,
             avatarUrl: true,
-            // @ts-expect-error Prisma client in this environment has not been regenerated yet
-            isVerified: true,
           },
         },
         order: {
@@ -296,6 +294,23 @@ export default async function ProductPage({ params }: { params: { slug: string }
   ]);
 
   const likedReviewIds = new Set(likedReviewRows.map((row) => row.reviewId));
+
+  const buyerIds = Array.from(
+    new Set(
+      productReviews
+        .map((review) => review.buyerId)
+        .filter((buyerId): buyerId is string => typeof buyerId === "string" && buyerId.length > 0)
+    )
+  );
+  const verifiedBuyerRows = buyerIds.length
+    ? ((await prisma.user.findMany({
+        where: { id: { in: buyerIds } },
+        select: { id: true, isVerified: true },
+      } as any)) as { id: string; isVerified?: boolean | null }[])
+    : [];
+  const verifiedBuyerIds = new Set(
+    verifiedBuyerRows.filter((row) => row.isVerified).map((row) => row.id)
+  );
 
   const category = categoryInfoMap.get(product.category);
   const originalPrice = typeof product.originalPrice === "number" ? product.originalPrice : null;
@@ -724,13 +739,13 @@ export default async function ProductPage({ params }: { params: { slug: string }
               <div className="space-y-4">
                 {productReviews.map((review) => {
                   const reviewWithRelations = review as typeof review & {
-                    buyer: { name: string; avatarUrl: string | null; isVerified?: boolean | null };
+                    buyer: { name: string; avatarUrl: string | null };
                     order: { items: { id: string; qty: number }[] };
                     _count: { helpfulVotes?: number | null };
                   };
                   const buyerRecord = reviewWithRelations.buyer;
                   const buyerName = buyerRecord.name.trim() || "Pembeli";
-                  const buyerVerified = Boolean(buyerRecord.isVerified);
+                  const buyerVerified = verifiedBuyerIds.has(review.buyerId);
                   const firstItem = reviewWithRelations.order.items[0];
                   const purchaseInfo = firstItem
                     ? `${firstItem.qty} barang dibeli`
