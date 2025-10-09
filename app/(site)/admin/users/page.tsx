@@ -1,8 +1,9 @@
 import Link from "next/link";
 
+import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
-import { JAKARTA_TIME_ZONE } from "@/lib/time";
+import { JAKARTA_TIME_ZONE, formatRelativeTimeFromNow } from "@/lib/time";
 
 const storeBadges = ["BASIC", "STAR", "STAR_PLUS", "MALL", "PREMIUM"] as const;
 
@@ -86,11 +87,18 @@ export default async function AdminUsersPage({
               const hasWarehouse = user.warehouses.length > 0;
               const isSeller = user._count.products > 0 || hasWarehouse;
               const isBanned = user.isBanned;
+              const isVerified = Boolean((user as { isVerified?: boolean }).isVerified);
+              const lastActiveMessage = formatRelativeTimeFromNow((user as { lastActiveAt?: Date | null }).lastActiveAt ?? null);
+              const storeActivityLabel = user.storeIsOnline
+                ? "Sedang online"
+                : lastActiveMessage
+                ? `Aktif ${lastActiveMessage}`
+                : "Aktivitas belum tersedia";
               return (
                 <tr key={user.id} id={`user-${user.id}`} className="border-b align-top">
                   <td className="py-3">
-                    <div className="flex items-start gap-3">
-                      <div className="h-12 w-12 overflow-hidden rounded-full bg-gray-200">
+                    <div className="flex items-start gap-4">
+                      <div className="aspect-square w-16 overflow-hidden rounded-xl bg-gray-200">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={
@@ -103,7 +111,12 @@ export default async function AdminUsersPage({
                         />
                       </div>
                       <div>
-                        <div className="font-medium">{user.name}</div>
+                        <div className="font-medium">
+                          <span className="inline-flex items-center gap-1">
+                            <span>{user.name}</span>
+                            {isVerified ? <VerifiedBadge size={14} /> : null}
+                          </span>
+                        </div>
                         <div className="text-xs text-gray-500">
                           Bergabung{' '}
                           {new Date(user.createdAt).toLocaleDateString("id-ID", { timeZone: JAKARTA_TIME_ZONE })}
@@ -144,10 +157,11 @@ export default async function AdminUsersPage({
                           </select>
                           <button className="btn-outline text-xs px-3 py-1">Simpan</button>
                         </form>
-                        <div className="flex items-center gap-2 text-xs">
+                        <div className="flex flex-wrap items-center gap-2 text-xs">
                           <span className={`badge ${user.storeIsOnline ? "badge-paid" : "badge-pending"}`}>
-                            {user.storeIsOnline ? "Toko Aktif" : "Toko Tutup"}
+                            {user.storeIsOnline ? "Toko Online" : "Toko Offline"}
                           </span>
+                          <span className="text-gray-500">{storeActivityLabel}</span>
                           <form
                             method="POST"
                             action={`/api/admin/users/${user.id}/toggle-store`}
@@ -217,6 +231,22 @@ export default async function AdminUsersPage({
                         }
                       >
                         {isBanned ? "Cabut Ban" : "Ban Pengguna"}
+                      </button>
+                    </form>
+                    <form
+                      method="POST"
+                      action={`/api/admin/users/${user.id}/toggle-verified`}
+                      className="inline"
+                    >
+                      <button
+                        className={`text-xs font-semibold rounded px-3 py-1 ${
+                          isVerified
+                            ? "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                            : "bg-sky-600 text-white hover:bg-sky-700"
+                        }`}
+                        type="submit"
+                      >
+                        {isVerified ? "Cabut Verifikasi" : "Verifikasi"}
                       </button>
                     </form>
                     {isSeller ? (
@@ -324,8 +354,8 @@ export default async function AdminUsersPage({
                             <span className="mb-1 block text-xs font-semibold uppercase text-gray-500">
                               Pratinjau Foto Profil
                             </span>
-                            <div className="flex items-center gap-3">
-                              <div className="h-16 w-16 overflow-hidden rounded-full bg-gray-200">
+                            <div className="flex items-center gap-4">
+                              <div className="aspect-square w-20 overflow-hidden rounded-2xl bg-gray-200">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                   src={

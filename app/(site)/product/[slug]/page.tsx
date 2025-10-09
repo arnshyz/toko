@@ -2,8 +2,9 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatIDR } from "@/lib/utils";
 import { getCategoryDataset } from "@/lib/categories";
-import { VariantSelector } from "@/components/VariantSelector";
-import { AddToCartForm } from "@/components/AddToCartForm";
+import { ProductPurchaseOptions } from "@/components/ProductPurchaseOptions";
+import { ProductImageGallery } from "@/components/ProductImageGallery";
+import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { VariantGroup } from "@/types/product";
 import {
   getPrimaryProductImageSrc,
@@ -17,7 +18,7 @@ import {
   getActiveFlashSale,
   getNextFlashSale,
 } from "@/lib/flash-sale";
-import { formatJakartaDate } from "@/lib/time";
+import { formatJakartaDate, formatRelativeTimeFromNow } from "@/lib/time";
 import { resolveStoreBadgeStyle } from "@/lib/store-badges";
 
 function formatCompactNumber(value: number) {
@@ -252,7 +253,12 @@ export default async function ProductPage({ params }: { params: { slug: string }
       },
       orderBy: { createdAt: "desc" },
       include: {
-        buyer: { select: { name: true, avatarUrl: true } },
+        buyer: {
+          select: {
+            name: true,
+            avatarUrl: true,
+          },
+        },
         order: {
           select: {
             orderCode: true,
@@ -290,6 +296,23 @@ export default async function ProductPage({ params }: { params: { slug: string }
 
   const likedReviewIds = new Set(likedReviewRows.map((row) => row.reviewId));
 
+  const buyerIds = Array.from(
+    new Set(
+      productReviews
+        .map((review) => review.buyerId)
+        .filter((buyerId): buyerId is string => typeof buyerId === "string" && buyerId.length > 0)
+    )
+  );
+  const verifiedBuyerRows = buyerIds.length
+    ? ((await prisma.user.findMany({
+        where: { id: { in: buyerIds } },
+        select: { id: true, isVerified: true },
+      } as any)) as { id: string; isVerified?: boolean | null }[])
+    : [];
+  const verifiedBuyerIds = new Set(
+    verifiedBuyerRows.filter((row) => row.isVerified).map((row) => row.id)
+  );
+
   const category = categoryInfoMap.get(product.category);
   const originalPrice = typeof product.originalPrice === "number" ? product.originalPrice : null;
   const activeFlashSale = getActiveFlashSale(product.flashSales ?? [], now);
@@ -319,8 +342,18 @@ export default async function ProductPage({ params }: { params: { slug: string }
   const primaryImage = getPrimaryProductImageSrc(product);
 
   const seller = product.seller;
+  const sellerRecord = seller as typeof seller & {
+    isVerified?: boolean | null;
+    lastActiveAt?: Date | null;
+  };
   const badge = resolveStoreBadgeStyle(seller.storeBadge);
   const isOnline = seller.storeIsOnline ?? false;
+  const lastActiveMessage = formatRelativeTimeFromNow(sellerRecord.lastActiveAt ?? null);
+  const activityLabel = isOnline
+    ? "Sedang online sekarang"
+    : lastActiveMessage
+    ? `Aktif ${lastActiveMessage}`
+    : "Aktivitas terakhir belum tersedia";
   const followers = seller.storeFollowers ?? 0;
   const following = seller.storeFollowing ?? 0;
   const storeRatingValue = seller.storeRating ?? 0;
@@ -334,6 +367,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
 
   const soldCount = product._count?.orderItems ?? 0;
   const totalSellerProducts = siblingProducts.length + 1;
+  const sellerVerified = Boolean(sellerRecord.isVerified);
   const favoriteEstimate = Math.max(18, Math.round(salePrice / 50000));
   const specifications: { label: string; value: string }[] = [
     { label: "Kategori", value: `${categoryEmoji} ${categoryLabel}` },
@@ -374,54 +408,50 @@ export default async function ProductPage({ params }: { params: { slug: string }
       title: "Layanan",
       description: isOnline
         ? "Toko sedang online dan siap merespons pesanan Anda."
+        : lastActiveMessage
+        ? `Toko sedang offline. Aktif ${lastActiveMessage}.`
         : "Toko akan memproses pesanan segera setelah kembali online.",
     },
   ];
 
   const productImageSources = getProductImageSources(product.id, product.images ?? []);
-  const heroImageSrc = productImageSources[0]?.src ?? product.imageUrl ?? HERO_PLACEHOLDER;
-  const thumbnailImages = (
-    productImageSources.length > 0
-      ? productImageSources
-      : [{ id: "placeholder", src: product.imageUrl ?? THUMB_PLACEHOLDER }]
-  ).slice(0, 5);
 
   return (
     <div className="space-y-10 pb-36 lg:pb-0">
       <section className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
         <div className="space-y-4">
-          <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-            <div className="lg:p-4">
-              <img
-                src={heroImageSrc}
-                alt={product.title}
-                className="aspect-[3/4] w-full object-cover lg:aspect-[4/3] lg:rounded-xl"
-              />
-            </div>
-            <div className="absolute inset-x-0 top-0 flex items-center justify-between p-4 text-white lg:hidden">
-              <Link href="/" aria-label="Kembali">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-black/40 backdrop-blur">
-                  <IconChevronLeft className="h-5 w-5" />
-                </span>
-              </Link>
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-black/40 backdrop-blur"
-                  aria-label="Bagikan produk"
-                >
-                  <IconShare className="h-5 w-5" />
-                </button>
-                <Link
-                  href="/cart"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-black/40 backdrop-blur"
-                  aria-label="Lihat keranjang"
-                >
-                  <IconShoppingCart className="h-5 w-5" />
+          <ProductImageGallery
+            title={product.title}
+            images={productImageSources}
+            fallbackImage={product.imageUrl}
+            heroPlaceholder={HERO_PLACEHOLDER}
+            thumbPlaceholder={THUMB_PLACEHOLDER}
+            topOverlay={
+              <div className="absolute inset-x-0 top-0 flex items-center justify-between p-4 text-white lg:hidden">
+                <Link href="/" aria-label="Kembali">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-black/40 backdrop-blur">
+                    <IconChevronLeft className="h-5 w-5" />
+                  </span>
                 </Link>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-black/40 backdrop-blur"
+                    aria-label="Bagikan produk"
+                  >
+                    <IconShare className="h-5 w-5" />
+                  </button>
+                  <Link
+                    href="/cart"
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-black/40 backdrop-blur"
+                    aria-label="Lihat keranjang"
+                  >
+                    <IconShoppingCart className="h-5 w-5" />
+                  </Link>
+                </div>
               </div>
-            </div>
-          </div>
+            }
+          />
           <div className="space-y-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm lg:hidden">
             <div className="flex items-end justify-between gap-3">
               <div>
@@ -451,20 +481,6 @@ export default async function ProductPage({ params }: { params: { slug: string }
               <span>•</span>
               <span>{formatCompactNumber(favoriteEstimate)} favorit</span>
             </div>
-          </div>
-          <div className="flex gap-3 overflow-x-auto lg:grid lg:grid-cols-4 lg:gap-3 lg:overflow-visible xl:grid-cols-5">
-            {thumbnailImages.map((image, index) => (
-              <div
-                key={image.id}
-                className="flex h-20 min-w-[80px] items-center justify-center overflow-hidden rounded-lg border border-dashed border-gray-200 bg-white"
-              >
-                <img
-                  src={image.src}
-                  alt={`Preview ${index + 1} dari ${product.title}`}
-                  className="h-full w-full object-cover"
-                />
-              </div>
-            ))}
           </div>
           <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Keunggulan Produk</h2>
@@ -564,20 +580,9 @@ export default async function ProductPage({ params }: { params: { slug: string }
                     <span>C.O.D &amp; Transfer Bank</span>
                   </div>
                 </div>
-
-                <div className="rounded-xl border border-gray-200 bg-white p-4">
-                  <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">Varian</h2>
-                  <VariantSelector groups={displayVariantGroups} />
-                  {variantGroups.length === 0 && (
-                    <p className="mt-3 text-xs text-gray-500">
-                      Penjual belum menambahkan detail varian, produk tersedia dalam 1 pilihan standar.
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="hidden lg:block">
-                <AddToCartForm
+                <ProductPurchaseOptions
+                  variantGroups={displayVariantGroups}
+                  showSingleVariantNotice={variantGroups.length === 0}
                   productId={product.id}
                   title={product.title}
                   price={salePrice}
@@ -587,23 +592,13 @@ export default async function ProductPage({ params }: { params: { slug: string }
                   isLoggedIn={Boolean(currentUserId)}
                 />
               </div>
-              <AddToCartForm
-                productId={product.id}
-                title={product.title}
-                price={salePrice}
-                sellerId={product.sellerId}
-                stock={product.stock}
-                imageUrl={primaryImage}
-                isLoggedIn={Boolean(currentUserId)}
-                variant="mobile"
-              />
             </div>
           </div>
 
           <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div className="flex items-center gap-4">
-                <div className="relative h-16 w-16 overflow-hidden rounded-xl bg-gradient-to-br from-gray-100 to-gray-200">
+            <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+              <div className="flex items-center gap-5">
+                <div className="relative aspect-square w-20 overflow-hidden rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200">
                   {seller.avatarUrl?.trim() ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -619,7 +614,10 @@ export default async function ProductPage({ params }: { params: { slug: string }
                 </div>
                 <div className="space-y-1">
                   <div className="flex flex-wrap items-center gap-2 text-lg font-semibold text-gray-900">
-                    {seller.name}
+                    <span className="flex items-center gap-1">
+                      <span>{seller.name}</span>
+                      {sellerVerified ? <VerifiedBadge size={16} /> : null}
+                    </span>
                     <span
                       className={`inline-flex items-center rounded-full text-[11px] font-semibold ${
                         badge.imageSrc ? "" : "px-2 py-0.5"
@@ -651,6 +649,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
                     <span>Mengikuti: {formatCompactNumber(following)}</span>
                     <span>Penilaian: {storeRatingLabel}</span>
                     <span>Bergabung: {formatJoinedSince(seller.createdAt)}</span>
+                    <span>{activityLabel}</span>
                   </div>
                 </div>
               </div>
@@ -732,12 +731,19 @@ export default async function ProductPage({ params }: { params: { slug: string }
             {productReviews.length > 0 ? (
               <div className="space-y-4">
                 {productReviews.map((review) => {
-                  const buyerName = review.buyer.name.trim() || "Pembeli";
-                  const firstItem = review.order.items[0];
+                  const reviewWithRelations = review as typeof review & {
+                    buyer: { name: string; avatarUrl: string | null };
+                    order: { items: { id: string; qty: number }[] };
+                    _count: { helpfulVotes?: number | null };
+                  };
+                  const buyerRecord = reviewWithRelations.buyer;
+                  const buyerName = buyerRecord.name.trim() || "Pembeli";
+                  const buyerVerified = verifiedBuyerIds.has(review.buyerId);
+                  const firstItem = reviewWithRelations.order.items[0];
                   const purchaseInfo = firstItem
                     ? `${firstItem.qty} barang dibeli`
                     : "Pesanan diverifikasi";
-                  const helpfulCount = review._count.helpfulVotes ?? 0;
+                  const helpfulCount = reviewWithRelations._count.helpfulVotes ?? 0;
                   const likedByCurrentUser = likedReviewIds.has(review.id);
                   const isOwnReview = currentUserId ? review.buyerId === currentUserId : false;
 
@@ -745,7 +751,10 @@ export default async function ProductPage({ params }: { params: { slug: string }
                     <article key={review.id} className="space-y-3 rounded-xl border border-gray-100 p-4">
                       <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-gray-500">
                         <div className="flex items-center gap-2 font-semibold text-gray-700">
-                          <span>{buyerName}</span>
+                          <span className="flex items-center gap-1">
+                            <span>{buyerName}</span>
+                            {buyerVerified ? <VerifiedBadge size={14} /> : null}
+                          </span>
                           <span className="flex gap-0.5 text-sky-500">{renderStars(review.rating)}</span>
                         </div>
                         <span>{formatRelativeTime(review.createdAt)}</span>
