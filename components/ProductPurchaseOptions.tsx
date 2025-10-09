@@ -23,15 +23,32 @@ export function ProductPurchaseOptions({
   showSingleVariantNotice = false,
   ...addToCartProps
 }: ProductPurchaseOptionsProps) {
+  const variantSignature = useMemo(() => JSON.stringify(variantGroups), [variantGroups]);
+
   const [selection, setSelection] = useState<Record<string, string>>(() => {
-    const initialEntries = variantGroups.map((group) => [group.name, group.options[0] ?? ""] as const);
+    const initialEntries = variantGroups
+      .filter((group) => Array.isArray(group.options) && group.options.length > 0)
+      .map((group) => [group.name, group.options[0] ?? ""] as const);
     return Object.fromEntries(initialEntries);
   });
 
   useEffect(() => {
-    const nextEntries = variantGroups.map((group) => [group.name, group.options[0] ?? ""] as const);
-    setSelection(Object.fromEntries(nextEntries));
-  }, [variantGroups]);
+    setSelection((prev) => {
+      const next: Record<string, string> = {};
+
+      variantGroups.forEach((group) => {
+        if (!Array.isArray(group.options) || group.options.length === 0) {
+          return;
+        }
+
+        const prevValue = prev[group.name];
+        const fallback = group.options[0] ?? "";
+        next[group.name] = prevValue && group.options.includes(prevValue) ? prevValue : fallback;
+      });
+
+      return next;
+    });
+  }, [variantSignature]);
 
   const variantNote = useMemo(() => formatVariantNote(selection), [selection]);
   const trimmedNote = variantNote.trim();
@@ -53,6 +70,7 @@ export function ProductPurchaseOptions({
         <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">Varian</h2>
         <VariantSelector
           groups={variantGroups}
+          value={selection}
           onSelectionChange={handleSelectionChange}
         />
         {showSingleVariantNotice ? (
