@@ -71,8 +71,8 @@ export default async function Storefront({ params }: { params: { slug: string } 
       <section className="overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm">
         <div className="flex flex-col gap-6 p-5 md:flex-row md:items-start md:justify-between md:p-6">
           <div className="flex flex-1 flex-col gap-6 md:flex-row md:items-center">
-            <div className="flex flex-col items-center gap-3 text-center md:items-start md:text-left">
-              <div className="relative aspect-square w-20 overflow-hidden rounded-xl bg-gradient-to-br from-gray-100 to-gray-200">
+            <div className="flex flex-col items-center gap-4 text-center md:items-start md:text-left">
+              <div className="relative aspect-square w-24 overflow-hidden rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200">
                 {seller.avatarUrl?.trim() ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img

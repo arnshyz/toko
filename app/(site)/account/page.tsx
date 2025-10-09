@@ -195,8 +195,8 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
             <h2 className="text-xl font-semibold text-gray-900">Profil</h2>
             <p className="text-sm text-gray-600">Perbarui informasi dasar akun pembeli Anda.</p>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="relative aspect-square w-16 overflow-hidden rounded-xl border border-gray-200 bg-gray-100">
+          <div className="flex items-center gap-4">
+            <div className="relative aspect-square w-20 overflow-hidden rounded-xl border border-gray-200 bg-gray-100">
               {account.avatarUrl?.trim() ? (
                 <img
                   src={account.avatarUrl}

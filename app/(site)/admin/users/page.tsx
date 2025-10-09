@@ -97,8 +97,8 @@ export default async function AdminUsersPage({
               return (
                 <tr key={user.id} id={`user-${user.id}`} className="border-b align-top">
                   <td className="py-3">
-                    <div className="flex items-start gap-3">
-                      <div className="aspect-square w-12 overflow-hidden rounded-lg bg-gray-200">
+                    <div className="flex items-start gap-4">
+                      <div className="aspect-square w-16 overflow-hidden rounded-xl bg-gray-200">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={
@@ -354,8 +354,8 @@ export default async function AdminUsersPage({
                             <span className="mb-1 block text-xs font-semibold uppercase text-gray-500">
                               Pratinjau Foto Profil
                             </span>
-                            <div className="flex items-center gap-3">
-                              <div className="aspect-square w-16 overflow-hidden rounded-xl bg-gray-200">
+                            <div className="flex items-center gap-4">
+                              <div className="aspect-square w-20 overflow-hidden rounded-2xl bg-gray-200">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                   src={
