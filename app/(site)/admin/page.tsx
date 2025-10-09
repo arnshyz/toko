@@ -84,6 +84,13 @@ function SalesBarChart({ data }: { data: ChartPoint[] }) {
 
 const adminActions = [
   {
+    href: "/admin/settings",
+    title: "Pengaturan Website",
+    description: "Atur nama, deskripsi, dan logo agar identitas toko selalu konsisten.",
+    icon: "⚙️",
+    accent: "from-violet-500 via-indigo-500 to-blue-500",
+  },
+  {
     href: "/admin/users",
     title: "Pengguna & Seller",
     description: "Kelola akun pengguna, atur peran admin, dan pantau status seller.",

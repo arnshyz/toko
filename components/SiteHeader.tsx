@@ -5,13 +5,15 @@ import { useState, useRef, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { SessionUser } from "@/lib/session";
 import type { ProductCategory } from "@/lib/categories";
+import type { SiteSettings } from "@/lib/site-settings";
 
 type SiteHeaderProps = {
   user: SessionUser | null;
   categories: ProductCategory[];
+  siteSettings: SiteSettings;
 };
 
-export function SiteHeader({ user, categories }: SiteHeaderProps) {
+export function SiteHeader({ user, categories, siteSettings }: SiteHeaderProps) {
   const pathname = usePathname();
   const hideMobileHeader = pathname?.startsWith("/product/") ?? false;
   const [open, setOpen] = useState(false);
@@ -19,6 +21,8 @@ export function SiteHeader({ user, categories }: SiteHeaderProps) {
   const [cartCount, setCartCount] = useState(0);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const categoryRef = useRef<HTMLDivElement | null>(null);
+  const displayName = siteSettings.siteName;
+  const logoUrl = siteSettings.logoUrl;
 
   useEffect(() => {
     if (!open) return;
@@ -176,8 +180,25 @@ export function SiteHeader({ user, categories }: SiteHeaderProps) {
       </div>
       <div className="mx-auto hidden w-full max-w-6xl items-center justify-between gap-4 px-4 py-3 md:flex">
         <div className="flex items-center gap-2 md:gap-3">
-          <Link href="/" className="text-2xl font-bold tracking-wide md:text-[26px]">
-            🛍️ Akay Nusantara
+          <Link
+            href="/"
+            className="flex items-center gap-2 text-2xl font-bold tracking-wide md:text-[26px]"
+            aria-label={displayName}
+          >
+            {logoUrl ? (
+              <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-white/20">
+                <img
+                  src={logoUrl}
+                  alt={displayName}
+                  className="h-full w-full object-cover"
+                />
+              </span>
+            ) : (
+              <span aria-hidden className="text-3xl">
+                🛍️
+              </span>
+            )}
+            <span className="max-w-[220px] truncate md:max-w-none">{displayName}</span>
           </Link>
           <div className="relative" ref={categoryRef}>
             <button
@@ -252,8 +273,19 @@ export function SiteHeader({ user, categories }: SiteHeaderProps) {
       {!hideMobileHeader ? (
         <div className="mx-auto w-full max-w-6xl px-4 py-3 md:hidden">
           <div className="flex items-center justify-between">
-            <Link href="/" className="text-lg font-semibold tracking-wide">
-              🛍️ Akay Nusantara
+            <Link
+              href="/"
+              className="flex items-center gap-2 text-lg font-semibold tracking-wide"
+              aria-label={displayName}
+            >
+              {logoUrl ? (
+                <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-white/20">
+                  <img src={logoUrl} alt={displayName} className="h-full w-full object-cover" />
+                </span>
+              ) : (
+                <span aria-hidden className="text-2xl">🛍️</span>
+              )}
+              <span className="max-w-[160px] truncate">{displayName}</span>
             </Link>
             <div className="flex items-center gap-3 text-xl">
               <Link href="/notifications" aria-label="Notifikasi" className="transition hover:scale-105">
