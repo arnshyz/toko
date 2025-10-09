@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useCallback, useState, type ChangeEvent, type FormEvent } from "react";
 
 export type AddToCartFormProps = {
@@ -24,6 +25,17 @@ type CartItem = {
   sellerId: string;
   note?: string | null;
   variants?: Record<string, string>;
+};
+
+const createVariantKey = (value?: Record<string, string> | null) => {
+  if (!value) return null;
+  const entries = Object.entries(value).filter(([, option]) => Boolean(option));
+  if (entries.length === 0) return null;
+  return entries
+    .map(([group, option]) => [group, option] as const)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([group, option]) => `${group}=${option}`)
+    .join("|");
 };
 
 function readCart(): CartItem[] {
@@ -60,26 +72,34 @@ export function AddToCartForm({
 }: AddToCartFormProps) {
   const [quantity, setQuantity] = useState(1);
   const [status, setStatus] = useState<"idle" | "success" | "unauthenticated">("idle");
+  const router = useRouter();
 
-  const handleSubmit = useCallback(
-    (event: FormEvent<HTMLFormElement>) => {
-      event.preventDefault();
+  const persistCartItem = useCallback(
+    (options?: { showSuccessMessage?: boolean }) => {
       if (!isLoggedIn) {
         setStatus("unauthenticated");
-        return;
+        return false;
       }
 
       const safeQty = Math.max(1, Math.min(quantity, stock || quantity));
       const normalizedNote = typeof orderNote === "string" ? orderNote.trim() : "";
       const noteValue = normalizedNote ? normalizedNote : null;
-      const variantsValue = selectedVariants && Object.keys(selectedVariants).length > 0 ? { ...selectedVariants } : undefined;
+      const variantsValue =
+        selectedVariants && Object.keys(selectedVariants).length > 0
+          ? { ...selectedVariants }
+          : undefined;
+      const variantsKey = createVariantKey(variantsValue);
 
       const cart = readCart();
-      const index = cart.findIndex(
-        (item) =>
+      const index = cart.findIndex((item) => {
+        const itemVariantsKey = createVariantKey(item.variants ?? null);
+        return (
           item.productId === productId &&
-          (item.note ?? "") === (noteValue ?? ""),
-      );
+          (item.note ?? "") === (noteValue ?? "") &&
+          itemVariantsKey === variantsKey
+        );
+      });
+
       if (index >= 0) {
         cart[index].qty += safeQty;
         cart[index].note = noteValue;
@@ -100,10 +120,26 @@ export function AddToCartForm({
           variants: variantsValue,
         });
       }
+
       writeCart(cart);
-      setStatus("success");
+
+      if (options?.showSuccessMessage) {
+        setStatus("success");
+      } else {
+        setStatus("idle");
+      }
+
+      return true;
     },
     [imageUrl, isLoggedIn, orderNote, price, productId, quantity, selectedVariants, sellerId, stock, title],
+  );
+
+  const handleSubmit = useCallback(
+    (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      persistCartItem({ showSuccessMessage: true });
+    },
+    [persistCartItem],
   );
 
   const handleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
@@ -114,6 +150,14 @@ export function AddToCartForm({
     }
     setQuantity(Math.max(1, Math.floor(value)));
   }, []);
+
+  const handleBuyNow = useCallback(() => {
+    const saved = persistCartItem();
+    if (!saved) {
+      return;
+    }
+    router.push("/checkout");
+  }, [persistCartItem, router]);
 
   if (variant === "mobile") {
     return (
@@ -162,12 +206,13 @@ export function AddToCartForm({
               >
                 Masukkan Keranjang
               </button>
-              <a
-                href="/checkout"
+              <button
+                type="button"
+                onClick={handleBuyNow}
                 className="flex-[1.3] rounded-full bg-sky-500 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-sky-600"
               >
                 Beli Sekarang
-              </a>
+              </button>
             </div>
           </div>
         </div>
@@ -199,7 +244,7 @@ export function AddToCartForm({
         <button type="submit" className="flex-1 rounded-full bg-sky-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-sky-600">
           Masukkan Keranjang
         </button>
-        <LinkButton href="/checkout" label="Beli Sekarang" variant="outline" />
+        <LinkButton href="/checkout" label="Beli Sekarang" variant="outline" onClick={handleBuyNow} />
         <button
           type="button"
           className="rounded-full border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-600 transition hover:border-sky-200 hover:text-sky-600"
@@ -225,25 +270,27 @@ type LinkButtonProps = {
   href: string;
   label: string;
   variant?: "solid" | "outline";
+  onClick?: () => void;
 };
 
-function LinkButton({ href, label, variant = "solid" }: LinkButtonProps) {
-  if (variant === "outline") {
+function LinkButton({ href, label, variant = "solid", onClick }: LinkButtonProps) {
+  const commonProps = {
+    className:
+      variant === "outline"
+        ? "flex-1 rounded-full border border-sky-500 px-6 py-3 text-center text-sm font-semibold text-sky-600 transition hover:bg-sky-50"
+        : "flex-1 rounded-full bg-sky-500 px-6 py-3 text-center text-sm font-semibold text-white transition hover:bg-sky-600",
+  } as const;
+
+  if (onClick) {
     return (
-      <a
-        href={href}
-        className="flex-1 rounded-full border border-sky-500 px-6 py-3 text-center text-sm font-semibold text-sky-600 transition hover:bg-sky-50"
-      >
+      <button type="button" onClick={onClick} {...commonProps}>
         {label}
-      </a>
+      </button>
     );
   }
 
   return (
-    <a
-      href={href}
-      className="flex-1 rounded-full bg-sky-500 px-6 py-3 text-center text-sm font-semibold text-white transition hover:bg-sky-600"
-    >
+    <a href={href} {...commonProps}>
       {label}
     </a>
   );
