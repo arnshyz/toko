@@ -2,8 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatIDR } from "@/lib/utils";
 import { getCategoryDataset } from "@/lib/categories";
-import { VariantSelector } from "@/components/VariantSelector";
-import { AddToCartForm } from "@/components/AddToCartForm";
+import { ProductPurchaseOptions } from "@/components/ProductPurchaseOptions";
 import { VariantGroup } from "@/types/product";
 import {
   getPrimaryProductImageSrc,
@@ -564,20 +563,9 @@ export default async function ProductPage({ params }: { params: { slug: string }
                     <span>C.O.D &amp; Transfer Bank</span>
                   </div>
                 </div>
-
-                <div className="rounded-xl border border-gray-200 bg-white p-4">
-                  <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-500">Varian</h2>
-                  <VariantSelector groups={displayVariantGroups} />
-                  {variantGroups.length === 0 && (
-                    <p className="mt-3 text-xs text-gray-500">
-                      Penjual belum menambahkan detail varian, produk tersedia dalam 1 pilihan standar.
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className="hidden lg:block">
-                <AddToCartForm
+                <ProductPurchaseOptions
+                  variantGroups={displayVariantGroups}
+                  showSingleVariantNotice={variantGroups.length === 0}
                   productId={product.id}
                   title={product.title}
                   price={salePrice}
@@ -587,16 +575,6 @@ export default async function ProductPage({ params }: { params: { slug: string }
                   isLoggedIn={Boolean(currentUserId)}
                 />
               </div>
-              <AddToCartForm
-                productId={product.id}
-                title={product.title}
-                price={salePrice}
-                sellerId={product.sellerId}
-                stock={product.stock}
-                imageUrl={primaryImage}
-                isLoggedIn={Boolean(currentUserId)}
-                variant="mobile"
-              />
             </div>
           </div>
 
