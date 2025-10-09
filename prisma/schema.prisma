@@ -14,6 +14,7 @@ model User {
   passwordHash String
   slug         String   @unique
   isAdmin      Boolean  @default(false)
+  isVerified   Boolean  @default(false)
   isBanned     Boolean  @default(false)
   sellerOnboardingStatus SellerOnboardingStatus @default(ACTIVE)
   createdAt    DateTime @default(now())
@@ -23,6 +24,7 @@ model User {
   gender       Gender?
   storeBadge   StoreBadge @default(BASIC)
   storeIsOnline Boolean   @default(true)
+  lastActiveAt  DateTime?
   storeFollowers Int      @default(0)
   storeFollowing Int      @default(0)
   storeRating    Float?
@@ -262,6 +264,7 @@ model OrderItem {
   qty        Int
   price      Int
   status     ItemStatus @default(PENDING)
+  note       String?
 
   returns    ReturnRequest[]
 }

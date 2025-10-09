@@ -19,7 +19,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
   await prisma.user.update({
     where: { id: params.id },
-    data: { storeIsOnline: !target.storeIsOnline },
+    data: { storeIsOnline: !target.storeIsOnline, lastActiveAt: new Date() } as any,
   });
 
   return NextResponse.redirect(new URL("/admin/users", req.url));

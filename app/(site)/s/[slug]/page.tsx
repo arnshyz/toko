@@ -1,9 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { getCategoryDataset } from "@/lib/categories";
+import { formatRelativeTimeFromNow } from "@/lib/time";
 import { formatIDR } from "@/lib/utils";
 import { calculateFlashSalePrice, getActiveFlashSale } from "@/lib/flash-sale";
 import { getPrimaryProductImageSrc } from "@/lib/productImages";
 import { resolveStoreBadgeStyle } from "@/lib/store-badges";
+import { VerifiedBadge } from "@/components/VerifiedBadge";
 
 function formatCompactNumber(value: number) {
   return new Intl.NumberFormat("id-ID", { notation: "compact", maximumFractionDigits: 1 }).format(value);
@@ -42,8 +44,18 @@ export default async function Storefront({ params }: { params: { slug: string } 
   const categoryDataset = await getCategoryDataset();
   const categoryInfoMap = categoryDataset.infoBySlug;
 
+  const sellerRecord = seller as typeof seller & {
+    isVerified?: boolean | null;
+    lastActiveAt?: Date | null;
+  };
   const badge = resolveStoreBadgeStyle(seller.storeBadge);
   const isOnline = seller.storeIsOnline ?? false;
+  const lastActiveMessage = formatRelativeTimeFromNow(sellerRecord.lastActiveAt ?? null);
+  const activityLabel = isOnline
+    ? "Sedang online sekarang"
+    : lastActiveMessage
+    ? `Aktif ${lastActiveMessage}`
+    : "Aktivitas terakhir belum tersedia";
   const followers = seller.storeFollowers ?? 0;
   const following = seller.storeFollowing ?? 0;
   const ratingValue = seller.storeRating ?? 0;
@@ -52,6 +64,7 @@ export default async function Storefront({ params }: { params: { slug: string } 
     ? `${ratingValue.toFixed(1)} (${formatCompactNumber(ratingCount)} penilaian)`
     : "Belum ada penilaian";
   const joinedLabel = formatJoinedSince(seller.createdAt);
+  const sellerVerified = Boolean(sellerRecord.isVerified);
 
   return (
     <div className="space-y-8">
@@ -59,7 +72,7 @@ export default async function Storefront({ params }: { params: { slug: string } 
         <div className="flex flex-col gap-6 p-5 md:flex-row md:items-start md:justify-between md:p-6">
           <div className="flex flex-1 flex-col gap-6 md:flex-row md:items-center">
             <div className="flex flex-col items-center gap-3 text-center md:items-start md:text-left">
-              <div className="relative h-20 w-20 overflow-hidden rounded-xl bg-gradient-to-br from-gray-100 to-gray-200">
+              <div className="relative aspect-square w-20 overflow-hidden rounded-xl bg-gradient-to-br from-gray-100 to-gray-200">
                 {seller.avatarUrl?.trim() ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -95,7 +108,10 @@ export default async function Storefront({ params }: { params: { slug: string } 
               <div className="flex flex-col items-start gap-3 md:flex-row md:items-center md:justify-between">
                 <div>
                   <div className="flex items-center gap-2 text-lg font-semibold text-gray-900">
-                    {seller.name}
+                    <span className="flex items-center gap-1">
+                      <span>{seller.name}</span>
+                      {sellerVerified ? <VerifiedBadge size={16} /> : null}
+                    </span>
                     <span
                       className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium ${isOnline ? "border-emerald-200 bg-emerald-50 text-emerald-600" : "border-gray-200 bg-gray-50 text-gray-500"}`}
                     >
@@ -104,6 +120,7 @@ export default async function Storefront({ params }: { params: { slug: string } 
                     </span>
                   </div>
                   <div className="text-sm text-gray-500">@{seller.slug}</div>
+                  <div className="text-xs text-gray-500">{activityLabel}</div>
                 </div>
 
                 <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">

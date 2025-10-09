@@ -25,7 +25,11 @@ export async function POST(req: NextRequest) {
   if (!courierKey || !courierMap[courierKey]) {
     courierKey = availableCourierKeys[0]!;
   }
-  const items = JSON.parse(String(form.get('items') || '[]')) as { productId: string; qty: number }[];
+  const items = JSON.parse(String(form.get('items') || '[]')) as {
+    productId: string;
+    qty: number;
+    note?: string | null;
+  }[];
   const paymentMethod = String(form.get('paymentMethod') || 'TRANSFER') as 'TRANSFER'|'COD';
   const voucherCode = String(form.get('voucher') || '').trim().toUpperCase();
 
@@ -160,7 +164,10 @@ export async function POST(req: NextRequest) {
       ? calculateFlashSalePrice(p.price, { discountPercent, startAt: now, endAt: now })
       : p.price;
     itemsTotal += unitPrice * it.qty;
-    createdItems.push({ productId: p.id, sellerId: p.sellerId, qty: it.qty, price: unitPrice });
+    const rawNote = typeof it.note === "string" ? it.note.trim() : "";
+    const note = rawNote ? rawNote.slice(0, 200) : null;
+
+    createdItems.push({ productId: p.id, sellerId: p.sellerId, qty: it.qty, price: unitPrice, note });
 
     const shipmentKey = p.warehouseId ?? 'default';
     const existing =
