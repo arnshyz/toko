@@ -262,6 +262,7 @@ model OrderItem {
   qty        Int
   price      Int
   status     ItemStatus @default(PENDING)
+  note       String?
 
   returns    ReturnRequest[]
 }

@@ -11,6 +11,8 @@ export type AddToCartFormProps = {
   imageUrl?: string | null;
   isLoggedIn?: boolean;
   variant?: "default" | "mobile";
+  orderNote?: string;
+  selectedVariants?: Record<string, string> | undefined;
 };
 
 type CartItem = {
@@ -20,6 +22,8 @@ type CartItem = {
   qty: number;
   imageUrl?: string | null;
   sellerId: string;
+  note?: string | null;
+  variants?: Record<string, string>;
 };
 
 function readCart(): CartItem[] {
@@ -51,6 +55,8 @@ export function AddToCartForm({
   imageUrl,
   isLoggedIn = false,
   variant = "default",
+  orderNote,
+  selectedVariants,
 }: AddToCartFormProps) {
   const [quantity, setQuantity] = useState(1);
   const [status, setStatus] = useState<"idle" | "success" | "unauthenticated">("idle");
@@ -64,18 +70,40 @@ export function AddToCartForm({
       }
 
       const safeQty = Math.max(1, Math.min(quantity, stock || quantity));
+      const normalizedNote = typeof orderNote === "string" ? orderNote.trim() : "";
+      const noteValue = normalizedNote ? normalizedNote : null;
+      const variantsValue = selectedVariants && Object.keys(selectedVariants).length > 0 ? { ...selectedVariants } : undefined;
 
       const cart = readCart();
-      const index = cart.findIndex((item) => item.productId === productId);
+      const index = cart.findIndex(
+        (item) =>
+          item.productId === productId &&
+          (item.note ?? "") === (noteValue ?? ""),
+      );
       if (index >= 0) {
         cart[index].qty += safeQty;
+        cart[index].note = noteValue;
+        if (variantsValue) {
+          cart[index].variants = variantsValue;
+        } else {
+          delete cart[index].variants;
+        }
       } else {
-        cart.push({ productId, title, price, qty: safeQty, sellerId, imageUrl });
+        cart.push({
+          productId,
+          title,
+          price,
+          qty: safeQty,
+          sellerId,
+          imageUrl,
+          note: noteValue,
+          variants: variantsValue,
+        });
       }
       writeCart(cart);
       setStatus("success");
     },
-    [imageUrl, isLoggedIn, price, productId, quantity, sellerId, stock, title],
+    [imageUrl, isLoggedIn, orderNote, price, productId, quantity, selectedVariants, sellerId, stock, title],
   );
 
   const handleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {

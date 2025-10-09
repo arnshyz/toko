@@ -158,6 +158,9 @@ export default async function OrderDetailPage({ params }: { params: { code: stri
                     )}
                   </h3>
                   <p className="text-xs text-gray-500">Qty: {item.qty} • Status item: {item.status}</p>
+                  {item.note ? (
+                    <p className="text-xs text-gray-500">Catatan pesanan: {item.note}</p>
+                  ) : null}
                   {seller ? (
                     <p className="text-xs text-gray-500">
                       Toko:

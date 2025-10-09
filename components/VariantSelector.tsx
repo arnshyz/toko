@@ -13,9 +13,14 @@ const slugify = (value: string) =>
 type VariantSelectorProps = {
   groups: VariantGroup[];
   namePrefix?: string;
+  onSelectionChange?: (selection: Record<string, string>) => void;
 };
 
-export function VariantSelector({ groups, namePrefix = "variant" }: VariantSelectorProps) {
+export function VariantSelector({
+  groups,
+  namePrefix = "variant",
+  onSelectionChange,
+}: VariantSelectorProps) {
   const safeGroups = Array.isArray(groups) ? groups.filter((group) => group.options?.length) : [];
 
   const defaultSelection = useMemo(() => {
@@ -28,6 +33,12 @@ export function VariantSelector({ groups, namePrefix = "variant" }: VariantSelec
   useEffect(() => {
     setSelected(defaultSelection);
   }, [defaultSelection]);
+
+  useEffect(() => {
+    if (typeof onSelectionChange === "function") {
+      onSelectionChange(selected);
+    }
+  }, [onSelectionChange, selected]);
 
   if (safeGroups.length === 0) {
     return (

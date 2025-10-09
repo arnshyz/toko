@@ -89,6 +89,9 @@ export default async function SellerOrders() {
                           <p className="text-xs text-gray-500">
                             Qty: {item.qty} • Rp {new Intl.NumberFormat("id-ID").format(item.price)}
                           </p>
+                          {item.note ? (
+                            <p className="text-xs text-gray-500">Catatan pesanan: {item.note}</p>
+                          ) : null}
                         </div>
                         <span className={`badge ${item.status === "PENDING" ? "badge-pending" : "badge-paid"}`}>
                           {item.status}
