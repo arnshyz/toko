@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { formatIDR } from "@/lib/utils";
 import { getCategoryDataset } from "@/lib/categories";
 import { ProductPurchaseOptions } from "@/components/ProductPurchaseOptions";
+import { ProductImageGallery } from "@/components/ProductImageGallery";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { VariantGroup } from "@/types/product";
 import {
@@ -414,49 +415,43 @@ export default async function ProductPage({ params }: { params: { slug: string }
   ];
 
   const productImageSources = getProductImageSources(product.id, product.images ?? []);
-  const heroImageSrc = productImageSources[0]?.src ?? product.imageUrl ?? HERO_PLACEHOLDER;
-  const thumbnailImages = (
-    productImageSources.length > 0
-      ? productImageSources
-      : [{ id: "placeholder", src: product.imageUrl ?? THUMB_PLACEHOLDER }]
-  ).slice(0, 5);
 
   return (
     <div className="space-y-10 pb-36 lg:pb-0">
       <section className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] xl:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
         <div className="space-y-4">
-          <div className="relative overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-            <div className="lg:p-4">
-              <img
-                src={heroImageSrc}
-                alt={product.title}
-                className="aspect-[3/4] w-full object-cover lg:aspect-[4/3] lg:rounded-xl"
-              />
-            </div>
-            <div className="absolute inset-x-0 top-0 flex items-center justify-between p-4 text-white lg:hidden">
-              <Link href="/" aria-label="Kembali">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-black/40 backdrop-blur">
-                  <IconChevronLeft className="h-5 w-5" />
-                </span>
-              </Link>
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-black/40 backdrop-blur"
-                  aria-label="Bagikan produk"
-                >
-                  <IconShare className="h-5 w-5" />
-                </button>
-                <Link
-                  href="/cart"
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-black/40 backdrop-blur"
-                  aria-label="Lihat keranjang"
-                >
-                  <IconShoppingCart className="h-5 w-5" />
+          <ProductImageGallery
+            title={product.title}
+            images={productImageSources}
+            fallbackImage={product.imageUrl}
+            heroPlaceholder={HERO_PLACEHOLDER}
+            thumbPlaceholder={THUMB_PLACEHOLDER}
+            topOverlay={
+              <div className="absolute inset-x-0 top-0 flex items-center justify-between p-4 text-white lg:hidden">
+                <Link href="/" aria-label="Kembali">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-black/40 backdrop-blur">
+                    <IconChevronLeft className="h-5 w-5" />
+                  </span>
                 </Link>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-black/40 backdrop-blur"
+                    aria-label="Bagikan produk"
+                  >
+                    <IconShare className="h-5 w-5" />
+                  </button>
+                  <Link
+                    href="/cart"
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-black/40 backdrop-blur"
+                    aria-label="Lihat keranjang"
+                  >
+                    <IconShoppingCart className="h-5 w-5" />
+                  </Link>
+                </div>
               </div>
-            </div>
-          </div>
+            }
+          />
           <div className="space-y-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm lg:hidden">
             <div className="flex items-end justify-between gap-3">
               <div>
@@ -486,20 +481,6 @@ export default async function ProductPage({ params }: { params: { slug: string }
               <span>•</span>
               <span>{formatCompactNumber(favoriteEstimate)} favorit</span>
             </div>
-          </div>
-          <div className="flex gap-3 overflow-x-auto lg:grid lg:grid-cols-4 lg:gap-3 lg:overflow-visible xl:grid-cols-5">
-            {thumbnailImages.map((image, index) => (
-              <div
-                key={image.id}
-                className="flex h-20 min-w-[80px] items-center justify-center overflow-hidden rounded-lg border border-dashed border-gray-200 bg-white"
-              >
-                <img
-                  src={image.src}
-                  alt={`Preview ${index + 1} dari ${product.title}`}
-                  className="h-full w-full object-cover"
-                />
-              </div>
-            ))}
           </div>
           <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Keunggulan Produk</h2>
