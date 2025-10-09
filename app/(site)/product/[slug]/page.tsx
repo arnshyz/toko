@@ -17,7 +17,7 @@ import {
   getActiveFlashSale,
   getNextFlashSale,
 } from "@/lib/flash-sale";
-import { formatJakartaDate } from "@/lib/time";
+import { formatJakartaDate, formatRelativeTimeFromNow } from "@/lib/time";
 import { resolveStoreBadgeStyle } from "@/lib/store-badges";
 
 function formatCompactNumber(value: number) {
@@ -341,9 +341,18 @@ export default async function ProductPage({ params }: { params: { slug: string }
   const primaryImage = getPrimaryProductImageSrc(product);
 
   const seller = product.seller;
-  const sellerRecord = seller as typeof seller & { isVerified?: boolean | null };
+  const sellerRecord = seller as typeof seller & {
+    isVerified?: boolean | null;
+    lastActiveAt?: Date | null;
+  };
   const badge = resolveStoreBadgeStyle(seller.storeBadge);
   const isOnline = seller.storeIsOnline ?? false;
+  const lastActiveMessage = formatRelativeTimeFromNow(sellerRecord.lastActiveAt ?? null);
+  const activityLabel = isOnline
+    ? "Sedang online sekarang"
+    : lastActiveMessage
+    ? `Aktif ${lastActiveMessage}`
+    : "Aktivitas terakhir belum tersedia";
   const followers = seller.storeFollowers ?? 0;
   const following = seller.storeFollowing ?? 0;
   const storeRatingValue = seller.storeRating ?? 0;
@@ -398,6 +407,8 @@ export default async function ProductPage({ params }: { params: { slug: string }
       title: "Layanan",
       description: isOnline
         ? "Toko sedang online dan siap merespons pesanan Anda."
+        : lastActiveMessage
+        ? `Toko sedang offline. Aktif ${lastActiveMessage}.`
         : "Toko akan memproses pesanan segera setelah kembali online.",
     },
   ];
@@ -657,6 +668,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
                     <span>Mengikuti: {formatCompactNumber(following)}</span>
                     <span>Penilaian: {storeRatingLabel}</span>
                     <span>Bergabung: {formatJoinedSince(seller.createdAt)}</span>
+                    <span>{activityLabel}</span>
                   </div>
                 </div>
               </div>

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { VerifiedBadge } from "@/components/VerifiedBadge";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
-import { JAKARTA_TIME_ZONE } from "@/lib/time";
+import { JAKARTA_TIME_ZONE, formatRelativeTimeFromNow } from "@/lib/time";
 
 const storeBadges = ["BASIC", "STAR", "STAR_PLUS", "MALL", "PREMIUM"] as const;
 
@@ -88,6 +88,12 @@ export default async function AdminUsersPage({
               const isSeller = user._count.products > 0 || hasWarehouse;
               const isBanned = user.isBanned;
               const isVerified = Boolean((user as { isVerified?: boolean }).isVerified);
+              const lastActiveMessage = formatRelativeTimeFromNow((user as { lastActiveAt?: Date | null }).lastActiveAt ?? null);
+              const storeActivityLabel = user.storeIsOnline
+                ? "Sedang online"
+                : lastActiveMessage
+                ? `Aktif ${lastActiveMessage}`
+                : "Aktivitas belum tersedia";
               return (
                 <tr key={user.id} id={`user-${user.id}`} className="border-b align-top">
                   <td className="py-3">
@@ -151,10 +157,11 @@ export default async function AdminUsersPage({
                           </select>
                           <button className="btn-outline text-xs px-3 py-1">Simpan</button>
                         </form>
-                        <div className="flex items-center gap-2 text-xs">
+                        <div className="flex flex-wrap items-center gap-2 text-xs">
                           <span className={`badge ${user.storeIsOnline ? "badge-paid" : "badge-pending"}`}>
-                            {user.storeIsOnline ? "Toko Aktif" : "Toko Tutup"}
+                            {user.storeIsOnline ? "Toko Online" : "Toko Offline"}
                           </span>
+                          <span className="text-gray-500">{storeActivityLabel}</span>
                           <form
                             method="POST"
                             action={`/api/admin/users/${user.id}/toggle-store`}

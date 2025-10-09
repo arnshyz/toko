@@ -4,16 +4,20 @@ import { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/session";
+import { formatRelativeTimeFromNow } from "@/lib/time";
 
-const SELLER_SELECTION = Prisma.validator<Prisma.UserSelect>()({
+const SELLER_SELECTION = {
   isBanned: true,
   storeIsOnline: true,
   name: true,
   slug: true,
   sellerOnboardingStatus: true,
-});
+} as const;
 
-type SellerAccount = Prisma.UserGetPayload<{ select: typeof SELLER_SELECTION }> & {
+type BaseSellerAccount = Prisma.UserGetPayload<{ select: typeof SELLER_SELECTION }>;
+
+type SellerAccount = BaseSellerAccount & {
+  lastActiveAt: Date | null;
   storeCity: string | null;
   storeProvince: string | null;
   storeAddressLine: string | null;
@@ -31,10 +35,10 @@ async function getPrimaryWarehouseCity(userId: string): Promise<string | null> {
 
 async function getSellerDashboardAccount(userId: string): Promise<SellerAccount | null> {
   try {
-    const account = await prisma.user.findUnique({
+    const account = (await prisma.user.findUnique({
       where: { id: userId },
-      select: SELLER_SELECTION,
-    });
+      select: { ...SELLER_SELECTION, lastActiveAt: true } as any,
+    })) as (BaseSellerAccount & { lastActiveAt: Date | null }) | null;
 
     if (!account) {
       return null;
@@ -44,6 +48,7 @@ async function getSellerDashboardAccount(userId: string): Promise<SellerAccount 
 
     return {
       ...account,
+      lastActiveAt: account.lastActiveAt ?? null,
       storeCity: warehouseCity,
       storeProvince: null,
       storeAddressLine: null,
@@ -59,11 +64,12 @@ async function getSellerDashboardAccount(userId: string): Promise<SellerAccount 
         Array<{
           isBanned: boolean;
           storeIsOnline: boolean | null;
+          lastActiveAt: Date | null;
           name: string;
           slug: string;
           sellerOnboardingStatus: string;
         }>
-      >`SELECT "isBanned", "storeIsOnline", "name", "slug", "sellerOnboardingStatus" FROM "User" WHERE "id" = ${userId} LIMIT 1`;
+      >`SELECT "isBanned", "storeIsOnline", "lastActiveAt", "name", "slug", "sellerOnboardingStatus" FROM "User" WHERE "id" = ${userId} LIMIT 1`;
 
       const row = fallbackAccount[0];
       if (!row) {
@@ -75,6 +81,7 @@ async function getSellerDashboardAccount(userId: string): Promise<SellerAccount 
       return {
         isBanned: row.isBanned,
         storeIsOnline: row.storeIsOnline ?? false,
+        lastActiveAt: row.lastActiveAt ?? null,
         name: row.name,
         slug: row.slug,
         sellerOnboardingStatus: row.sellerOnboardingStatus as SellerAccount['sellerOnboardingStatus'],
@@ -130,6 +137,7 @@ export default async function Dashboard() {
   }
 
   const storeIsOnline = account.storeIsOnline ?? false;
+  const lastActiveAt = account.lastActiveAt ?? null;
   const storeName = account.name;
   const storeSlug = account.slug;
   const storeCity = account.storeCity?.trim() ?? "";
@@ -159,6 +167,13 @@ export default async function Dashboard() {
 
   const ordersCount = distinctOrders.length;
   const revenueTotal = revenueAggregate._sum.price ?? 0;
+
+  const lastActiveLabel = storeIsOnline
+    ? "Sedang online sekarang"
+    : (() => {
+        const relative = formatRelativeTimeFromNow(lastActiveAt);
+        return relative ? `Aktif ${relative}` : "Aktivitas terakhir belum tersedia";
+      })();
 
   const sellerOrderSummary = [
     { label: "Perlu Diproses", value: pendingItemCount, icon: "🧾", href: "/seller/orders?status=PENDING" },
@@ -198,12 +213,19 @@ export default async function Dashboard() {
                 </p>
               )}
             </div>
-            <form method="POST" action="/api/seller/store/toggle" className="flex-shrink-0">
-              <input type="hidden" name="status" value={storeIsOnline ? "offline" : "online"} />
-              <button className="rounded-full bg-white px-4 py-2 text-xs font-semibold text-sky-600 shadow">
-                {storeIsOnline ? "Tutup Toko" : "Buka Toko"}
-              </button>
-            </form>
+            <div className="flex flex-col items-end gap-2 text-right text-white">
+              <span
+                className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold shadow ${
+                  storeIsOnline ? "bg-white/90 text-sky-700" : "bg-black/30 text-white"
+                }`}
+              >
+                <span
+                  className={`h-2 w-2 rounded-full ${storeIsOnline ? "bg-emerald-500" : "bg-gray-300"}`}
+                />
+                {storeIsOnline ? "Online" : "Offline"}
+              </span>
+              <span className="text-[11px] text-white/80">{lastActiveLabel}</span>
+            </div>
           </div>
           <div className="mt-4 flex items-center justify-between text-xs text-white/80">
             <Link href={`/s/${storeSlug}`} className="inline-flex items-center gap-1 rounded-full bg-white/20 px-4 py-2 text-xs font-semibold text-white">
@@ -315,18 +337,25 @@ export default async function Dashboard() {
           </div>
           <div>
             <h2 className="text-lg font-semibold">Status Toko</h2>
-            <p className="text-sm text-gray-600">
-              {storeIsOnline
-                ? "Toko Anda sedang buka dan pelanggan dapat melakukan pembelian."
-                : "Toko Anda sedang ditutup. Buka kembali agar pelanggan dapat berbelanja."}
-            </p>
+            <div className="mt-2 flex flex-col gap-2">
+              <span
+                className={`inline-flex items-center gap-2 w-fit rounded-full px-3 py-1 text-xs font-semibold ${
+                  storeIsOnline
+                    ? "bg-emerald-50 text-emerald-600"
+                    : "bg-gray-100 text-gray-600"
+                }`}
+              >
+                <span
+                  className={`h-2 w-2 rounded-full ${storeIsOnline ? "bg-emerald-500" : "bg-gray-400"}`}
+                />
+                {storeIsOnline ? "Online" : "Offline"}
+              </span>
+              <p className="text-sm text-gray-600">{lastActiveLabel}</p>
+              <p className="text-xs text-gray-500">
+                Status toko kini diperbarui otomatis saat Anda login atau logout.
+              </p>
+            </div>
           </div>
-          <form method="POST" action="/api/seller/store/toggle" className="flex-shrink-0">
-            <input type="hidden" name="status" value={storeIsOnline ? "offline" : "online"} />
-            <button className={storeIsOnline ? "btn-outline" : "btn-primary"}>
-              {storeIsOnline ? "Tutup Toko" : "Buka Toko"}
-            </button>
-          </form>
         </div>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="rounded border bg-white p-4">

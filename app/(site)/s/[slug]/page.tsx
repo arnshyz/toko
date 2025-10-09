@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getCategoryDataset } from "@/lib/categories";
+import { formatRelativeTimeFromNow } from "@/lib/time";
 import { formatIDR } from "@/lib/utils";
 import { calculateFlashSalePrice, getActiveFlashSale } from "@/lib/flash-sale";
 import { getPrimaryProductImageSrc } from "@/lib/productImages";
@@ -43,9 +44,18 @@ export default async function Storefront({ params }: { params: { slug: string } 
   const categoryDataset = await getCategoryDataset();
   const categoryInfoMap = categoryDataset.infoBySlug;
 
-  const sellerRecord = seller as typeof seller & { isVerified?: boolean | null };
+  const sellerRecord = seller as typeof seller & {
+    isVerified?: boolean | null;
+    lastActiveAt?: Date | null;
+  };
   const badge = resolveStoreBadgeStyle(seller.storeBadge);
   const isOnline = seller.storeIsOnline ?? false;
+  const lastActiveMessage = formatRelativeTimeFromNow(sellerRecord.lastActiveAt ?? null);
+  const activityLabel = isOnline
+    ? "Sedang online sekarang"
+    : lastActiveMessage
+    ? `Aktif ${lastActiveMessage}`
+    : "Aktivitas terakhir belum tersedia";
   const followers = seller.storeFollowers ?? 0;
   const following = seller.storeFollowing ?? 0;
   const ratingValue = seller.storeRating ?? 0;
@@ -110,6 +120,7 @@ export default async function Storefront({ params }: { params: { slug: string } 
                     </span>
                   </div>
                   <div className="text-sm text-gray-500">@{seller.slug}</div>
+                  <div className="text-xs text-gray-500">{activityLabel}</div>
                 </div>
 
                 <div className="flex w-full flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">

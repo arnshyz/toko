@@ -24,6 +24,7 @@ model User {
   gender       Gender?
   storeBadge   StoreBadge @default(BASIC)
   storeIsOnline Boolean   @default(true)
+  lastActiveAt  DateTime?
   storeFollowers Int      @default(0)
   storeFollowing Int      @default(0)
   storeRating    Float?

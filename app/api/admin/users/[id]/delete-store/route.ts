@@ -53,12 +53,13 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       where: { id: params.id },
       data: {
         storeIsOnline: false,
+        lastActiveAt: new Date(),
         storeBadge: defaultBadge,
         storeFollowers: 0,
         storeFollowing: 0,
         storeRating: null,
         storeRatingCount: 0,
-      },
+      } as any,
     }),
   ]);
 
