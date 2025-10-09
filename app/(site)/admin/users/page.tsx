@@ -98,7 +98,7 @@ export default async function AdminUsersPage({
                 <tr key={user.id} id={`user-${user.id}`} className="border-b align-top">
                   <td className="py-3">
                     <div className="flex items-start gap-3">
-                      <div className="h-12 w-12 overflow-hidden rounded-full bg-gray-200">
+                      <div className="aspect-square w-12 overflow-hidden rounded-lg bg-gray-200">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={
@@ -355,7 +355,7 @@ export default async function AdminUsersPage({
                               Pratinjau Foto Profil
                             </span>
                             <div className="flex items-center gap-3">
-                              <div className="h-16 w-16 overflow-hidden rounded-full bg-gray-200">
+                              <div className="aspect-square w-16 overflow-hidden rounded-xl bg-gray-200">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                   src={

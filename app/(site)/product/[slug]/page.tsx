@@ -617,7 +617,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
           <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div className="flex items-center gap-4">
-                <div className="relative h-16 w-16 overflow-hidden rounded-xl bg-gradient-to-br from-gray-100 to-gray-200">
+                <div className="relative aspect-square w-16 overflow-hidden rounded-xl bg-gradient-to-br from-gray-100 to-gray-200">
                   {seller.avatarUrl?.trim() ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
