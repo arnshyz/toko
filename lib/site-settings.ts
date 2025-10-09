@@ -7,6 +7,8 @@ export type SiteSettings = {
   siteName: string;
   siteDescription: string;
   logoUrl: string | null;
+  pageTitle: string;
+  faviconUrl: string | null;
 };
 
 const DEFAULT_SITE_SETTINGS: SiteSettings = {
@@ -14,6 +16,8 @@ const DEFAULT_SITE_SETTINGS: SiteSettings = {
   siteName: "Akay Nusantara",
   siteDescription: "Belanja produk pilihan dari penjual terpercaya di seluruh Nusantara.",
   logoUrl: null,
+  pageTitle: "Akay Nusantara",
+  faviconUrl: null,
 };
 
 function normalizeName(value: string | null | undefined) {
@@ -38,17 +42,41 @@ function normalizeLogo(value: string | null | undefined) {
   return trimmed ? trimmed : null;
 }
 
+function normalizePageTitle(
+  value: string | null | undefined,
+  fallbackName: string,
+): string {
+  if (typeof value !== "string") {
+    return fallbackName;
+  }
+
+  const trimmed = value.trim();
+  return trimmed ? trimmed : fallbackName;
+}
+
+function normalizeFavicon(value: string | null | undefined) {
+  if (typeof value !== "string") {
+    return null;
+  }
+  const trimmed = value.trim();
+  return trimmed ? trimmed : null;
+}
+
 export async function getSiteSettings(): Promise<SiteSettings> {
   const record = await prisma.siteSetting.findUnique({ where: { id: SITE_SETTINGS_ID } });
   if (!record) {
     return { ...DEFAULT_SITE_SETTINGS };
   }
 
+  const siteName = normalizeName(record.siteName);
+
   return {
     id: record.id,
-    siteName: normalizeName(record.siteName),
+    siteName,
     siteDescription: normalizeDescription(record.siteDescription),
     logoUrl: normalizeLogo(record.logoUrl),
+    pageTitle: normalizePageTitle(record.pageTitle, siteName),
+    faviconUrl: normalizeFavicon(record.faviconUrl),
   };
 }
 
@@ -56,6 +84,8 @@ export type SiteSettingsInput = {
   siteName: string;
   siteDescription?: string | null;
   logoUrl?: string | null;
+  pageTitle?: string | null;
+  faviconUrl?: string | null;
 };
 
 export async function saveSiteSettings(input: SiteSettingsInput): Promise<SiteSettings> {
@@ -66,6 +96,9 @@ export async function saveSiteSettings(input: SiteSettingsInput): Promise<SiteSe
     ? siteDescriptionRaw.trim()
     : null;
   const logoUrl = normalizeLogo(input.logoUrl);
+  const pageTitleRaw = typeof input.pageTitle === "string" ? input.pageTitle : undefined;
+  const pageTitle = pageTitleRaw && pageTitleRaw.trim() ? pageTitleRaw.trim() : null;
+  const faviconUrl = normalizeFavicon(input.faviconUrl);
 
   const record = await prisma.siteSetting.upsert({
     where: { id: SITE_SETTINGS_ID },
@@ -73,19 +106,27 @@ export async function saveSiteSettings(input: SiteSettingsInput): Promise<SiteSe
       siteName,
       siteDescription,
       logoUrl,
+      pageTitle,
+      faviconUrl,
     },
     create: {
       id: SITE_SETTINGS_ID,
       siteName,
       siteDescription,
       logoUrl,
+      pageTitle,
+      faviconUrl,
     },
   });
 
+  const normalizedName = normalizeName(record.siteName);
+
   return {
     id: record.id,
-    siteName: normalizeName(record.siteName),
+    siteName: normalizedName,
     siteDescription: normalizeDescription(record.siteDescription),
     logoUrl: normalizeLogo(record.logoUrl),
+    pageTitle: normalizePageTitle(record.pageTitle, normalizedName),
+    faviconUrl: normalizeFavicon(record.faviconUrl),
   };
 }

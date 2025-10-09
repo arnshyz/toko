@@ -20,6 +20,10 @@ export default async function AdminSettingsPage({
     siteSettings.logoUrl && siteSettings.logoUrl.startsWith("data:")
       ? ""
       : siteSettings.logoUrl ?? "";
+  const faviconInputDefault =
+    siteSettings.faviconUrl && siteSettings.faviconUrl.startsWith("data:")
+      ? ""
+      : siteSettings.faviconUrl ?? "";
   const successMessage =
     typeof searchParams?.message === "string" ? searchParams.message : undefined;
   const errorMessage = typeof searchParams?.error === "string" ? searchParams.error : undefined;
@@ -30,7 +34,8 @@ export default async function AdminSettingsPage({
         <div>
           <h1 className="text-2xl font-semibold">Pengaturan Identitas Website</h1>
           <p className="text-sm text-gray-500">
-            Sesuaikan nama, deskripsi, dan logo untuk menjaga konsistensi brand di seluruh halaman.
+            Sesuaikan nama, judul halaman, deskripsi, logo, dan favicon untuk menjaga konsistensi brand di
+            seluruh halaman.
           </p>
         </div>
         <Link href="/admin" className="link text-sm">
@@ -63,6 +68,7 @@ export default async function AdminSettingsPage({
           className="grid gap-5 md:grid-cols-2"
         >
           <input type="hidden" name="currentLogo" value={siteSettings.logoUrl ?? ""} />
+          <input type="hidden" name="currentFavicon" value={siteSettings.faviconUrl ?? ""} />
           <label className="md:col-span-2 text-xs font-semibold uppercase tracking-wide text-gray-600">
             Nama Website
             <input
@@ -72,6 +78,17 @@ export default async function AdminSettingsPage({
               defaultValue={siteSettings.siteName}
               className="mt-2 w-full rounded border px-3 py-2 text-sm"
               placeholder="Contoh: Akay Nusantara"
+            />
+          </label>
+
+          <label className="md:col-span-2 text-xs font-semibold uppercase tracking-wide text-gray-600">
+            Judul Halaman (Page Title)
+            <input
+              type="text"
+              name="pageTitle"
+              defaultValue={siteSettings.pageTitle}
+              className="mt-2 w-full rounded border px-3 py-2 text-sm"
+              placeholder="Contoh: Akay Nusantara | Marketplace UMKM"
             />
           </label>
 
@@ -130,6 +147,59 @@ export default async function AdminSettingsPage({
                 </label>
                 <p className="text-[11px] text-gray-500">
                   Jika tidak mencentang hapus logo, logo sebelumnya akan dipertahankan ketika tidak ada tautan atau berkas baru.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4 md:col-span-2">
+            <h3 className="text-sm font-semibold text-gray-700">Favicon (Ikon Situs)</h3>
+            <div className="flex flex-col gap-4 md:flex-row md:items-center">
+              <div className="flex h-16 w-16 items-center justify-center overflow-hidden rounded border border-dashed border-gray-300 bg-gray-50">
+                {siteSettings.faviconUrl ? (
+                  <img
+                    src={siteSettings.faviconUrl}
+                    alt="Favicon website"
+                    className="h-full w-full object-contain"
+                  />
+                ) : (
+                  <span aria-hidden className="text-lg">🌐</span>
+                )}
+              </div>
+              <div className="flex-1 space-y-3 text-xs text-gray-600">
+                <p className="font-medium uppercase tracking-wide text-gray-500">Pengaturan Favicon</p>
+                <p>
+                  Gunakan favicon berformat persegi (minimal 64x64px) agar tampil maksimal di tab browser
+                  dan perangkat mobile.
+                </p>
+                <label className="block">
+                  <span className="font-semibold uppercase tracking-wide text-gray-500">Tautan Favicon</span>
+                  <input
+                    type="url"
+                    name="faviconUrl"
+                    defaultValue={faviconInputDefault}
+                    placeholder="https://example.com/favicon.png"
+                    className="mt-1 w-full rounded border px-3 py-2 text-sm"
+                  />
+                </label>
+                <label className="block">
+                  <span className="font-semibold uppercase tracking-wide text-gray-500">
+                    Upload Favicon (opsional)
+                  </span>
+                  <input
+                    type="file"
+                    name="faviconFile"
+                    accept="image/png,image/jpeg,image/webp,image/svg+xml,image/x-icon,image/vnd.microsoft.icon"
+                    className="mt-1 w-full text-sm"
+                  />
+                </label>
+                <label className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  <input type="checkbox" name="removeFavicon" value="1" className="h-4 w-4" />
+                  Hapus favicon saat menyimpan
+                </label>
+                <p className="text-[11px] text-gray-500">
+                  Jika tidak mencentang hapus favicon, favicon sebelumnya akan dipertahankan ketika tidak ada tautan atau
+                  berkas baru.
                 </p>
               </div>
             </div>
