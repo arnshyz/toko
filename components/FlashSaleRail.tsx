@@ -124,20 +124,22 @@ export function FlashSaleRail({ items }: FlashSaleRailProps) {
                 className="group w-48 shrink-0 overflow-hidden rounded-xl border border-sky-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
               >
                 <Link href={`/product/${item.slug}`} className="relative block">
-                  <img
-                    src={item.imageUrl}
-                    alt={item.title}
-                    className="h-32 w-full object-cover"
-                  />
-                  <div className="absolute left-0 top-0 rounded-br-lg bg-sky-500 px-2 py-1 text-xs font-bold uppercase text-white">
-                    -{item.discountPercent}%
-                  </div>
-                  <div className="absolute right-2 top-2 flex items-center gap-1 rounded bg-black/70 px-2 py-0.5 text-[11px] font-semibold text-white">
-                    <span>{countdown.hours}</span>
-                    <span>:</span>
-                    <span>{countdown.minutes}</span>
-                    <span>:</span>
-                    <span>{countdown.seconds}</span>
+                  <div className="relative aspect-square w-full overflow-hidden rounded-t-xl bg-gray-50">
+                    <img
+                      src={item.imageUrl}
+                      alt={item.title}
+                      className="h-full w-full object-cover"
+                    />
+                    <div className="absolute left-0 top-0 rounded-br-lg bg-sky-500 px-2 py-1 text-xs font-bold uppercase text-white">
+                      -{item.discountPercent}%
+                    </div>
+                    <div className="absolute right-2 top-2 flex items-center gap-1 rounded bg-black/70 px-2 py-0.5 text-[11px] font-semibold text-white">
+                      <span>{countdown.hours}</span>
+                      <span>:</span>
+                      <span>{countdown.minutes}</span>
+                      <span>:</span>
+                      <span>{countdown.seconds}</span>
+                    </div>
                   </div>
                 </Link>
                 <div className="space-y-2 p-3">

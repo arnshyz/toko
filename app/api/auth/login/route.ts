@@ -21,9 +21,13 @@ export async function POST(req: NextRequest) {
       passwordHash: true,
     },
   });
-  if (!user) return NextResponse.json({ error: 'Invalid' }, { status: 400 });
+  if (!user) {
+    return NextResponse.redirect(new URL('/seller/login?error=invalid', req.url));
+  }
   const ok = await bcrypt.compare(password, user.passwordHash);
-  if (!ok) return NextResponse.json({ error: 'Invalid' }, { status: 400 });
+  if (!ok) {
+    return NextResponse.redirect(new URL('/seller/login?error=invalid', req.url));
+  }
 
   if (user.isBanned) {
     return NextResponse.redirect(new URL('/seller/login?error=banned', req.url));
