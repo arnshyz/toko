@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { VariantGroup } from "@/types/product";
 
 const slugify = (value: string) =>
@@ -13,21 +13,43 @@ const slugify = (value: string) =>
 type VariantSelectorProps = {
   groups: VariantGroup[];
   namePrefix?: string;
+  value?: Record<string, string>;
+  onSelectionChange?: (selection: Record<string, string>) => void;
 };
 
-export function VariantSelector({ groups, namePrefix = "variant" }: VariantSelectorProps) {
-  const safeGroups = Array.isArray(groups) ? groups.filter((group) => group.options?.length) : [];
+const normalizeGroups = (groups: VariantGroup[]) =>
+  groups
+    .filter((group) => Array.isArray(group.options) && group.options.length > 0)
+    .map((group) => ({
+      name: group.name,
+      options: [...group.options],
+    }));
 
-  const defaultSelection = useMemo(() => {
+export function VariantSelector({
+  groups,
+  namePrefix = "variant",
+  value,
+  onSelectionChange,
+}: VariantSelectorProps) {
+  const safeGroups = useMemo(() => normalizeGroups(Array.isArray(groups) ? groups : []), [groups]);
+
+  const baseSelection = useMemo(() => {
     const entries = safeGroups.map((group) => [group.name, group.options[0]] as const);
     return Object.fromEntries(entries);
   }, [safeGroups]);
 
-  const [selected, setSelected] = useState<Record<string, string>>(defaultSelection);
-
-  useEffect(() => {
-    setSelected(defaultSelection);
-  }, [defaultSelection]);
+  const selected = useMemo(() => {
+    const next = { ...baseSelection } as Record<string, string>;
+    if (value && typeof value === "object") {
+      for (const [groupName, option] of Object.entries(value)) {
+        const targetGroup = safeGroups.find((group) => group.name === groupName);
+        if (targetGroup && targetGroup.options.includes(option)) {
+          next[groupName] = option;
+        }
+      }
+    }
+    return next;
+  }, [baseSelection, safeGroups, value]);
 
   if (safeGroups.length === 0) {
     return (
@@ -51,12 +73,12 @@ export function VariantSelector({ groups, namePrefix = "variant" }: VariantSelec
                   <button
                     key={option}
                     type="button"
-                    onClick={() =>
-                      setSelected((prev) => ({
-                        ...prev,
-                        [group.name]: option,
-                      }))
-                    }
+                    onClick={() => {
+                      if (typeof onSelectionChange !== "function") return;
+
+                      const nextSelection = { ...selected, [group.name]: option };
+                      onSelectionChange(nextSelection);
+                    }}
                     className={`rounded-full border px-4 py-1.5 text-sm transition focus:outline-none focus:ring-2 focus:ring-sky-500 ${
                       isActive
                         ? "border-sky-500 bg-sky-50 text-sky-600"

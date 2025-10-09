@@ -154,6 +154,11 @@ export async function handleGoogleCallback(req: NextRequest): Promise<NextRespon
     );
   }
 
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { storeIsOnline: true, lastActiveAt: new Date() } as any,
+  });
+
   const redirectTo = new URL(
     user.sellerOnboardingStatus === "ACTIVE"
       ? "/seller/dashboard"

@@ -33,6 +33,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.redirect(new URL('/seller/login?error=banned', req.url));
   }
 
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { storeIsOnline: true, lastActiveAt: new Date() } as any,
+  });
+
   const redirectTo = new URL('/', req.url);
   const res = new NextResponse();
   const session = await getIronSession<{ user?: SessionUser }>(req, res, sessionOptions);
