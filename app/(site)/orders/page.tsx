@@ -34,6 +34,7 @@ type BuyerOrder = {
     price: number;
     status: "PENDING" | "PACKED" | "SHIPPED" | "DELIVERED" | string;
     productId: string;
+    note: string | null;
     product: null | {
       id: string;
       slug: string;
@@ -442,6 +443,9 @@ export default function BuyerOrdersPage() {
                             )}
                           </p>
                           <p className="text-xs text-gray-500">Qty: {item.qty}</p>
+                          {item.note ? (
+                            <p className="text-xs text-gray-500">Catatan pesanan: {item.note}</p>
+                          ) : null}
                           <p className="text-xs text-gray-500">Status item: {item.status}</p>
                           {seller ? (
                             <p className="text-xs text-gray-500">
