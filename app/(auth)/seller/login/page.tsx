@@ -23,6 +23,8 @@ export default async function SellerLogin({
   if (errorParam === "banned") {
     errorMessage =
       "Akun Anda telah diblokir oleh admin. Silakan hubungi support@akay.id untuk informasi lebih lanjut.";
+  } else if (errorParam === "invalid") {
+    errorMessage = "Email atau password salah. Silakan periksa kembali data Anda.";
   } else if (errorParam) {
     errorMessage = "Gagal masuk. Silakan coba lagi atau reset password Anda.";
   }

@@ -69,7 +69,7 @@ export function ProductCard({
   return (
     <article className={classes.join(" ")}>
       <Link href={href} className="block">
-        <div className="relative aspect-[4/5] w-full overflow-hidden bg-gray-50">
+        <div className="relative aspect-square w-full overflow-hidden bg-gray-50">
           {imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
